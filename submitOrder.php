@@ -42,8 +42,8 @@
 		$dishQuantity = $obj->order[$i]->quan;
 		if (!$dbOrder->exec("INSERT INTO ".ORDER_DETAIL_TABLE."(".ORDER_DETAIL_TABLE_COLUM_DISH_ID.",".
 															ORDER_DETAIL_TABLE_COLUM_PRICE.",".
-															ORDER_DETAIL_TABLE_QUANTITY.",".
-															ORDER_DETAIL_TABLE_ORDER_ID.")".
+															ORDER_DETAIL_TABLE_COLUM_QUANTITY.",".
+															ORDER_DETAIL_TABLE_COLUM_ORDER_ID.")".
 							 "values($dishId, $price, $dishQuantity, $orderId)")) {
 			die(0);
 		}
