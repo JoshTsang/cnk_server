@@ -1,6 +1,42 @@
 <?php
 	require('macros.php');
+	class counter{
+		private $file;
+		private $hits;
+	 
+		// 构造函数
+		public function __construct($name = 'counter'){
+	 
+			// 存放计数的文件
+			$this->file =  "../db/count.txt";
+	 
+			// 判断文件是否存在，不存在则创建
+			if(file_exists($this->file))
+			{
+				$this->hits = file_get_contents($this->file);
+			}
+			else
+			{
+				file_put_contents($this->file, "1");
+				$this->hits = 1;
+			}
+		}
+	 
+		// 获取计数
+		public function add(){
+						$this->hits++;
+						$this->hits = $this->hits % 10000;
+						file_put_contents($this->file, $this->hits);
+		}
+		
+		public function get() {
+			return $this->hits;
+		}
+ 
+	}
 	
+	$ver = new counter();
+	$ver->add();
 	$dbOrder = new SQLite3(DATABASE_ORDER);
 	if (!$dbOrder) {
 		header("HTTP/1.1 ERR_COULD_NOT_CONECT_DB 'ERR_COULD_NOT_CONECT_DB'");
@@ -31,7 +67,9 @@
 			// echo "quantity:$row[3]<br/>";
 			// echo "order_id:$row[4]<br/>";
 		}
-		$jsonString = json_encode($dishes);
+		$TodoDishesObj = array('ver' => $ver->get(),
+							   'dishes' => $dishes );
+		$jsonString = json_encode($TodoDishesObj);
 		echo "$jsonString";
 	} else {
 		die(ERR_DB_QUERY);
