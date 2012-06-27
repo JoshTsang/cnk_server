@@ -27,6 +27,7 @@
 	define('ORDER_DETAIL_TABLE_COLUM_ORDER_ID', "order_id");
 	define('ORDER_DETAIL_TABLE_COLUM_QUANTITY', "quantity");
 	
+	define('DATABASE_SALES', "../db/sales.db");
 	/* Dish status */
 	define('DISH_STATUS_SOLD_OUT', "0");
 	
