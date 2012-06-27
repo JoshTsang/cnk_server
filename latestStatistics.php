@@ -27,8 +27,9 @@
 		$timestamp = get();
 		echo "[$timestamp]";
 	} else if($action == "set") {
-		$timestamp = $_GET['timestamp'];
-		set($timestamp);
+		$date = $_GET['date'];
+		$time = $_GET['time'];
+		set($date." ".$time);
 		echo "$timestamp";
 	}
  
