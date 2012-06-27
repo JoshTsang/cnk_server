@@ -40,6 +40,7 @@
 		$dishId = $obj->order[$i]->id;
 		$price = $obj->order[$i]->price;
 		$dishQuantity = $obj->order[$i]->quan;
+		$dishName = $obj->order[$i]->name;
 		if (!$dbOrder->exec("INSERT INTO ".ORDER_DETAIL_TABLE."(".ORDER_DETAIL_TABLE_COLUM_DISH_ID.",".
 															ORDER_DETAIL_TABLE_COLUM_PRICE.",".
 															ORDER_DETAIL_TABLE_COLUM_QUANTITY.",".
