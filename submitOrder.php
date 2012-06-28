@@ -30,9 +30,11 @@
 		if ($row = $resultSet->fetchArray()) {
 			$orderId = $row[0];
 		} else {
+			header("HTTP/1.1 ERR_DB_QUERY 'ERR_DB_QUERY'");
 			die(0);
 		}
 	} else {
+		header("HTTP/1.1 ERR_DB_QUERY 'ERR_DB_QUERY'");
 		die(ERR_DB_QUERY);
 	}
 	
@@ -46,6 +48,7 @@
 															ORDER_DETAIL_TABLE_COLUM_QUANTITY.",".
 															ORDER_DETAIL_TABLE_COLUM_ORDER_ID.")".
 							 "values($dishId, $price, $dishQuantity, $orderId)")) {
+			header("HTTP/1.1 ERR_DB_EXEC 'ERR_DB_QUERY'");
 			die(0);
 		}
 	}

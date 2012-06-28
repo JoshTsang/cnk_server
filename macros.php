@@ -3,6 +3,8 @@
 	define('ERR_COULD_NOT_CONECT_DB', "501");
 	define("ERR_DB_QUERY", "502");
 	define("NO_ORDERED_DISH", "503");
+	define('MORE_PARAM_NEEDED', "504");
+	define('ERR_DB_EXEC', "505");
 	
 	
 	/* Database */
