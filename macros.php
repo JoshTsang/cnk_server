@@ -28,6 +28,10 @@
 	define('ORDER_DETAIL_TABLE_COLUM_QUANTITY', "quantity");
 	
 	define('DATABASE_SALES', "../db/sales.db");
+	define('TABLE_INFO', "table_info");
+	define('TABLE_NAME', "table_name");
+	define('TABLE_ID', "table_id");
+	define('TABLE_STATUS', "status");
 	/* Dish status */
 	define('DISH_STATUS_SOLD_OUT', "0");
 	
