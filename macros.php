@@ -34,6 +34,7 @@
 	define('TABLE_NAME', "table_name");
 	define('TABLE_ID', "table_id");
 	define('TABLE_STATUS', "status");
+	
 	/* Dish status */
 	define('DISH_STATUS_SOLD_OUT', "0");
 	

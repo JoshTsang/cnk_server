@@ -1,5 +1,7 @@
 <?php
 	require('macros.php');
+	require('print.php');
+	
 	$json_string = $_POST['json'];
 	//$json_string =  " {\"order\":[{\"quan\":1,\"id\":2,\"price\":12},{\"quan\":1,\"id\":3,\"price\":12},{\"quan\":1,\"id\":5,\"price\":34}],\"timestamp\":\"2012-06-23 20:22:38\",\"tableId\":0}";
 	$obj = json_decode($json_string); 
@@ -52,4 +54,6 @@
 			die(0);
 		}
 	}
+	
+	printJson($json_string);
 ?>

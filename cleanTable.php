@@ -3,17 +3,19 @@
 	
 	$dbSales = new SQLite3(DATABASE_SALES);
 	if (!$dbSales) {
-	  die(ERR_CLOUD_NOT_CONECT_DB);
+		header("HTTP/1.1 ERR_COULD_NOT_CONECT_DB 'ERR_COULD_NOT_CONECT_DB'");
+	  	die(ERR_CLOUD_NOT_CONECT_DB);
 	}
 	
 	$dbOrder = new SQLite3(DATABASE_ORDER);
 	if (!$dbSales) {
-	  die(ERR_CLOUD_NOT_CONECT_DB);
+		header("HTTP/1.1 ERR_COULD_NOT_CONECT_DB 'ERR_COULD_NOT_CONECT_DB'");
+	  	die(ERR_CLOUD_NOT_CONECT_DB);
 	}
 	
 	$tableId = $_GET['TID'];
 	if ($tableId == NULL) {
-		echo "[]";
+		header("HTTP/1.1 MORE_PARAM_NEEDED 'MORE_PARAM_NEEDED'");
 		die(0);
 	}
 	
@@ -35,6 +37,7 @@
 		}
 		$dbSales->close();
 	} else {
+		header("HTTP/1.1 ERR_DB_QUERY 'ERR_DB_QUERY'");
 		die(ERR_DB_QUERY);
 	}
 	
@@ -49,6 +52,7 @@
 			$dbOrder->exec($sqlDelete);
 		}
 	} else {
+		header("HTTP/1.1 ERR_DB_QUERY 'ERR_DB_QUERY'");
 		die(ERR_DB_QUERY);
 	}
 	
