@@ -3,6 +3,8 @@
 	define('ERR_COULD_NOT_CONECT_DB', "501");
 	define("ERR_DB_QUERY", "502");
 	define("NO_ORDERED_DISH", "503");
+	define('MORE_PARAM_NEEDED', "504");
+	define('ERR_DB_EXEC', "505");
 	
 	
 	/* Database */
@@ -32,6 +34,10 @@
 	define('TABLE_NAME', "table_name");
 	define('TABLE_ID', "table_id");
 	define('TABLE_STATUS', "status");
+	
+	define('USER_TABLE',"administrator");
+	define('USER_NAME',"username");
+	define('USER_PWD',"password");
 	/* Dish status */
 	define('DISH_STATUS_SOLD_OUT', "0");
 	
