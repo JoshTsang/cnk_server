@@ -35,6 +35,10 @@
 	define('TABLE_ID', "table_id");
 	define('TABLE_STATUS', "status");
 	
+
+	define('USER_TABLE',"administrator");
+	define('USER_NAME',"username");
+	define('USER_PWD',"password");
 	/* Dish status */
 	define('DISH_STATUS_SOLD_OUT', "0");
 	
