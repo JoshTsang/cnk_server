@@ -35,9 +35,9 @@ function printl($socket, $str) {
 function printerStatus() {
 	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 	$connection = socket_connect($socket, '192.168.1.8', 4000);
-	
+	set_time_limit(0);  
 	$ret = socket_write($socket, "\x1b\x76");
-	if ($ret <= 0) {
+	if (!$ret) {
 		return "err";
 	}
 	

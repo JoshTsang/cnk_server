@@ -3,10 +3,12 @@
 3.建立软连接jpeg,连接到菜品图片所在目录
 4.将源码中db目录下的sql执行生成对应的db文件,文件名与sql文件一致,后缀为.db
 5.将生成的2个数据库(sales,order)拷贝到路由器刚刚建立的db文件夹中,确认文件名为sales.db和order.db
-6.在路由器db目录下,建立软连接menu.db指向菜谱数据库
+6.在路由器db目录下,建立硬连接menu.db指向菜谱数据库
 7.将db目录和db目录下的sales.db,order.db权限改为777
+8.将根目录下菜单数据库权限改为777
 8.将源码中所有.php拷贝到orderPad目录
 9.检查:(1).db目录下有sales.db,order.db,menu.db
        (2).orderPad下有全部.php
        (3).jpeg目录下有全部图片
        (4).db目录,db目录下的order.db,sales.db权限为rwxrwxrwx
+       (5).确认根目录下菜单数据库权限为rwxrwxrwx
