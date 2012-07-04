@@ -44,8 +44,11 @@ function printerStatus() {
 	//printl($socket, $print);
 	//$ret = socket_set_timeout($stream, $seconds, $microseconds)
 	$ret = socket_read($socket, 4, PHP_NORMAL_READ);
+	if (!$ret) {
+		echo socket_strerror($socket_last_error);
+	}
 	socket_close($socket);
-	return sprintf("%x", $ret);
+	return sprintf("%d",$ret);
 }
 
 function printc($socket, $str) {
