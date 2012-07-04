@@ -29,4 +29,5 @@
 	} else {
 		die(ERR_DB_QUERY);
 	}
+	$dbTable->close();
 ?>
