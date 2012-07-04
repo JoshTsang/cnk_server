@@ -1,0 +1,16 @@
+DROP TABLE IF EXISTS [order_detail];
+CREATE TABLE [order_detail] (
+[id] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
+[dish_id] INTEGER  NOT NULL,
+[price] FLOAT  NOT NULL,
+[quantity] INTEGER  NOT NULL,
+[status] INTEGER DEFAULT '1' NOT NULL,
+[order_id] INTEGER  NOT NULL
+);
+
+DROP TABLE IF EXISTS [table_order];
+CREATE TABLE [table_order] (
+[id] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
+[table_id] INTEGER  NOT NULL,
+[timestamp] TIMESTAMP  NOT NULL
+);

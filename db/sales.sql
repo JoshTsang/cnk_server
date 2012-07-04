@@ -1,0 +1,8 @@
+DROP TABLE IF EXISTS [sales_data];
+CREATE TABLE [sales_data] (
+[id] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
+[dish_id] INTEGER  NOT NULL,
+[price] FLOAT  NOT NULL,
+[quantity] INTEGER  NOT NULL,
+[timestamp] TIMESTAMP NOT NULL
+);
