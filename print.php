@@ -1,7 +1,7 @@
 <?php
 function printTitle($socket, $str) {
 	socket_write($socket,"\x1b\x21\x0");
-	
+	//socket_write($socket, "\x1b\x4c");
 	$print = iconv("UTF-8","GB2312", $str);
 	socket_write($socket, $print);
 	socket_write($socket, "\r\n");
@@ -23,12 +23,29 @@ function printFooter($socket, $total) {
 					 "-------------------------------\r\n", $total);
 	
 	printl($socket, $print);
+	//socket_write($socket, "FF");
 }
 
 function printl($socket, $str) {
 	$print = iconv("UTF-8","GB2312", $str);
 	socket_write($socket, $print);
 	socket_write($socket, "\r\n");
+}
+
+function printerStatus() {
+	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+	$connection = socket_connect($socket, '192.168.1.8', 4000);
+	
+	$ret = socket_write($socket, "\x1b\x76");
+	if ($ret <= 0) {
+		return "err";
+	}
+	
+	//printl($socket, $print);
+	//$ret = socket_set_timeout($stream, $seconds, $microseconds)
+	$ret = socket_read($socket, 4, PHP_NORMAL_READ);
+	socket_close($socket);
+	return sprintf("%x", $ret);
 }
 
 function printc($socket, $str) {
@@ -115,5 +132,6 @@ function printJson($print) {
 		printl($socket, $printString);
 	}
 	printFooter($socket, $total);
+	socket_close($socket);
 }
 ?>

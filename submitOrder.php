@@ -2,28 +2,30 @@
 	require('macros.php');
 	require('print.php');
 	
+	// if (!isset($_POST['json'])) {
+	  	// die("[MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED."]");
+	// }
 	$json_string = $_POST['json'];
-	//$json_string =  " {\"order\":[{\"quan\":1,\"id\":2,\"price\":12},{\"quan\":1,\"id\":3,\"price\":12},{\"quan\":1,\"id\":5,\"price\":34}],\"timestamp\":\"2012-06-23 20:22:38\",\"tableId\":0}";
+	//$json_string =  " {\"order\":[{\"quan\":1,\"id\":1,\"price\":7,\"name\":\"柠檬汁\"}],\"timestamp\":\"2012-07-03 23:31:21\",\"tableId\":1}";
 	$obj = json_decode($json_string); 
 	$dishCount = count($obj->order);
 	$tableId = $obj->tableId;
 	$timestamp = $obj->timestamp;
 	if ($dishCount <= 0) {
-		header("HTTP/1.1 NO_ORDERED_DISH 'NO_ORDERED_DISH'");
-		exit();
+	  	die("[MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED."]");
 	}
 	
 	$dbOrder = new SQLite3(DATABASE_ORDER);
 	if (!$dbOrder) {
-		header("HTTP/1.1 ERR_COULD_NOT_CONECT_DB 'ERR_COULD_NOT_CONECT_DB'");
-	  	die(ERR_COULD_NOT_CONECT_DB);
+		echo "[ERR_COULD_NOT_CONECT_DB:";
+	  	die(ERR_COULD_NOT_CONECT_DB."]");
 	}
-	
+	$dbOrder->busyTimeout(0);
 	if (!$dbOrder->exec("INSERT INTO ".TABLE_ORDER_TABLE."(".TABLE_ORDER_TABLE_COLUM_TABLE_ID.",". 
 									 TABLE_ORDER_TABLE_COLUM_TIMESTAMP.")".
 						"values('$tableId', '$timestamp')")){
-		header("HTTP/1.1 ERR_DB_QUERY 'ERR_DB_QUERY'");
-		die(ERR_COULD_NOT_CONECT_DB);
+		echo "[ERR_COULD_NOT_CONECT_DB:";
+		die(ERR_COULD_NOT_CONECT_DB."]");
 	}
 	
 	$resultSet = $dbOrder->query("SELECT MAX(".TABLE_ORDER_TABLE_COLUM_ID.") from ".
@@ -32,12 +34,12 @@
 		if ($row = $resultSet->fetchArray()) {
 			$orderId = $row[0];
 		} else {
-			header("HTTP/1.1 ERR_DB_QUERY 'ERR_DB_QUERY'");
-			die(0);
+			echo "[ERR_DB_QUERY:";
+			die(ERR_DB_QUERY."]");
 		}
 	} else {
-		header("HTTP/1.1 ERR_DB_QUERY 'ERR_DB_QUERY'");
-		die(ERR_DB_QUERY);
+		echo "[ERR_DB_QUERY:";
+		die(ERR_DB_QUERY."]");
 	}
 	
 	for ($i=0; $i<$dishCount; $i++) {
@@ -50,10 +52,11 @@
 															ORDER_DETAIL_TABLE_COLUM_QUANTITY.",".
 															ORDER_DETAIL_TABLE_COLUM_ORDER_ID.")".
 							 "values($dishId, $price, $dishQuantity, $orderId)")) {
-			header("HTTP/1.1 ERR_DB_EXEC 'ERR_DB_QUERY'");
-			die(0);
+			echo "[ERR_DB_EXEC:";
+			die(ERR_DB_EXEC."]");
 		}
 	}
+	$dbOrder->close();
 	
 	printJson($json_string);
 ?>
