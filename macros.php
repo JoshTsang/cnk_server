@@ -31,14 +31,15 @@
 	
 	define('DATABASE_SALES', "../db/sales.db");
 	define('TABLE_INFO', "table_info");
-	define('TABLE_NAME', "table_name");
-	define('TABLE_ID', "table_id");
+	define('TABLE_NAME', "tablenum");
+	define('TABLE_ID', "id");
 	define('TABLE_STATUS', "status");
 	
 
 	define('USER_TABLE',"administrator");
 	define('USER_NAME',"username");
 	define('USER_PWD',"password");
+	define('USER_PERMISSION',"permission");
 	/* Dish status */
 	define('DISH_STATUS_SOLD_OUT', "0");
 	

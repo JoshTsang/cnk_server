@@ -14,5 +14,6 @@
 				 ORDER_DETAIL_TABLE_COLUM_DISH_ID,$DishId);
 				 
 	$dbTable->query($sql);
+	$dbTable->close();
 	
 ?>
