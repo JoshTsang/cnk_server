@@ -104,4 +104,30 @@ function printJson($print) {
 	
 	socket_close($socket);
 }
+
+function printJsonDel($print) {
+	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
+	$connection = socket_connect($socket,'192.168.1.8', 9100); 
+	
+	$json_string = $print;
+	$obj = json_decode($json_string); 
+	$dishCount = count($obj->order);
+	$tableId = $obj->tableId;
+	$timestamp = $obj->timestamp;
+	$total = 0;
+	
+	if ($dishCount <= 0) {
+		header("HTTP/1.1 NO_ORDERED_DISH 'NO_ORDERED_DISH'");
+		exit();
+	}
+	printTitle($socket, "存根联 (删除）\r\n");
+	printOrder($socket, $tableId, $timestamp, $obj, $total);
+	
+	//TODO print 1 copy for debug
+	exit(0);
+	printTitle($socket, "客户联\r\n");
+	printOrder($socket, $tableId, $timestamp, $obj, $total);
+	
+	socket_close($socket);
+}
 ?>
