@@ -6,8 +6,8 @@
 		header("HTTP/1.1 ERR_COULD_NOT_CONECT_DB 'ERR_COULD_NOT_CONECT_DB'");
 	  	die(ERR_COULD_NOT_CONECT_DB);
 	}
-	$sql=sprintf("select %s,%s,%s from %s",
-				 TABLE_ID ,TABLE_STATUS,TABLE_NAME,TABLE_INFO);
+	$sql=sprintf("select %s,%s,%s from %s order by %s",
+				 TABLE_ID ,TABLE_STATUS,TABLE_NAME,TABLE_INFO,TABLE_NAME);
 	$resultSet = $dbTable->query($sql);
 	if ($resultSet) {
 		$i = 0;
