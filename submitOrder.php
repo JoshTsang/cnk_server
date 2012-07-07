@@ -11,6 +11,7 @@
 	$dishCount = count($obj->order);
 	$tableId = $obj->tableId;
 	$timestamp = $obj->timestamp;
+	$datetime = split(" ", $timestamp);
 	if ($dishCount <= 0) {
 	  	die("[MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED."]");
 	}
@@ -23,7 +24,7 @@
 	$dbOrder->busyTimeout(0);
 	if (!$dbOrder->exec("INSERT INTO ".TABLE_ORDER_TABLE."(".TABLE_ORDER_TABLE_COLUM_TABLE_ID.",". 
 									 TABLE_ORDER_TABLE_COLUM_TIMESTAMP.")".
-						"values('$tableId', '$timestamp')")){
+						"values('$tableId', '$datetime[0]T$datetime[1]')")){
 		echo "[ERR_COULD_NOT_CONECT_DB:";
 		die(ERR_COULD_NOT_CONECT_DB."]");
 	}

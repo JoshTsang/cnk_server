@@ -32,7 +32,8 @@
 	$resultSet = $dbOrder->query($sql);
 	if ($resultSet) {
 		while($row = $resultSet->fetchArray()) {
-			$sqlInsert=sprintf("insert into [sales_data] values(null, %s, %s, %s, '%s');", $row[0],$row[1],$row[2],$row[3]);
+			$datetime=split(" ", $row[3]);
+			$sqlInsert=sprintf("insert into [sales_data] values(null, %s, %s, %s, '%s%s');", $row[0],$row[1],$row[2],$datetime[0], $datetime[1]);
 			$dbSales->exec($sqlInsert);
 		}
 		$dbSales->close();
