@@ -87,6 +87,7 @@ function printJson($print) {
 	$obj = json_decode($json_string); 
 	$dishCount = count($obj->order);
 	$tableId = $obj->tableId;
+	$tableName = $obj->tableName;
 	$timestamp = $obj->timestamp;
 	$total = 0;
 	
@@ -95,12 +96,10 @@ function printJson($print) {
 		exit();
 	}
 	printTitle($socket, "存根联\r\n");
-	printOrder($socket, $tableId, $timestamp, $obj, $total);
+	printOrder($socket, $tableName, $timestamp, $obj, $total);
 	
-	//TODO print 1 copy for debug
-	exit(0);
 	printTitle($socket, "客户联\r\n");
-	printOrder($socket, $tableId, $timestamp, $obj, $total);
+	printOrder($socket, $tableName, $timestamp, $obj, $total);
 	
 	socket_close($socket);
 }
