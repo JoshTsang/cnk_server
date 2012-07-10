@@ -17,7 +17,6 @@
 	$obj = json_decode($json_string);
 	$tableId = $obj->TID;
 	$timestamp = $obj->timestamp;
-	$datetime = split(" ", $timestamp);
 	if ($tableId == NULL) {
 		header("HTTP/1.1 MORE_PARAM_NEEDED 'MORE_PARAM_NEEDED'");
 		die(0);
@@ -36,7 +35,7 @@
 	$resultSet = $dbOrder->query($sql);
 	if ($resultSet) {
 		while($row = $resultSet->fetchArray()) {
-			$sqlInsert=sprintf("insert into [sales_data] values(null, %s, %s, %s, '%s%s');", $row[0],$row[1],$row[2],$datetime[0], $datetime[1]);
+			$sqlInsert=sprintf("insert into [sales_data] values(null, %s, %s, %s, '%s');", $row[0],$row[1],$row[2],$timestamp);
 			$dbSales->exec($sqlInsert);
 		}
 		$dbSales->close();

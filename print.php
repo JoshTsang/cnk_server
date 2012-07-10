@@ -8,7 +8,7 @@ function printTitle($socket, $str) {
 }
 
 function printHeader($socket, $table, $timestamp) {
-	printl($socket, "            xxx餐饮店                               ");
+	printl($socket, "            百姓鲜榨汁                               ");
 	$print = sprintf("桌号:%-4d    %s", $table, $timestamp);
 	printl($socket, $print);
 	printl($socket, "-------------------------------");
