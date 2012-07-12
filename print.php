@@ -80,10 +80,15 @@ function printOrder($socket, $tableId, $timestamp, $obj, $total) {
 }
 
 function printJson($print) {
+	printReceipt($print, PRINTER_FOE_CHECKEOUT, "客户联");
+	printReceipt($print, PRINTER_FOR_KITCHEN, "存根联");
+}
+
+function printReceipt($json, $printerIP, $title) {
 	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
-	$connection = socket_connect($socket,'192.168.1.8', 9100); 
+	$connection = socket_connect($socket, $printerIP, 9100); 
 	
-	$json_string = $print;
+	$json_string = $json;
 	$obj = json_decode($json_string); 
 	$dishCount = count($obj->order);
 	$tableId = $obj->tableId;
@@ -95,10 +100,7 @@ function printJson($print) {
 		header("HTTP/1.1 NO_ORDERED_DISH 'NO_ORDERED_DISH'");
 		exit();
 	}
-	printTitle($socket, "存根联\r\n");
-	printOrder($socket, $tableName, $timestamp, $obj, $total);
-	
-	printTitle($socket, "客户联\r\n");
+	printTitle($socket, "$title\r\n");
 	printOrder($socket, $tableName, $timestamp, $obj, $total);
 	
 	socket_close($socket);
@@ -106,7 +108,7 @@ function printJson($print) {
 
 function printJsonDel($print) {
 	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
-	$connection = socket_connect($socket,'192.168.1.8', 9100); 
+	$connection = socket_connect($socket, PRINTER_FOR_KITCHEN, 9100); 
 	
 	$json_string = $print;
 	$obj = json_decode($json_string); 
