@@ -1,7 +1,7 @@
 <?php
 	require('macros.php');
 	
-	$dbTable = new SQLite3(DATABASE_MENU);
+	$dbTable = new SQLite3(DATABASE_TABLE);
 	if (!$dbTable) {
 		header("HTTP/1.1 ERR_COULD_NOT_CONECT_DB 'ERR_COULD_NOT_CONECT_DB'");
 	  	die(ERR_COULD_NOT_CONECT_DB);
