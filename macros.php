@@ -16,7 +16,7 @@
 	define('DISHES_TABLE_COLUM_ID', "id");
 	define('DISHES_TABLE_COLUM_STATUS', "status");
 	
-	define('DATABASE_ORDER', "../db/order.db");
+	define('DATABASE_ORDER', "../db/temporary/order.db");
 	define('TABLE_ORDER_TABLE', "table_order");
 	define('TABLE_ORDER_TABLE_COLUM_ID', "id");
 	define('TABLE_ORDER_TABLE_COLUM_TABLE_ID', "table_id");
@@ -40,6 +40,8 @@
 	define('USER_NAME',"username");
 	define('USER_PWD',"password");
 	define('USER_PERMISSION',"permission");
+	
+	define('DATABASE_TABLE', '../db/temporary/temp.db3');
 	
 	/* Dish status */
 	define('DISH_STATUS_SOLD_OUT', "0");
