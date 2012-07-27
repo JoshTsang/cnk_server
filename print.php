@@ -8,7 +8,7 @@ function printTitle($socket, $str) {
 }
 
 function printHeader($socket, $table, $timestamp) {
-	printl($socket, "            xxx餐饮店                               ");
+	printl($socket, "            百姓鲜榨汁                               ");
 	$print = sprintf("桌号:%-4d    %s", $table, $timestamp);
 	printl($socket, $print);
 	printl($socket, "-------------------------------");
@@ -80,13 +80,19 @@ function printOrder($socket, $tableId, $timestamp, $obj, $total) {
 }
 
 function printJson($print) {
+	//printReceipt($print, PRINTER_FOE_CHECKEOUT, "客户联");
+	printReceipt($print, PRINTER_FOR_KITCHEN, "存根联");
+}
+
+function printReceipt($json, $printerIP, $title) {
 	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
-	$connection = socket_connect($socket,'192.168.1.8', 9100); 
+	$connection = socket_connect($socket, $printerIP, 9100); 
 	
-	$json_string = $print;
+	$json_string = $json;
 	$obj = json_decode($json_string); 
 	$dishCount = count($obj->order);
 	$tableId = $obj->tableId;
+	$tableName = $obj->tableName;
 	$timestamp = $obj->timestamp;
 	$total = 0;
 	
@@ -94,20 +100,15 @@ function printJson($print) {
 		header("HTTP/1.1 NO_ORDERED_DISH 'NO_ORDERED_DISH'");
 		exit();
 	}
-	printTitle($socket, "存根联\r\n");
-	printOrder($socket, $tableId, $timestamp, $obj, $total);
-	
-	//TODO print 1 copy for debug
-	exit(0);
-	printTitle($socket, "客户联\r\n");
-	printOrder($socket, $tableId, $timestamp, $obj, $total);
+	printTitle($socket, "$title\r\n");
+	printOrder($socket, $tableName, $timestamp, $obj, $total);
 	
 	socket_close($socket);
 }
 
 function printJsonDel($print) {
 	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
-	$connection = socket_connect($socket,'192.168.1.8', 9100); 
+	$connection = socket_connect($socket, PRINTER_FOR_KITCHEN, 9100); 
 	
 	$json_string = $print;
 	$obj = json_decode($json_string); 
