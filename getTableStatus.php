@@ -3,7 +3,7 @@
 	
 
 	$dbTable = new SQLite3(DATABASE_PHONE);
-	jone
+
 	if (!$dbTable) {
 		header("HTTP/1.1 ERR_COULD_NOT_CONECT_DB 'ERR_COULD_NOT_CONECT_DB'");
 	  	die(ERR_COULD_NOT_CONECT_DB);
