@@ -41,13 +41,17 @@
 	define('USER_PWD',"password");
 	define('USER_PERMISSION',"permission");
 	
-	define('DATABASE_TABLE', '../db/temporary/temp.db3');
-	
+
+	define('DATABASE_PHONE', '../db/temp.db');
+	define('TABLE_PHONE_ORDERED_DISH', 'temporaryMainDish');
+	define('PHONE_COLUM_TID', 'tablenum');
+
+
 	/* Dish status */
 	define('DISH_STATUS_SOLD_OUT', "0");
 	
 	/* printers */
-	define('PRINTER_FOR_KITCHEN', "192.168.1.8");
-	define('PRINTER_FOE_CHECKEOUT', "192.168.1.9");
-	
+
+	define('PRINTER_FOR_KITCHEN', '192.168.1.8');
+	define('PRINTER_FOE_CHECKEOUT', '192.168.1.9');
 ?>

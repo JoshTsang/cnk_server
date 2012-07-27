@@ -14,9 +14,17 @@
 	}
 	
 	$json_string = $_POST['json'];
+<<<<<<< HEAD
 	$obj = json_decode($json_string);
 	$tableId = $obj->TID;
 	$timestamp = $obj->timestamp;
+=======
+	//$json_string =  " {\"order\":[{\"quan\":1,\"id\":1,\"price\":7,\"name\":\"柠檬汁\"}],\"timestamp\":\"2012-07-03 23:31:21\",\"tableId\":1}";
+	$obj = json_decode($json_string);
+	$tableId = $obj->TID;
+	$timestamp = $obj->timestamp;
+	$datetime = split(" ", $timestamp);
+>>>>>>> jone
 	if ($tableId == NULL) {
 		header("HTTP/1.1 MORE_PARAM_NEEDED 'MORE_PARAM_NEEDED'");
 		die(0);

@@ -1,13 +1,15 @@
 <?php
 	require('macros.php');
 	
-	$dbTable = new SQLite3(DATABASE_TABLE);
+
+	$dbTable = new SQLite3(DATABASE_PHONE);
+	jone
 	if (!$dbTable) {
 		header("HTTP/1.1 ERR_COULD_NOT_CONECT_DB 'ERR_COULD_NOT_CONECT_DB'");
 	  	die(ERR_COULD_NOT_CONECT_DB);
 	}
-	$sql=sprintf("select %s,%s,%s from %s order by %s",
-				 TABLE_ID ,TABLE_STATUS,TABLE_NAME,TABLE_INFO,TABLE_NAME);
+	$sql=sprintf("select %s,%s,%s from %s",
+				 TABLE_ID ,TABLE_STATUS,TABLE_NAME,TABLE_INFO);
 	$resultSet = $dbTable->query($sql);
 	if ($resultSet) {
 		$i = 0;

@@ -80,8 +80,9 @@ function printOrder($socket, $tableId, $timestamp, $obj, $total) {
 }
 
 function printJson($print) {
+
 	printReceipt($print, PRINTER_FOE_CHECKEOUT, "客户联");
-	printReceipt($print, PRINTER_FOR_KITCHEN, "存根联");
+
 }
 
 function printReceipt($json, $printerIP, $title) {
