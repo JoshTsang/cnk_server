@@ -8,7 +8,7 @@
 	
 	
 	/* Database */
-    define('DATABASE_MENU', "../db/menu.db");
+    define('DATABASE_MENU', "../db/test.db3");
 	
 	define('CATEGROY_TABLE', "table_show");
 	define('CATEGROY_TABLE_COLUM_TABLE_NAME', "tablename");
@@ -41,12 +41,21 @@
 	define('USER_PWD',"password");
 	define('USER_PERMISSION',"permission");
 	
-
-	define('DATABASE_PHONE', '../db/temp.db');
+	//TODO update db path
+	define('DATABASE_PHONE', '../db/temporary/temp.db3');
 	define('TABLE_PHONE_ORDERED_DISH', 'temporaryMainDish');
 	define('PHONE_COLUM_TID', 'tablenum');
+	
+	define('TABLE_NOTIFICATION', 'callWaiter');
+	define('NOTIFICATION_COLUM_TID', 'tablenum');
+	define('NOTIFICATION_COLUM_STATUS', 'callStatus');
+	
+	define('TABLE_NOTIFICATION_TYPES', 'serviceList');
+	define('NOTIFICATION_TYPE_COLUM_ID', 'id');
+	define('NOTIFICATION_TYPE_COLUM_VALUE', 'serviceName');
 
-
+	define('DATABASE_TEMP', '../db/temporary/temp.db3');
+	
 	/* Dish status */
 	define('DISH_STATUS_SOLD_OUT', "0");
 	
