@@ -8,9 +8,14 @@
 	}
 
 	$tableId = $_GET['TID'];
-	
-	$sql=sprintf("delete from %s where %s=%s", TABLE_PHONE_ORDERED_DISH, PHONE_COLUM_TID, "$tableId");
-	
+	$tableDishId = $_GET['DID'];
+	if(isset($tableDishId)){
+		$sql=sprintf("delete  from %s where %s=%s and %s = %s", 
+		TABLE_PHONE_ORDERED_DISH, PHONE_COLUM_TID, "$tableId",TABLE_PHONE_ORDERED_DID,"$tableDishId");
+	} else {
+		$sql=sprintf("delete from %s where %s=%s", 
+		TABLE_PHONE_ORDERED_DISH, PHONE_COLUM_TID, "$tableId");
+	}
 	$db->exec($sql);			 
 	$db->close();
 ?>

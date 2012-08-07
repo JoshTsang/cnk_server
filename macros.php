@@ -56,6 +56,8 @@
 
 	define('DATABASE_TEMP', '../db/temporary/temp.db3');
 	
+	define('TABLE_PHONE_ORDERED_DID','dishId');
+	define('PHONE_COLUM_TID','dishnum');
 	/* Dish status */
 	define('DISH_STATUS_SOLD_OUT', "0");
 	
