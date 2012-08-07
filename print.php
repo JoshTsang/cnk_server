@@ -2,34 +2,36 @@
 function printTitle($socket, $str) {
 	socket_write($socket,"\x1b\x21\x0");
 	//socket_write($socket, "\x1b\x4c");
-	$print = iconv("UTF-8","GB2312", $str);
+	$print = iconv("UTF-8","GB18030", $str);
 	socket_write($socket, $print);
 	socket_write($socket, "\r\n");
 }
 
 function printHeader($socket, $table, $timestamp) {
-	printl($socket, "            百姓鲜榨汁                               ");
-	$print = sprintf("桌号:%-4d    %s", $table, $timestamp);
+	printl($socket, "                 百姓鲜榨汁\r\n");
+	$print = sprintf("桌号:%-4d                  %s", $table, $timestamp);
 	printl($socket, $print);
-	printl($socket, "-------------------------------");
-	printl($socket, "品名         单价  数量   小计");
+	printl($socket, "----------------------------------------------");
+	printl($socket, "品名                       单价  数量    小计");
 }
 
 function printFooter($socket, $total) {
-	$print = sprintf("-------------------------------\r\n".
-					 "合计:%24.2f\r\n".
-					 "-------------------------------\r\n".
-					 "\r\n          谢谢惠顾!            \r\n \r\n ".
-					 "-------------------------------\r\n", $total);
-	
+	$print = sprintf("----------------------------------------------\r\n".
+					 "合计:%34.2f\r\n".
+					 "----------------------------------------------\r\n".
+					 "\r\n               谢谢惠顾!               \r\n \r\n ", $total);
 	printl($socket, $print);
 	//socket_write($socket, "FF");
 }
 
 function printl($socket, $str) {
-	$print = iconv("UTF-8","GB2312", $str);
+	$print = iconv("UTF-8","GB18030", $str);
 	socket_write($socket, $print);
 	socket_write($socket, "\r\n");
+}
+
+function printR($socket, $str) {
+	socket_write($socket, $str);
 }
 
 function printerStatus() {
@@ -55,9 +57,10 @@ function printc($socket, $str) {
 	// if (strlen($str)>15) {
 		// $str = substr($str, 0, 15);
 	// }
-	$print = iconv("UTF-8","GB2312", $str);
+	$print = iconv("UTF-8","GB18030", $str);
 	socket_write($socket, $print);
-	socket_write($socket, "\r\n");
+	socket_write($socket, "\x09");
+	//socket_write($socket, "\r\n");
 }
 
 function printOrder($socket, $tableId, $timestamp, $obj, $total) {
@@ -71,24 +74,37 @@ function printOrder($socket, $tableId, $timestamp, $obj, $total) {
 		$dishQuantity = $obj->order[$i]->quan;
 		$dishName = $obj->order[$i]->name;
 		$total += $price * $dishQuantity;
-		//socket_write($socket, "\x1b\x44\x0b\x12\x00");
-		printc($socket, $dishName);
-		$printString = sprintf("            %2.2f%4d% 10.2f", $price, $dishQuantity, $price*$dishQuantity);
+		//socket_write($socket, "\x1b\x44\x0F\x00\n");
+		//printc($socket, $dishName);
+		$dishNameLen = strlen($dishName)/3;
+		if ($dishNameLen > 13) {
+			$dishName = substr($dishName, 0, 13*3);
+			$dishNameLen = 13;
+		}
+		$spaceLen = 26 - $dishNameLen*2;
+		$printString = sprintf("%s%$spaceLen"."s %3.2f %4d %8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
 		printl($socket, $printString);
 	}
 	printFooter($socket, $total);
 }
 
 function printJson($print) {
-
-	printReceipt($print, PRINTER_FOE_CHECKEOUT, "客户联");
-
+	//printReceipt($print, PRINTER_FOE_CHECKEOUT, "客户联");
+	printReceipt($print, PRINTER_FOR_KITCHEN, "存根联");
 }
 
 function printReceipt($json, $printerIP, $title) {
 	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
+	if ($socket < 0)
+	{
+		echo socket_strerror(socket_last_error())."\n";
+		die("Unable to connect printer.ip:$printerIP");
+	}
 	$connection = socket_connect($socket, $printerIP, 9100); 
-	
+	if (!$connection) {
+		echo socket_strerror(socket_last_error())."\n";
+		die("Unable to connect printer.ip:$printerIP");
+	}
 	$json_string = $json;
 	$obj = json_decode($json_string); 
 	$dishCount = count($obj->order);
@@ -103,7 +119,7 @@ function printReceipt($json, $printerIP, $title) {
 	}
 	printTitle($socket, "$title\r\n");
 	printOrder($socket, $tableName, $timestamp, $obj, $total);
-	
+	//printR($socket, "\x1D\x56\x42\5\n");
 	socket_close($socket);
 }
 
@@ -129,7 +145,6 @@ function printJsonDel($print) {
 	exit(0);
 	printTitle($socket, "客户联\r\n");
 	printOrder($socket, $tableId, $timestamp, $obj, $total);
-	
 	socket_close($socket);
 }
 ?>
