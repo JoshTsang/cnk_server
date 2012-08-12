@@ -2,7 +2,7 @@
 	require('macros.php');
 	
 
-	$dbTable = new SQLite3(DATABASE_PHONE);
+	$dbTable = new SQLite3(DATABASE_TEMP);
 
 	if (!$dbTable) {
 		header("HTTP/1.1 ERR_COULD_NOT_CONECT_DB 'ERR_COULD_NOT_CONECT_DB'");
