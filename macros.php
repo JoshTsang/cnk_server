@@ -61,6 +61,6 @@
 	
 	/* printers */
 
-	define('PRINTER_FOR_KITCHEN', '192.168.1.8');
-	define('PRINTER_FOE_CHECKEOUT', '192.168.1.9');
+	define('PRINTER_FOR_KITCHEN', '192.168.0.8');
+	define('PRINTER_FOE_CHECKEOUT', '192.168.0.9');
 ?>
