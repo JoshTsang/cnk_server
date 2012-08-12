@@ -34,18 +34,31 @@ function printR($socket, $str) {
 	socket_write($socket, $str);
 }
 
-function printerStatus() {
+function printerStatus($printerIp) {
 	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
-	$connection = socket_connect($socket, '192.168.1.8', 4000);
-	set_time_limit(0);  
-	$ret = socket_write($socket, "\x1b\x76");
-	if (!$ret) {
-		return "err";
+	if ($socket < 0)
+	{
+		echo socket_strerror(socket_last_error())."\n";
+		die("Unable to connect printer.ip:$printerIP");
 	}
 	
+	$connection = socket_connect($socket, $printerIp, 9100);
+	if (!$connection) {
+		echo socket_strerror(socket_last_error())."\n";
+		die("Unable to connect printer.ip:$printerIP");
+	}
+	
+	set_time_limit(0);
+	ob_implicit_flush();
+	$ret = socket_write($socket, "\x10\x4\x1");
+	if ($ret <= 0) {
+		echo socket_strerror(socket_last_error())."\n";
+		die("failed to write printer.ip:$printerIP");
+		return -1;
+	}
 	//printl($socket, $print);
 	//$ret = socket_set_timeout($stream, $seconds, $microseconds)
-	$ret = socket_read($socket, 4, PHP_NORMAL_READ);
+	$ret = socket_recv($socket, $buf, 1024, MSG_DONTWAIT);
 	if (!$ret) {
 		echo socket_strerror($socket_last_error);
 	}
@@ -89,6 +102,10 @@ function printOrder($socket, $tableId, $timestamp, $obj, $total) {
 }
 
 function printJson($print) {
+	// $ret = printerStatus(PRINTER_FOR_KITCHEN);
+	// if ($ret <= 0) {
+		// die("Can't get priter status");
+	// }
 	//printReceipt($print, PRINTER_FOE_CHECKEOUT, "客户联");
 	printReceipt($print, PRINTER_FOR_KITCHEN, "存根联");
 }
@@ -120,6 +137,7 @@ function printReceipt($json, $printerIP, $title) {
 	printTitle($socket, "$title\r\n");
 	printOrder($socket, $tableName, $timestamp, $obj, $total);
 	//printR($socket, "\x1D\x56\x42\5\n");
+	printR($socket, "\x1B\x43\1\x13\3\n");
 	socket_close($socket);
 }
 
