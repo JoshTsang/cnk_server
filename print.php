@@ -83,19 +83,19 @@ function printOrder($socket, $tableId, $timestamp, $obj, $total) {
 	$total = 0;
 	for ($i=0; $i<$dishCount; $i++) {
 		$dishId = $obj->order[$i]->id;
-		$price = $obj->order[$i]->price;
+		$printString = sprintf("%s%$spaceLen"."s%7.2f%6d%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);$price = $obj->order[$i]->price;
 		$dishQuantity = $obj->order[$i]->quan;
 		$dishName = $obj->order[$i]->name;
 		$total += $price * $dishQuantity;
 		//socket_write($socket, "\x1b\x44\x0F\x00\n");
 		//printc($socket, $dishName);
 		$dishNameLen = strlen($dishName)/3;
-		if ($dishNameLen > 13) {
-			$dishName = substr($dishName, 0, 13*3);
-			$dishNameLen = 13;
+		if ($dishNameLen > 10) {
+			$printString = sprintf("%s\n%24s%7.2f%6d%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
+		} else {
+			$spaceLen = 24 - $dishNameLen*2;
+			$printString = sprintf("%s%$spaceLen"."s%7.2f%6d%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
 		}
-		$spaceLen = 26 - $dishNameLen*2;
-		$printString = sprintf("%s%$spaceLen"."s %3.2f %4d %8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
 		printl($socket, $printString);
 	}
 	printFooter($socket, $total);
@@ -137,7 +137,7 @@ function printReceipt($json, $printerIP, $title) {
 	printTitle($socket, "$title\r\n");
 	printOrder($socket, $tableName, $timestamp, $obj, $total);
 	//printR($socket, "\x1D\x56\x42\5\n");
-	printR($socket, "\x1B\x43\1\x13\3\n");
+	//printR($socket, "\x1B\x43\1\x13\3\n");
 	socket_close($socket);
 }
 
