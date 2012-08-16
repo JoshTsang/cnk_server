@@ -1,4 +1,8 @@
 <?php
+
+define('PRINTER_COMMAND_ALARM', "\x1B\x43\1\x13\3\n");
+define('PRINTER_COMMAND_CUT', "\x1D\x56\x42\5\n");
+
 function printTitle($socket, $str) {
 	socket_write($socket,"\x1b\x21\x0");
 	//socket_write($socket, "\x1b\x4c");
@@ -138,8 +142,8 @@ function printReceipt($json, $printerIP, $title) {
 	}
 	printTitle($socket, "$title\r\n");
 	printOrder($socket, $tableName, $timestamp, $obj, $total);
-	//printR($socket, "\x1D\x56\x42\5\n");
-	printR($socket, "\x1B\x43\1\x13\3\n");
+	//printR($socket, PRINTER_COMMAND_CUT);
+	printR($socket, PRINTER_COMMAND_ALARM);
 	socket_close($socket);
 }
 
