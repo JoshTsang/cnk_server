@@ -3,6 +3,9 @@
 define('PRINTER_COMMAND_ALARM', "\x1B\x43\1\x13\3\n");
 define('PRINTER_COMMAND_CUT', "\x1D\x56\x42\5\n");
 
+define('PRINTER_TYPE_58', 1);
+define('PRINTER_TYPE_80', 2);
+
 function printTitle($socket, $str) {
 	socket_write($socket,"\x1b\x21\x0");
 	//socket_write($socket, "\x1b\x4c");
@@ -11,20 +14,36 @@ function printTitle($socket, $str) {
 	socket_write($socket, "\r\n");
 }
 
-function printHeader($socket, $table, $timestamp) {
-	printl($socket, "                 百姓鲜榨汁\r\n");
-	$print = sprintf("桌号:%-4d                  %s", $table, $timestamp);
-	printl($socket, $print);
-	printl($socket, "----------------------------------------------");
-	printl($socket, "品名                       单价  数量    小计");
+function printHeader($socket, $table, $timestamp, $printerType) {
+	if ($printerType == PRINTER_TYPE_80) {
+		printl($socket, "                 百姓鲜榨汁\r\n");
+		$print = sprintf("桌号:%-4d                  %s", $table, $timestamp);
+		printl($socket, $print);
+		printl($socket, "----------------------------------------------");
+		printl($socket, "品名                       单价  数量    小计");
+	} else if ($printerType == PRINTER_TYPE_58) {
+		printl($socket, "           百姓鲜榨汁\r\n");
+		$print = sprintf("桌号:%-4d   %s", $table, $timestamp);
+		printl($socket, $print);
+		printl($socket, "--------------------------------");
+		printl($socket, "品名          单价  数量    小计");
+	}
 }
 
-function printFooter($socket, $total) {
-	$print = sprintf("----------------------------------------------\r\n".
-					 "合计:%34.2f\r\n".
-					 "----------------------------------------------\r\n".
-					 "\r\n               谢谢惠顾!               \r\n \r\n ", $total);
-	printl($socket, $print);
+function printFooter($socket, $total, $printerType) {
+	if ($printerType == PRINTER_TYPE_80) {
+		$print = sprintf("----------------------------------------------\r\n".
+						 "合计:%34.2f\r\n".
+						 "----------------------------------------------\r\n".
+						 "\r\n               谢谢惠顾!               \r\n \r\n ", $total);
+		printl($socket, $print);
+	} else if ($printerType == PRINTER_TYPE_58) {
+		$print = sprintf("--------------------------------\r\n".
+						 "合计:%27.2f\r\n".
+						 "--------------------------------\r\n".
+						 "\r\n           谢谢惠顾!          \r\n \r\n ", $total);
+		printl($socket, $print);
+	}
 	//socket_write($socket, "FF");
 }
 
@@ -80,8 +99,8 @@ function printc($socket, $str) {
 	//socket_write($socket, "\r\n");
 }
 
-function printOrder($socket, $tableId, $timestamp, $obj, $total) {
-	printHeader($socket, $tableId, $timestamp);
+function printOrder($socket, $tableId, $timestamp, $obj, $total, $printerType) {
+	printHeader($socket, $tableId, $timestamp, $printerType);
 	
 	$dishCount = count($obj->order);
 	$total = 0;
@@ -96,15 +115,24 @@ function printOrder($socket, $tableId, $timestamp, $obj, $total) {
 		$zhLen = (strlen($dishName) - iconv_strlen($dishName, "UTF-8"))/2;
 		$enLen = iconv_strlen($dishName, "UTF-8") - $zhLen;
 		$dishNameSpace = $zhLen*2 + $enLen;
-		if ($dishNameSpace > 12) {
-			$printString = sprintf("%s\n%24s%7.2f%6d%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
-		} else {
-			$spaceLen = 24 - $dishNameSpace;
-			$printString = sprintf("%s%$spaceLen"."s%7.2f%6d%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
+		if ($printerType == PRINTER_TYPE_80) {
+			if ($dishNameSpace > 24) {
+				$printString = sprintf("%s\n%24s%7.2f%6d%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
+			} else {
+				$spaceLen = 24 - $dishNameSpace;
+				$printString = sprintf("%s%$spaceLen"."s%7.2f%6d%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
+			}
+		} else if($printerType == PRINTER_TYPE_58) {
+			if ($dishNameSpace > 12) {
+				$printString = sprintf("%s\n%12s%6.2f%6d%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
+			} else {
+				$spaceLen = 12 - $dishNameSpace;
+				$printString = sprintf("%s%$spaceLen"."s%6.2f%6d%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
+			}
 		}
 		printl($socket, $printString);
 	}
-	printFooter($socket, $total);
+	printFooter($socket, $total, $printerType);
 }
 
 function printJson($print) {
@@ -113,10 +141,10 @@ function printJson($print) {
 		// die("Can't get priter status");
 	// }
 	//printReceipt($print, PRINTER_FOE_CHECKEOUT, "客户联");
-	printReceipt($print, PRINTER_FOR_KITCHEN, "存根联");
+	printReceipt($print, PRINTER_FOR_KITCHEN, "存根联", PRINTER_TYPE_58);
 }
 
-function printReceipt($json, $printerIP, $title) {
+function printReceipt($json, $printerIP, $title, $printerType) {
 	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
 	if ($socket < 0)
 	{
@@ -141,8 +169,8 @@ function printReceipt($json, $printerIP, $title) {
 		exit();
 	}
 	printTitle($socket, "$title\r\n");
-	printOrder($socket, $tableName, $timestamp, $obj, $total);
-	//printR($socket, PRINTER_COMMAND_CUT);
+	printOrder($socket, $tableName, $timestamp, $obj, $total, $printerType);
+	printR($socket, PRINTER_COMMAND_CUT);
 	printR($socket, PRINTER_COMMAND_ALARM);
 	socket_close($socket);
 }
