@@ -44,10 +44,12 @@
 	//TODO update db path
 	define('DATABASE_PHONE', '../db/temporary/temp.db3');
 	define('TABLE_PHONE_ORDERED_DISH', 'temporaryMainDish');
+
 	define('PHONE_COLUM_TID', 'tableID');
 	
 	define('TABLE_NOTIFICATION', 'callWaiter');
 	define('NOTIFICATION_COLUM_TID', 'tableID');
+
 	define('NOTIFICATION_COLUM_STATUS', 'callStatus');
 	
 	define('TABLE_NOTIFICATION_TYPES', 'serviceList');

@@ -16,9 +16,11 @@
 		$sql=sprintf("delete from %s where %s=%s", 
 		TABLE_PHONE_ORDERED_DISH, PHONE_COLUM_TID, "$tableId");
 	}
+	
 	if (!$db->exec($sql) {
 			echo "[ERR_DB_EXEC:";
 			die(ERR_DB_EXEC."]");
 		}	
+
 	$db->close();
 ?>

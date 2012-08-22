@@ -16,6 +16,8 @@
 	  	die("[MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED."]");
 	}
 	
+	printJson($json_string);
+	
 	$dbOrder = new SQLite3(DATABASE_ORDER);
 	if (!$dbOrder) {
 		echo "[ERR_COULD_NOT_CONECT_DB:";
@@ -59,5 +61,4 @@
 	}
 	$dbOrder->close();
 	
-	printJson($json_string);
 ?>

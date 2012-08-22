@@ -21,4 +21,5 @@
 		die(ERR_DB_QUERY);
 	}
 	$jsonString = json_encode($table);
+
 ?>
