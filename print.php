@@ -176,10 +176,14 @@ function printReceipt($json, $printerIP, $title, $printerType) {
 }
 
 function printJsonDel($print) {
+	printDelReceipt($print, PRINTER_FOR_KITCHEN, "存根联 (删除）\r\n", PRINTER_TYPE_58);
+}
+
+function printDelReceipt($json, $printerIP, $title, $printerType) {
 	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
 	$connection = socket_connect($socket, PRINTER_FOR_KITCHEN, 9100); 
 	
-	$json_string = $print;
+	$json_string = $json;
 	$obj = json_decode($json_string); 
 	$dishCount = count($obj->order);
 	$tableId = $obj->tableId;
@@ -190,13 +194,9 @@ function printJsonDel($print) {
 		header("HTTP/1.1 NO_ORDERED_DISH 'NO_ORDERED_DISH'");
 		exit();
 	}
-	printTitle($socket, "存根联 (删除）\r\n");
-	printOrder($socket, $tableId, $timestamp, $obj, $total);
+	printTitle($socket, $title);
+	printOrder($socket, $tableId, $timestamp, $obj, $total, $printerType);
 	
-	//TODO print 1 copy for debug
-	exit(0);
-	printTitle($socket, "客户联\r\n");
-	printOrder($socket, $tableId, $timestamp, $obj, $total);
 	socket_close($socket);
 }
 ?>
