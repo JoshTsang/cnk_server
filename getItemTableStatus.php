@@ -3,24 +3,21 @@
 	
 
 	$dbTable = new SQLite3(DATABASE_TEMP);
-
+	$tableStatus = $_GET['TSI'];
 	if (!$dbTable) {
 		header("HTTP/1.1 ERR_COULD_NOT_CONECT_DB 'ERR_COULD_NOT_CONECT_DB'");
 	  	die(ERR_COULD_NOT_CONECT_DB);
 	}
-	$sql=sprintf("select %s,%s,%s from %s",
-				 TABLE_ID ,TABLE_STATUS,TABLE_NAME,TABLE_INFO);
+	$sql=sprintf("select %s from %s where id = %s",
+				 TABLE_STATUS,TABLE_INFO,$tableStatus);
 	$resultSet = $dbTable->query($sql);
 	if ($resultSet) {
-		$i = 0;
-		while($row = $resultSet->fetchArray()) {
-			$item = array('id' => $row[0],
-			 			  'status' => $row[1],
-						  'name' => $row[2]);
-			$Table[$i] = $item;
-			$i++;
+		if ($row = $resultSet->fetchArray()) {
+			$status = $row[0];
+			echo "$status";
+		} else {
+			die(0);
 		}
-		$jsonString = json_encode($Table);
 	} else {
 		die(ERR_DB_QUERY);
 	}

@@ -61,6 +61,9 @@
 	}
 	
 	$sqlDelete=sprintf("DELETE FROM %s where %s=%s;", TABLE_ORDER_TABLE,TABLE_ORDER_TABLE_COLUM_TABLE_ID,$tableId);
-	$dbOrder->exec($sqlDelete);
+	if (!$dbOrder->exec($sqlDelete) {
+			echo "[ERR_DB_EXEC:";
+			die(ERR_DB_EXEC."]");
+		}
 	$dbOrder->close();
 ?>

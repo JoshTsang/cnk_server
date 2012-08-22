@@ -17,9 +17,8 @@
 	}
 	
 	for ($i=0; $i<$dishCount; $i++) {
-		$dishId = $obj->order[$i]->id;
-		echo "dishId";
-		if (!$dbOrder->exec("DELETE from ".ORDER_DETAIL_TABLE." where ".ORDER_DETAIL_TABLE_COLUM_ID
+		$dishId = $obj->order[$i]->dishId;
+		if (!$dbOrder->exec("DELETE from ".ORDER_DETAIL_TABLE." where ".ORDER_DETAIL_TABLE_COLUM_DISH_ID
 							."=$dishId")) {
 			echo "[ERR_DB_EXEC:";
 			die(ERR_DB_EXEC."]");
