@@ -25,4 +25,5 @@
 		die(ERR_DB_QUERY);
 	}
 	$dbTable->close();
+	echo "$jsonString";
 ?>

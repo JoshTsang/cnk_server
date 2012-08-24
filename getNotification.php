@@ -37,4 +37,5 @@
 	$jsonString = json_encode($table);
 
 	$db->close();
+	echo "$jsonString";
 ?>
