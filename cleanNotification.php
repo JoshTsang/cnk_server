@@ -11,7 +11,7 @@
 	
 	$sql=sprintf("delete from %s where %s=%s", TABLE_NOTIFICATION, NOTIFICATION_COLUM_TID, $tableId);
 
-	if (!$db->exec($sql) {
+	if (!$db->exec($sql)) {
 			echo "[ERR_DB_EXEC:";
 			die(ERR_DB_EXEC."]");
 		}
