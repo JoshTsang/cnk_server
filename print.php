@@ -3,9 +3,6 @@
 define('PRINTER_COMMAND_ALARM', "\x1B\x43\1\x13\3\n");
 define('PRINTER_COMMAND_CUT', "\x1D\x56\x42\5\n");
 
-define('PRINTER_TYPE_58', 1);
-define('PRINTER_TYPE_80', 2);
-
 function printTitle($socket, $str) {
 	socket_write($socket,"\x1b\x21\x0");
 	//socket_write($socket, "\x1b\x4c");
@@ -216,7 +213,6 @@ function printSalesHeader($socket, $timeStart, $timeEnd, $printerType) {
 
 function printSalesData($obj, $socket, $printerType) {
 	$rowCount = count($obj->rows);
-	printl($socket, "-***********");
 	for ($i=0; $i<$rowCount; $i++) {
 		$dishName = $obj->rows[$i]->name;
 		$amount = $obj->rows[$i]->amount;
@@ -233,12 +229,11 @@ function printSalesData($obj, $socket, $printerType) {
 				$printString = sprintf("%s%$spaceLen"."s%7d%13.2f%10.2f%%",$dishName, "", $count, $amount, $percentage*100);
 			}
 		} else if($printerType == PRINTER_TYPE_58) {
-			$printString = sprintf("%s:%d/%d\r\n%6d%14.2f%10.2f%%", $dishName, $i, $rowCount, $count, $amount, $percentage*100);
+			$printString = sprintf("%s\r\n%6d%14.2f%10.2f%%", $dishName, $count, $amount, $percentage*100);
 		}
 		printl($socket, $printString);
 		
 	}
-	printl($socket, "end*****");
 }
 
 function printSalesReceipt($json, $printerIP, $printerType) {

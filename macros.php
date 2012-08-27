@@ -64,7 +64,8 @@
 	define('DISH_STATUS_SOLD_OUT', "0");
 	
 	/* printers */
-
+	define('PRINTER_TYPE_58', 1);
+	define('PRINTER_TYPE_80', 2);
 	define('PRINTER_FOR_KITCHEN', '192.168.0.8');
 	define('PRINTER_FOE_CHECKEOUT', '192.168.0.9');
 ?>
