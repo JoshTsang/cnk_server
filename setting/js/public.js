@@ -1,4 +1,5 @@
-$(document).ready(function(){
+$(document).ready(
+	function(){
 	$("#tablePageId tr").mouseover(function(){
 		$(this).css("background-color","#FFF");
 		
@@ -7,7 +8,12 @@ $(document).ready(function(){
 		$(this).css("background-color","#E0E0E0");
 		
 		});
-	
+	$("#menu tr").mouseover(function(){
+		$(this).css("background-color","#FFF");
+		});
+		$("#menu tr").mouseout(function(){
+		$(this).css("background-color","#E0E0E0");
+		});
 	})
 	
 	
