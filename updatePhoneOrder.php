@@ -17,10 +17,10 @@
 				 TABLE_PHONE_ORDERED_DID,$DishId,
 				 PHONE_COLUM_TID,$TableId);
 
-	if (!$dbPhone->exec($sql) {
+	if (!$dbPhone->exec($sql)) {
 			echo "[ERR_DB_EXEC:";
 			die(ERR_DB_EXEC."]");
-		}
+	}
 	$dbPhone->close();
 ?>
 

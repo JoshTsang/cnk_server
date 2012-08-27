@@ -133,12 +133,15 @@ function printOrder($socket, $tableId, $timestamp, $obj, $total, $printerType) {
 }
 
 function printJson($print) {
-	// $ret = printerStatus(PRINTER_FOR_KITCHEN);
-	// if ($ret <= 0) {
-		// die("Can't get priter status");
-	// }
-	//printReceipt($print, PRINTER_FOE_CHECKEOUT, "客户联");
-	printReceipt($print, PRINTER_FOR_KITCHEN, "存根联", PRINTER_TYPE_58);
+	$jsonObj = getPrinterInfo();
+	print_r($jsonObj);
+	$count = count($jsonObj);
+	echo $count;
+	for ($i=0; $i<$count; $i++) {
+		if($jsonObj[$i]->usefor <= PRINT_ORDER) {
+			printReceipt($print, $jsonObj[$i]->ip, $jsonObj[$i]->title, $jsonObj[$i]->type);
+		}
+	}
 }
 
 function printReceipt($json, $printerIP, $title, $printerType) {
@@ -259,4 +262,17 @@ function printSalesReceipt($json, $printerIP, $printerType) {
 	printFooter($socket, $total, $printerType);
 	printl($socket, "**end-printSalesRectipt");
 }
+
+function getPrinterInfo() {
+	$file =  "setting/printerInfo.json";
+ 
+	if(file_exists($file)) {
+		$json = file_get_contents($file);
+	} else {
+		$timestamp = "";
+	return null;
+	}
+	return json_decode($json);
+}
+
 ?>
