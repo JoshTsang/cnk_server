@@ -12,14 +12,27 @@ function printTitle($socket, $str) {
 }
 
 function printHeader($socket, $table, $timestamp, $printerType) {
+	if(file_exists("setting/shopname")) {
+		$shopname = file_get_contents("setting/shopname");
+	} else {
+		$shopname = "菜脑壳电子点菜系统";
+	}
+	$zhLen = (strlen($shopname) - iconv_strlen($shopname, "UTF-8"))/2;
+	$enLen = iconv_strlen($shopname, "UTF-8") - $zhLen;
+	$space = $zhLen*2 + $enLen;
+	
 	if ($printerType == PRINTER_TYPE_80) {
-		printl($socket, "                 百姓鲜榨汁\r\n");
+		$spaceLen = (48 - $space)/2;
+		$print = sprintf("%".$spaceLen."s%s\r\n", "", $shopname);
+		printl($socket, $print);
 		$print = sprintf("桌号:%-4d                  %s", $table, $timestamp);
 		printl($socket, $print);
 		printl($socket, "----------------------------------------------");
 		printl($socket, "品名                       单价  数量    小计");
 	} else if ($printerType == PRINTER_TYPE_58) {
-		printl($socket, "           百姓鲜榨汁\r\n");
+		$spaceLen = (34 - $space)/2;
+		$print = sprintf("%".$spaceLen."s%s\r\n", "", $shopname);
+		printl($socket, $print);
 		$print = sprintf("桌号:%-4d   %s", $table, $timestamp);
 		printl($socket, $print);
 		printl($socket, "--------------------------------");
@@ -134,9 +147,7 @@ function printOrder($socket, $tableId, $timestamp, $obj, $total, $printerType) {
 
 function printJson($print) {
 	$jsonObj = getPrinterInfo();
-	print_r($jsonObj);
 	$count = count($jsonObj);
-	echo $count;
 	for ($i=0; $i<$count; $i++) {
 		if($jsonObj[$i]->usefor <= PRINT_ORDER) {
 			printReceipt($print, $jsonObj[$i]->ip, $jsonObj[$i]->title, $jsonObj[$i]->type);
@@ -175,6 +186,7 @@ function printReceipt($json, $printerIP, $title, $printerType) {
 	socket_close($socket);
 }
 
+//TODO 
 function printJsonDel($print) {
 	printDelReceipt($print, PRINTER_FOR_KITCHEN, "存根联 (删除）\r\n", PRINTER_TYPE_58);
 }

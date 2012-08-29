@@ -1,5 +1,5 @@
 <?php
-    if(isset($_POST['config'])) {
+    if(!isset($_POST['config'])) {
     	die("parameter needed");
     }
 	

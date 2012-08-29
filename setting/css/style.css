@@ -18,15 +18,7 @@ body {
 	margin-top: 0px;
 	margin-right: 0px;
 	margin-bottom: 0px;
-	font: 12px/1.5 tahoma,arial,宋体;
-}
-
-a:link{
-	text-decoration:none;
-}
-
-a:hover {
-	color: #FF0000;
+	font: 12px/1.5 tahoma,arial;
 }
 
 .header{
@@ -81,6 +73,13 @@ a:hover {
 	width:670px;
 	float:right;
 }
+
+.shop_name{
+	height:auto;
+	width:670px;
+	float:right;
+}
+
 .printer_info_title{
 	height:38px;
 	border:2px solid #B2B2B2;
@@ -98,16 +97,33 @@ a:hover {
 	color:#000;
 }
 
-.printer_info_title .addPos .save a{
+.closeBtn a{
+	display:inline-block;
+	float:right;
+	color: #FF0000;
+}
+
+.closeBtn a:hover {
 	color:#000;
 }
-.printer_info_setting{
+.printer_info_title .addPos a{
+	color:#000;
+}
+
+.printer_info_title .addPos a:hover {
+	color: #FF0000;
+}
+.save a{
+	color:#000; 	
+}
+
+.printer_setting{
 	border:1px solid #B2B2B2;
 	background:none repeat scroll 0 0 #E0E0E0;
 	height:auto;
 	margin-top:10px;
 }
-.printer_info_setting .content_rightHeader  h1{
+.data .content_rightHeader  h1{
 	margin:0;
 	padding:0;
 	font-size:18px;
@@ -134,7 +150,6 @@ a:hover {
 }
 .printer_info_table td{
 	height:40px;
-	width:19%;
 	padding-left:20px;
 	border:0px solid #6E6E6E;
 	border-left:1px solid #999999;
@@ -143,6 +158,20 @@ a:hover {
 	font-size:15px;
 }
 
+#shopNameSetting {
+	width:100%;
+	padding:18px;
+	border:0px solid #6E6E6E;
+	font-size:15px;
+}
+
+a:link{
+	text-decoration:none;
+}
+
+a:hover {
+	color: #FF0000;
+}
 /*-------------------隐藏层样式-----------------------*/
 #container { 
  	min-height: 100%;
@@ -155,25 +184,24 @@ a:hover {
 	left:0;
 }
 #loginBoxContent{
-	height:250px;
-	width:400px;
+	height:240px;
+	width:270px;
 	background:white;
 	z-index:9998;
 	border:3px solid #999;
-	float:top;
 	margin:0px auto;
 	border-top:1px solid #999 !important;
 	padding-top: 20px;
 }
 #loginBoxContent .posTable{
-	margin:0 0 0 40px;
+	margin:0 0 0 25px;
 	display:block;
 	float:left;
-	
 }
+
 #loginBoxContent .posTable td span{
 	font-size:22px;
-	padding-left:40px;
+	padding-left:10px;
 	font-weight:bold;
 }
 #loginBoxContent .posTable td input{
@@ -199,14 +227,16 @@ a:hover {
 }
 
 #loginBoxTitle{
-	height:33px;
-	width:400px;
+	height:25px;
+	width:250px;
 	color: #999;
 	font-size:16px;
 	background:white;
 	z-index:9998;
 	border-bottom:1px solid #999 !important;
 	border:3px solid  #999;
+	padding-left:10px;
+	padding-right:10px;
 	margin:0px auto;
 }
 #loginBoxTitle h2{
@@ -216,6 +246,10 @@ a:hover {
 	z-index:999;
 	position: absolute;
 	width:100%;
-	top:200px;
+	top:100px;
+}
+
+#errMsg {
+	
 }
 
