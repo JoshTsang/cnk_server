@@ -2,7 +2,7 @@
 	require '../macros.php';
 	require 'defines.php';
     require '../print.php';
-function printTestPage($printerIP, $title, $usefor) {
+function printTestPage($printerIP, $title, $usefor, $type) {
 	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
 	if ($socket < 0)
 	{
@@ -20,8 +20,10 @@ function printTestPage($printerIP, $title, $usefor) {
 	} else {
 		$shopname = "未设置";
 	}
+	$printerType = $type==PRINTER_TYPE_58?"58打印机":"80打印机";
 	printl($socket, "店铺名:".$shopname);
 	printl($socket, "打印机IP:".$printerIP);
+	printl($socket, "打印机类型:".$printerType);
 	printl($socket, "小票抬头:".$title);
 	printl($socket, "打印内容码:".$usefor);
 	printl($socket, "\r\n");
@@ -39,6 +41,8 @@ function printTestPage($printerIP, $title, $usefor) {
 	$jsonObj = json_decode($json);
 	$count = count($jsonObj);
 	for ($i=0; $i<$count; $i++) {
-		printTestPage($jsonObj[$i]->ip, $jsonObj[$i]->title, $jsonObj[$i]->usefor);
+		if ($jsonObj[$i]->usefor < 200) {
+			printTestPage($jsonObj[$i]->ip, $jsonObj[$i]->title, $jsonObj[$i]->usefor, $jsonObj[$i]->type);
+		}
 	}
 ?>
