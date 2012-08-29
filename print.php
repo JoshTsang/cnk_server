@@ -43,7 +43,7 @@ function printHeader($socket, $table, $timestamp, $printerType) {
 function printFooter($socket, $total, $printerType) {
 	if ($printerType == PRINTER_TYPE_80) {
 		$print = sprintf("----------------------------------------------\r\n".
-						 "合计:%34.2f\r\n".
+						 "合计:%40.2f\r\n".
 						 "----------------------------------------------\r\n".
 						 "\r\n               谢谢惠顾!               \r\n \r\n ", $total);
 		printl($socket, $print);
@@ -253,7 +253,7 @@ function printSalesData($obj, $socket, $printerType) {
 
 function printSalesReceipt($json, $printerIP, $printerType) {
 	$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
-	$connection = socket_connect($socket, PRINTER_FOR_KITCHEN, 9100); 
+	$connection = socket_connect($socket, $printerIP, 9100); 
 	
 	$json_string = $json;
 	//$json_string = "{\"total\":3972,\"rows\":[{\"amount\":348,\"count\":29,\"percentage\":0.08761329305135952,\"name\":\"回锅肉\"},{\"amount\":372,\"count\":31,\"percentage\":0.09365558912386707,\"name\":\"红烧肉\"}],\"timeEnd\":\"2012-07-02 22:19\",\"timeStart\":\"2012-06-28 12:59\"}";
@@ -272,7 +272,9 @@ function printSalesReceipt($json, $printerIP, $printerType) {
 	printSalesHeader($socket, $timestart, $timeend, $printerType);
 	printSalesData($obj, $socket, $printerType);
 	printFooter($socket, $total, $printerType);
-	printl($socket, "**end-printSalesRectipt");
+	
+	printR($socket, PRINTER_COMMAND_CUT);
+	printR($socket, PRINTER_COMMAND_ALARM);
 }
 
 function getPrinterInfo() {

@@ -45,6 +45,7 @@
 			            	<?php
 			            		echo "<option value=".PRINT_STATISTICS.">".PRINT_STATISTICS_NAME."</option>";
 			            		echo "<option value=".PRINT_ORDER.">".PRINT_ORDER_NAME."</option>";
+								echo "<option value=200>停用</option>";
 			            	?>
 			            </select>
 	            	</td>

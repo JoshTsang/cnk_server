@@ -70,6 +70,10 @@ function settings() {
 				case "100":
 					printerData += "菜单";
 					break;
+				case 200:
+				case "200":
+					printerData += "停用";
+					break;
 				default:
 					printerData += this.settings[i].usefor;
 					break;
@@ -183,9 +187,9 @@ function modifyPrinter(index) {
 	
 	nameTag.value =  setting.settings[index].name;
 	ipTag.value = setting.settings[index].ip;
-	receiptTitle = setting.settings[index].title;
-	printerType = setting.settings[index].type;
-	usefor = setting.settings[index].usefor;
+	receiptTitle.value = setting.settings[index].title;
+	printerType.value = setting.settings[index].type;
+	usefor.value = setting.settings[index].usefor;
 	document.getElementById("submitPrinterSetting").innerHTML = "<input style=\"width:60px;height:30px;\" type=\"button\" name=\"submit\" value=\"确定\" onClick=\"validFormAndSubmit("+index+")\"/>";
 	hideLoginBoxOn();
 }
