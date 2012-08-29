@@ -1,0 +1,255 @@
+.clearfix:after {
+content: ".";
+display: block;
+height: 0;
+clear: both;
+visibility: hidden;
+}
+
+* html .clearfix {height: 1%;}
+
+body,td,th {
+	font-family: Tahoma, Verdana, Arial, sans-serif;
+	font-size: 12px;
+	color: #333333;
+}
+body {
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	font: 12px/1.5 tahoma,arial;
+}
+
+.header{
+	height:80px;
+	width:100%;
+	background:none repeat scroll 0 0 #EAEAEA;
+}
+.header .logo{
+	height:70px;
+	width:300px;
+}
+.header .logo h1{
+	margin:0;
+	padding-left:20px;
+	font-size:32px;
+}
+.header .logo span{
+	margin-left:60px;
+}
+.content{
+	width:100%;
+	height:100%;
+	margin:auto;
+	margin-top: 30px;
+}
+.content .content_page{
+	width:840px;
+	height:auto;
+	background:none repeat scroll 0 0 #FFF;
+	margin:auto;
+	overflow:hidden;
+	margin-top:8px;
+}
+.menu_bar{
+	height:auto;
+	width:150px;
+	border:0px solid #B2B2B2;
+	float:left;
+	background:none repeat scroll 0 0 #E0E0E0;
+}
+
+.menu_bar td{
+	height:40px;
+	font-size:20px;
+	padding-left:15px;
+	border:0px solid #6E6E6E;
+	border-collapse:collapse;
+	border-top:#C8C8C8;
+}
+.printer_info{
+	height:auto;
+	width:670px;
+	float:right;
+}
+
+.shop_name{
+	height:auto;
+	width:670px;
+	float:right;
+}
+
+.printer_info_title{
+	height:38px;
+	border:2px solid #B2B2B2;
+	background:none repeat scroll 0 0 #AAAAAA;
+	padding-right:10px;
+	line-height:42px;
+}
+.printer_info_title span{
+	font-size:20px;
+	margin-left:15px;
+}
+.printer_info_title .setting_btn{
+	display:inline-block;
+	float:right;
+	color:#000;
+}
+
+.closeBtn a{
+	display:inline-block;
+	float:right;
+	color: #FF0000;
+}
+
+.closeBtn a:hover {
+	color:#000;
+}
+.printer_info_title .addPos a{
+	color:#000;
+}
+
+.printer_info_title .addPos a:hover {
+	color: #FF0000;
+}
+.save a{
+	color:#000; 	
+}
+
+.printer_setting{
+	border:1px solid #B2B2B2;
+	background:none repeat scroll 0 0 #E0E0E0;
+	height:auto;
+	margin-top:10px;
+}
+.data .content_rightHeader  h1{
+	margin:0;
+	padding:0;
+	font-size:18px;
+	line-height:44px;
+}
+.content_rightHeader{
+	height:40px;
+	width:100%;
+	border-bottom:1px solid #AAA;
+	
+}
+.printer_info_table{
+	border-left:0px solid #6E6E6E;
+	border-collapse:collapse;
+	width:100%;
+}
+.printer_info_table th{
+	border:0px solid #6E6E6E;
+	background-color: #EAEAEA;
+	border-collapse:collapse;
+	border-top:#B2B2B2;
+	border-left:1px solid #999999;
+	font-size: 18px;
+}
+.printer_info_table td{
+	height:40px;
+	padding-left:20px;
+	border:0px solid #6E6E6E;
+	border-left:1px solid #999999;
+	border-collapse:collapse;
+	border-top:#C8C8C8;
+	font-size:15px;
+}
+
+#shopNameSetting {
+	width:100%;
+	padding:18px;
+	border:0px solid #6E6E6E;
+	font-size:15px;
+}
+
+a:link{
+	text-decoration:none;
+}
+
+a:hover {
+	color: #FF0000;
+}
+/*-------------------隐藏层样式-----------------------*/
+#container { 
+ 	min-height: 100%;
+	height: auto !important; 
+	height: 100%; 
+    width:100%; 
+	margin:0 auto;
+	position:absolute;
+	top:0;
+	left:0;
+}
+#loginBoxContent{
+	height:240px;
+	width:270px;
+	background:white;
+	z-index:9998;
+	border:3px solid #999;
+	margin:0px auto;
+	border-top:1px solid #999 !important;
+	padding-top: 20px;
+}
+#loginBoxContent .posTable{
+	margin:0 0 0 25px;
+	display:block;
+	float:left;
+}
+
+#loginBoxContent .posTable td span{
+	font-size:22px;
+	padding-left:10px;
+	font-weight:bold;
+}
+#loginBoxContent .posTable td input{
+	width:120px;
+}
+
+#loginBoxStyle{
+	height:100%;
+	width:100%;
+	filter:alpha(opacity=70);
+	-moz-opacity:0.78;
+	opacity:0.7;
+	background: #000000;
+}
+#loginBoxMain{
+	position:absolute;
+	top:0;
+	left:0;
+	height:100%;
+	width:100%;
+	z-index:101;
+	display:none;
+}
+
+#loginBoxTitle{
+	height:25px;
+	width:250px;
+	color: #999;
+	font-size:16px;
+	background:white;
+	z-index:9998;
+	border-bottom:1px solid #999 !important;
+	border:3px solid  #999;
+	padding-left:10px;
+	padding-right:10px;
+	margin:0px auto;
+}
+#loginBoxTitle h2{
+	margin:0px;
+}
+#loginBoxOutline{
+	z-index:999;
+	position: absolute;
+	width:100%;
+	top:100px;
+}
+
+#errMsg {
+	
+}
+

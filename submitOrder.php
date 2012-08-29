@@ -1,5 +1,6 @@
 <?php
 	require('macros.php');
+	require('setting/defines.php');
 	require('print.php');
 	
 	// if (!isset($_POST['json'])) {

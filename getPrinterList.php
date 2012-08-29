@@ -1,4 +1,11 @@
 <?php
     require 'macros.php';
-	echo "[".PRINTER_FOR_KITCHEN."]";
+	require 'print.php';
+	$jsonObj = getPrinterInfo();
+	$count = count($jsonObj);
+	$printerList = $jsonObj[0]->ip;
+	for ($i=1; $i<$count; $i++) {
+		$printerList = $printerList.",".$jsonObj[$i]->ip;
+	}
+	echo "["."$printerList"."]";
 ?>
