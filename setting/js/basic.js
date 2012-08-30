@@ -195,6 +195,7 @@ function modifyPrinter(index) {
 }
 
 function sendTestingRequest() {
+	alert("测试命令已发送，请等待测试结果...")
 	createXMLHttpRequest();
 	xmlHttp.onreadystatechange = handlePrinterTest;
 	xmlHttp.open("GET", "testPrinter.php");
@@ -254,7 +255,7 @@ function handlePrinterSettingSave() {
 function handlePrinterTest() {
 	if (xmlHttp.readyState == 4) {
 		if (xmlHttp.status == 200) {
-			alert("测试数据已发送");
+			alert("测试通过！");
 		} else {
 			alert("发送测试数据失败");
 		}

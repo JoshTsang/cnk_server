@@ -26,6 +26,7 @@
 	define('ORDER_DETAIL_TABLE_COLUM_ID', "id");
 	define('ORDER_DETAIL_TABLE_COLUM_DISH_ID', "dish_id");
 	define('ORDER_DETAIL_TABLE_COLUM_PRICE', "price");
+	define('ORDER_DETAIL_TABLE_COLUM_STATUS', "status");
 	define('ORDER_DETAIL_TABLE_COLUM_ORDER_ID', "order_id");
 	define('ORDER_DETAIL_TABLE_COLUM_QUANTITY', "quantity");
 	
