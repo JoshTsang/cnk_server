@@ -74,11 +74,20 @@
 		<h1>cainaoke</h1>
 		<span>--科技让生活更简单！</span>
 		</div>
+		<div class="navbar">
+			<ul>
+			<li><a href="#" id="currentPage">打印机设置</a></li>
+			<li><a href="upgrade.php">升级</a></li>
+			</ul>
+		</div>
 	</div>
 	<div class="content">
 		<div class="content_page clearfix">
 			<div class="menu_bar">
 				<table class="menu_bar" id="menu">
+					<thead>
+						<tr><th>打印机设置</th></tr>
+					</thead>
 					<tbody>
 					<tr onclick="javascript:showBaseSetting(this);"><td>基本设置</td></tr>
 					<tr onclick="javascript:showPrinterSetting(this);"><td>打印机管理</td></tr>

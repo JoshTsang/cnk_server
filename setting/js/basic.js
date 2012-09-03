@@ -135,8 +135,6 @@ $(document).ready(
 		$(this).css("background-color","#E0E0E0");
 		});
 		
-	
-	adjustBodyHeight();
 	loadShopName();
 	showBaseSetting();
 	}

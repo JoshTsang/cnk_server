@@ -36,7 +36,46 @@ body {
 	font-size:32px;
 }
 .header .logo span{
+	margin-left:20px;
 	margin-left:60px;
+}
+
+.logo {
+	float:left;
+}
+
+.navbar {
+	padding-right: 50px;
+	padding-top: 50px;
+	float:right;
+	font-size:20px;
+}
+
+.navbar ul
+{
+	width:100%;
+	padding:0;
+	margin:0;
+	list-style-type:none;
+}
+
+.navbar li {
+	display:inline;
+	margin-left: 10px;
+	padding-bottom: 3px;
+}
+
+#currentPage {
+	padding-bottom:2px;
+	border-bottom: 2px solid #6E6E6E;
+}
+
+.navbar a{
+	color: #6E6E6E;
+}
+.navbar a:hover {
+	color:#FFFFFF;
+	background: #6E6E6E;
 }
 .content{
 	width:100%;
@@ -67,6 +106,12 @@ body {
 	border:0px solid #6E6E6E;
 	border-collapse:collapse;
 	border-top:#C8C8C8;
+}
+
+.menu_bar th{
+	font-size:20px;
+	color: #FFFFFF;
+	background-color: #999999;
 }
 .printer_info{
 	height:auto;
@@ -158,11 +203,40 @@ body {
 	font-size:15px;
 }
 
+#uploadUpgradePack {
+	padding:10px;	
+}
+
 #shopNameSetting {
 	width:100%;
 	padding:18px;
 	border:0px solid #6E6E6E;
 	font-size:15px;
+}
+
+#uploadBtn {
+	float:right;
+	margin-right:20px;
+}
+
+#progress {
+	display: none;
+	margin-bottom: 10px;
+}
+#progressbar {
+	width:200px;
+	height:3px;
+	margin-left:10px;
+	border:1px solid #999;
+	background-color: #AAAAAA;
+	display: inline-block;
+}
+
+#done {
+	width:0px;
+	height:3px;
+	background-color: #6E6E6E;
+	display: inline-block;
 }
 
 a:link{
@@ -242,6 +316,7 @@ a:hover {
 #loginBoxTitle h2{
 	margin:0px;
 }
+
 #loginBoxOutline{
 	z-index:999;
 	position: absolute;

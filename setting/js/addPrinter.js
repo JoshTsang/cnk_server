@@ -3,8 +3,10 @@
  */
 function hideLoginBox(object){
 		$("div#loginBoxMain").css("display","none");
+		$("body").css("height", "auto");
 }
 function hideLoginBoxOn(object){
+		$("body").css("height", window.innerHeight);
 		$("div#loginBoxMain").css("display","block");
 }
 
