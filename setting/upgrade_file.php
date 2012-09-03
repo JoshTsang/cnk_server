@@ -125,6 +125,7 @@ class qqFileUploader {
     }
 	
 	private function install() {
+		system("rm *.apk");
 		system("/bin/tar xvf ./upgrade/upgrade.tar -C ../../ > null", $res);
 		system("rm -rf upgrade");
 		return $res;
