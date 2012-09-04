@@ -1,2 +1,2 @@
-<?php	require('macros.php');		$dbTable = new SQLite3(DATABASE_PHONE);	if (!$dbTable) {		header("HTTP/1.1 ERR_COULD_NOT_CONECT_DB 'ERR_COULD_NOT_CONECT_DB'");	  	die(ERR_COULD_NOT_CONECT_DB);	}	$TableId = $_GET['TID'];	$TableStatus = $_GET['TST'];	$sql=sprintf("UPDATE %s SET %s = %s where %s = %d",				 TABLE_INFO,				 TABLE_STATUS,$TableStatus,				 TABLE_ID,$TableId);				 	$dbTable->query($sql);	$dbTable->close();?>
+<?php	require('macros.php');	require('');		if (!isset($_GET['TID']) || !isset($_GET['TST'])) {		die("[MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED."]");	}	$TableId = $_GET['TID'];	$TableStatus = $_GET['TST'];	$db = new CNK_DB();	$db->updateTableStatus($TableId, $TableStatus);?>
 

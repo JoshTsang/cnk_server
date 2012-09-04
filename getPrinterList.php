@@ -1,14 +1,16 @@
 <?php
     require 'macros.php';
-	require 'print.php';
 	require 'setting/defines.php';
+	require 'classes/printer.php';
 	
 	if (isset($_GET['for'])) {
 		$for = $_GET['for'];
 	} else {
 		$for = 0;
 	}
-	$jsonObj = getPrinterInfo();
+	
+	$file = new file("setting/printerInfo.json");
+	$jsonObj = json_decode($file->getContent());
 	$count = count($jsonObj);
 	if ($for == 0) {
 		$printerList = $jsonObj[0]->ip;

@@ -1,13 +1,11 @@
 <?php
+	require("../classes/file.php");
+	
    if(!isset($_GET['shopname'])) {
     	die("parameter needed");
-    }	 
-		
-	function set($config){
-		$file =  "shopname";
-		file_put_contents($file, $config);
-	}
-	
+    }
+   
+	$file = new file("shopname");
 	$config = $_GET['shopname'];
-	set($config);
+	$file->setContent($config);
 ?>

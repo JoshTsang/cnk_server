@@ -2,6 +2,8 @@
 	require 'file.php';
 	define('PRINTER_COMMAND_ALARM', "\x1B\x43\1\x13\3\n");
 	define('PRINTER_COMMAND_CUT', "\x1D\x56\x42\5\n");
+	define('PRINTER_COMMAND_2X', "\x1D\x21\x11");
+	define('PRINTER_COMMAND_1X', "\x1D\x21\x0");
 	
 	class printer {
 		private $printerInfo;
@@ -38,12 +40,28 @@
 			}
 		}
 		
-		private function printTitle($socket, $str) {
+		public function printChangeTable($json) {
+			$count = count($this->printerInfo);
+			for ($i=0; $i<$count; $i++) {
+				if($this->printerInfo[$i]->usefor <= PRINT_ORDER) {
+					$this->printChangeTableReceipt($print, $this->printerInfo[$i]->ip, $this->printerInfo[$i]->title, $this->printerInfo[$i]->type);
+				}
+			}
+		}
+		private function printTitle($socket, $title, $subTitle) {
 			socket_write($socket,"\x1b\x21\x0");
 			//socket_write($socket, "\x1b\x4c");
-			$print = iconv("UTF-8","GB18030", $str);
-			socket_write($socket, $print);
-			socket_write($socket, "\r\n");
+			$print = iconv("UTF-8","GB18030", $title.$subTitle);
+			if (isset($subTitle)) {
+				socket_write($socket, PRINTER_COMMAND_2X);
+				socket_write($socket, $print);
+				socket_write($socket, "\r\n\r\n");
+				socket_write($socket, PRINTER_COMMAND_1X);
+			} else {
+				socket_write($socket, $print);
+				socket_write($socket, "\r\n\r\n");
+			}
+			
 		}
 		
 		private function printHeader($socket, $table, $timestamp, $printerType) {
@@ -169,7 +187,37 @@
 			if ($dishCount <= 0) {
 				die("NO_ORDERED_DISH 'NO_ORDERED_DISH'");
 			}
-			$this->printTitle($socket, "$title\r\n");
+			$this->printTitle($socket, $title, NULL);
+			$this->printOrderedDishes($socket, $tableName, $timestamp, $obj, $total, $printerType);
+			$this->printR($socket, PRINTER_COMMAND_CUT);
+			$this->printR($socket, PRINTER_COMMAND_ALARM);
+			socket_close($socket);
+		}
+		
+		private function printChangeTableReceipt($json, $printerIP, $title, $printerType) {
+			$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
+			if ($socket < 0)
+			{
+				echo socket_strerror(socket_last_error())."\n";
+				die("Unable to connect printer.ip:$printerIP");
+			}
+			$connection = socket_connect($socket, $printerIP, 9100); 
+			if (!$connection) {
+				echo socket_strerror(socket_last_error())."\n";
+				die("Unable to connect printer.ip:$printerIP");
+			}
+			$json_string = $json;
+			$obj = json_decode($json_string); 
+			$dishCount = count($obj->order);
+			$tableId = $obj->tableId;
+			$tableName = $obj->tableName;
+			$timestamp = $obj->timestamp;
+			$total = 0;
+			
+			if ($dishCount <= 0) {
+				die("NO_ORDERED_DISH 'NO_ORDERED_DISH'");
+			}
+			$this->printTitle($socket, $title, "(转台)");
 			$this->printOrderedDishes($socket, $tableName, $timestamp, $obj, $total, $printerType);
 			$this->printR($socket, PRINTER_COMMAND_CUT);
 			$this->printR($socket, PRINTER_COMMAND_ALARM);
@@ -190,7 +238,7 @@
 				header("HTTP/1.1 NO_ORDERED_DISH 'NO_ORDERED_DISH'");
 				exit();
 			}
-			$this->printTitle($socket, $title."(删除)");
+			$this->printTitle($socket, $title, "(删除)");
 			$this->printOrderedDishes($socket, $tableId, $timestamp, $obj, $total, $printerType);
 			
 			$this->printR($socket, PRINTER_COMMAND_CUT);
@@ -250,7 +298,7 @@
 				die("NO_ORDERED_DISH 'NO_ORDERED_DISH'");
 			}
 			
-			$this->printTitle($socket, "销售统计\r\n");
+			$this->printTitle($socket, "销售统计", NULL);
 			$this->printSalesHeader($socket, $timestart, $timeend, $printerType);
 			$this->printSalesData($obj, $socket, $printerType);
 			$this->printFooter($socket, $total, $printerType);
