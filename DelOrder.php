@@ -1,6 +1,7 @@
 <?php
 	require('macros.php');
-	require('print.php');
+	require 'setting/defines.php';
+	require('classes/printer.php');
 
 	$json_string = $_POST['json'];
 	$obj = json_decode($json_string); 
@@ -16,6 +17,8 @@
 	  	die(ERR_COULD_NOT_CONECT_DB."]");
 	}
 	
+	$printer = new printer("setting/printerInfo.json");
+	$printer->printDel($json_string);
 	for ($i=0; $i<$dishCount; $i++) {
 		$dishId = $obj->order[$i]->dishId;
 		if (!$dbOrder->exec("DELETE from ".ORDER_DETAIL_TABLE." where ".ORDER_DETAIL_TABLE_COLUM_DISH_ID
@@ -27,5 +30,6 @@
 	
 	$dbOrder->close();
 
-	printJsonDel($json_string);
+	
+	
 ?>

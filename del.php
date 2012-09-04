@@ -1,6 +1,5 @@
 <?php
 	require('macros.php');
-	require('print.php');
 	
 	$dbTable = new SQLite3(DATABASE_ORDER);
 	

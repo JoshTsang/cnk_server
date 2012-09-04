@@ -1,7 +1,7 @@
 <?php
 	require('macros.php');
 	require('setting/defines.php');
-	require('print.php');
+	require('classes/printer.php');
 	
 	// if (!isset($_POST['json'])) {
 	  	// die("[MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED."]");
@@ -13,11 +13,13 @@
 	$tableId = $obj->tableId;
 	$timestamp = $obj->timestamp;
 	$datetime = split(" ", $timestamp);
+	$printer = new printer("setting/printerInfo.json");
+	
 	if ($dishCount <= 0) {
 	  	die("[MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED."]");
 	}
 	
-	printJson($json_string);
+	$printer->printOrder($json_string);
 	
 	$dbOrder = new SQLite3(DATABASE_ORDER);
 	if (!$dbOrder) {
