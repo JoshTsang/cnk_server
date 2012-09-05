@@ -12,4 +12,5 @@
 	
 	$db = new CNK_DB();
 	$db->cleanTable($tableId, $timestamp);
+	echo $db->error();
 ?>

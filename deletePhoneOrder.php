@@ -14,4 +14,6 @@
 	} else {
 		$db->cleanPhoneOrder($tableId);
 	}
+
+	echo $db->error();
 ?>

@@ -4,5 +4,10 @@
 	
 	$db = new CNK_DB();
 	
-	echo $db->getNotificationTypes();
+	$ret = $db->getNotificationTypes();
+	if (!$ret) {
+		echo $db->error();
+	} else {
+		echo $ret;
+	}
 ?>

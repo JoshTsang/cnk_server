@@ -7,5 +7,10 @@
 	}
 	
 	$db = new CNK_DB();
-	echo $db->getPWD($_GET['UNAME']);
+	$ret = $db->getPWD($_GET['UNAME']);
+	if (!$ret) {
+		echo $db->error();
+	} else {
+		echo $ret;
+	}
 ?>

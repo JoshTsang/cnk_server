@@ -4,7 +4,7 @@ CREATE TABLE [order_detail] (
 [dish_id] INTEGER  NOT NULL,
 [price] FLOAT  NOT NULL,
 [quantity] INTEGER  NOT NULL,
-[status] INTEGER DEFAULT '1' NOT NULL,
+[status] INTEGER DEFAULT '0' NOT NULL,
 [order_id] INTEGER  NOT NULL
 );
 

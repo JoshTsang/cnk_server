@@ -21,4 +21,5 @@
 	
 	$printer->printOrder($json_string);
 	$db->submitOrder($obj);
+	echo $db->error();
 ?>

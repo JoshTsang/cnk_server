@@ -4,5 +4,10 @@
 	
 	$db = new CNK_DB();
 	
-	echo $db->getTableStatus();
+	$ret = $db->getTableStatus();
+	if (!$ret) {
+		echo $db->error();
+	} else {
+		echo $ret;
+	}
 ?>

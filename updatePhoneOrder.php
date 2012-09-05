@@ -1,26 +1,16 @@
 <?php
 	require('macros.php');
+	require('classes/CNK_DB.php');
+
+	if (!isset($_GET['DID']) || !isset($_GET['DNUM']) || !isset($_GET['TID'])) {
+		die("[MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED."]");
+	}
+	$did = $_GET['DID'];
+	$quantity = $_GET['DNUM'];
+	$tid = $_GET['TID'];
 	
-	$dbPhone = new SQLite3(DATABASE_TEMP);
-	if (!$dbPhone) {
-		header("HTTP/1.1 ERR_COULD_NOT_CONECT_DB 'ERR_COULD_NOT_CONECT_DB'");
-	  	die(ERR_COULD_NOT_CONECT_DB);
-	}
-
-
-	$DishId = $_GET['DID'];
-	$DishNum = $_GET['DNUM'];
-	$TableId = $_GET['TID'];
-	$sql=sprintf("UPDATE %s SET %s = %s where %s = %s and %s = %s",
-				 TABLE_PHONE_ORDERED_DISH,
-				 TABLE_PHONE_ORDERED_DNUM,$DishNum,
-				 TABLE_PHONE_ORDERED_DID,$DishId,
-				 PHONE_COLUM_TID,$TableId);
-
-	if (!$dbPhone->exec($sql)) {
-			echo "[ERR_DB_EXEC:";
-			die(ERR_DB_EXEC."]");
-	}
-	$dbPhone->close();
+	$db = new CNK_DB();
+	$db->updatePhoneOrder($tid, $did, $quantity);
+	echo $db->error();
 ?>
 
