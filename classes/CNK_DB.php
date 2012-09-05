@@ -385,6 +385,127 @@
 			$this->orderDB->query($sql);
 		}
 		
+		public function getPermission($username) {
+			if ($this->menuDB == NULL) {
+				$this->connectMenuDB();
+			}
+			
+			$sql=sprintf("select %s from %s where %s.%s = '%s'",
+						 USER_PERMISSION,USER_TABLE,USER_TABLE,USER_NAME,$username);
+			$resultSet = $this->menuDB->query($sql);
+			if ($resultSet) {
+				if ($row = $resultSet->fetchArray()) {
+					$permission = $row[0];
+				} else {
+					return FALSE;
+				}
+			} else {
+				// die(ERR_DB_QUERY);
+				return FALSE;
+			}
+			
+			return $permission;
+		}
+		
+		public function getPhoneOrder($tid) {
+			$sql=sprintf("select * from %s where %s=%s", TABLE_PHONE_ORDERED_DISH, PHONE_COLUM_TID, $tid);
+			
+			if ($this->phoneDB == NULL) {
+				$this->connectPhoneDB();
+			}
+			
+			$resultSet = $this->phoneDB->query($sql);
+			if ($resultSet) {
+				$i = 0;
+				while($row = $resultSet->fetchArray()) {
+					$item = array('dish_id' => $row[1],
+								  'quantity' => $row[2]);
+					$table[$i] = $item;
+					$i++;
+				}
+				$jsonString = json_encode($table);
+			} else {
+				//die(ERR_DB_QUERY);
+			}
+			
+			return $jsonString;
+		}
+		
+		public function getPWD($uname) {
+			if($this->menuDB == NULL) {
+				$this->connectMenuDB();
+			}
+			
+		
+			$sql=sprintf("select %s from %s where %s.%s = '%s'",
+						 USER_PWD,USER_TABLE,USER_TABLE,USER_NAME,$uName);
+			$resultSet = $this->menuDB->query($sql);
+			if ($resultSet) {
+				if ($row = $resultSet->fetchArray()) {
+					$pwd = $row[0];
+				} else {
+					return false;
+				}
+			} else {
+				return false;
+			}
+			return $pwd;
+		}
+		
+		public function getOrderedDishes($tid) {
+			if( $this->orderDB == NULL) {
+				$this->connectOrderDB();
+			}
+
+			$sql=sprintf("select %s,%s,%s,%s,%s,%s,%s.%s,%s from %s,%s where %s.%s = %s.%s and %s.%s = %s",
+				 ORDER_DETAIL_TABLE_COLUM_DISH_ID ,ORDER_DETAIL_TABLE_COLUM_PRICE,
+				 ORDER_DETAIL_TABLE_COLUM_ORDER_ID,ORDER_DETAIL_TABLE_COLUM_QUANTITY,
+				 TABLE_ORDER_TABLE_COLUM_TABLE_ID,TABLE_ORDER_TABLE_COLUM_TIMESTAMP,
+				 ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_ID,
+				 ORDER_DETAIL_TABLE_COLUM_STATUS,/*select*/
+				 ORDER_DETAIL_TABLE,TABLE_ORDER_TABLE,
+				 ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_ORDER_ID,/*from*/
+				 TABLE_ORDER_TABLE,TABLE_ORDER_TABLE_COLUM_ID,
+				 TABLE_ORDER_TABLE,TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid);
+		 
+			$resultSet = $this->orderDB->query($sql);
+			if ($resultSet) {
+				$i = 0;
+				while($row = $resultSet->fetchArray()) {
+					$item = array('dish_id' => $row[0],
+					 			  'price' => $row[1],
+								  'order_id' => $row[2],
+								  'quantity' => $row[3],
+								  'status' => $row[7]);
+					$table[$i] = $item;
+					$i++;
+				}
+				$jsonString = json_encode($table);
+			} else {
+				// die(ERR_DB_QUERY);
+				return FALSE;
+			}
+			return $jsonString;
+		}
+		
+		public function updatePhoneOrder($tid, $did, $quantity) {
+			if ($this->phoneDB == NULL) {
+				$this->connectPhoneDB();
+			}
+			$sql=sprintf("UPDATE %s SET %s = %s where %s = %s and %s = %s",
+				 TABLE_PHONE_ORDERED_DISH,
+				 TABLE_PHONE_ORDERED_DNUM,$quantity,
+				 TABLE_PHONE_ORDERED_DID,$did,
+				 PHONE_COLUM_TID,$tid);
+
+			if (!$this->phoneDB->exec($sql)) {
+					// echo "[ERR_DB_EXEC:";
+					// die(ERR_DB_EXEC."]");
+					return FALSE;
+			}
+			return TRUE;
+		}
+		
 		function __destruct() {
 			if (isset($this->menuDB)) {
 				$this->menuDB->close();
