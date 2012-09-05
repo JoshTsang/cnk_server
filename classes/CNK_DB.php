@@ -251,7 +251,7 @@
 			$resultSet = $this->phoneDB->query($sql);
 			if ($resultSet) {
 				if ($row = $resultSet->fetchArray()) {
-					$status = $row[0];
+					$status = "[".$row[0]."]";
 					return $status;
 				} else {
 					return FALSE;
@@ -382,7 +382,12 @@
 						 TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid,
 						 ORDER_DETAIL_TABLE_COLUM_DISH_ID, $did);	 
 
-			$this->orderDB->query($sql);
+			if (!$this->orderDB->exec($sql)) {
+					// echo "[ERR_DB_EXEC:";
+					// die(ERR_DB_EXEC."]");
+					return FALSE;
+			}
+			return TRUE;
 		}
 		
 		public function getPermission($username) {
