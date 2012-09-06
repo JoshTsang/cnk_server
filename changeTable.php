@@ -17,11 +17,9 @@
 	$datetime = split(" ", $timestamp);
 	$printer = new printer("setting/printerInfo.json");
 	
-	if ($dishCount <= 0) {
-	  	die("[MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED."]");
+	if ($dishCount > 0) {
+	  	$printer->printChangeTable($json_string);
 	}
-	
-	$printer->printChangeTable($json_string);
 	
 	$db = new CNK_DB();
 	$db->changeTable($_GET['srcTID'], $_GET['destTID']);
