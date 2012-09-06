@@ -598,6 +598,7 @@
 			return TRUE;
 		}
 		
+
 		private function getCategoryNameById($cid) {
 			if ($this->menuDB == NULL) {
 				$this->connectMenuDB();

@@ -1,5 +1,5 @@
 <?php
-	require 'macros.php';
+	require('macros.php');
 	require('setting/defines.php');
 	require('classes/printer.php');
 	require('classes/CNK_DB.php');
