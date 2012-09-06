@@ -8,4 +8,6 @@
 	
 	$db = new CNK_DB();
 	$db->updateDishStatus($_GET['TID'], $_GET['DID'], 2);
+	
+	echo $db->error();
 ?>

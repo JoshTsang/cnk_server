@@ -4,6 +4,10 @@
 	
 	$db = new CNK_DB();
 	
-	$jsonString = $db->getNotifications();
-	echo $jsonString;
+	$ret = $db->getNotifications();
+	if (!ret) {
+		echo $db->error();
+	} else {
+		echo $ret;
+	}
 ?>

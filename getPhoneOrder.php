@@ -9,5 +9,10 @@
 	
 	$db = new CNK_DB();
 	
-	echo $db->getPhoneOrder($tableId);
+	$ret = $db->getPhoneOrder($tableId); 
+	if (!$ret) {
+		echo $db->error();
+	} else {
+		echo $ret;
+	}
 ?>

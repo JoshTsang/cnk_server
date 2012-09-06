@@ -40,7 +40,7 @@
 			}
 		}
 		
-		public function printChangeTable($json) {
+		public function printChangeTable($print) {
 			$count = count($this->printerInfo);
 			for ($i=0; $i<$count; $i++) {
 				if($this->printerInfo[$i]->usefor <= PRINT_ORDER) {
@@ -132,7 +132,7 @@
 			$dishCount = count($obj->order);
 			$total = 0;
 			for ($i=0; $i<$dishCount; $i++) {
-				$dishId = $obj->order[$i]->id;
+				$dishId = $obj->order[$i]->dishId;
 				$price = $obj->order[$i]->price;
 				$dishQuantity = $obj->order[$i]->quan;
 				$dishName = $obj->order[$i]->name;

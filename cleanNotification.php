@@ -8,6 +8,6 @@
 	
 	$tableId = $_GET['TID'];
 	$db = new CNK_DB();
-	$db->connectPhoneDB();
 	$db->cleanNotification($tableId);
+	echo $db->error();
 ?>

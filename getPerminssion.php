@@ -7,5 +7,10 @@
 	}
 	
 	$db = new CNK_DB();
-	echo $db->getPermission($_GET['UNAME']);
+	$ret = $db->getPermission($_GET['UNAME']);
+	if (!$ret) {
+		echo $db->error();
+	} else {
+		echo $ret;
+	}
 ?>
