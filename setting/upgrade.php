@@ -21,10 +21,6 @@
         // don't wait for the window to load  
         window.onload = createUploader;     
     </script>    
-<?php
-	require("defines.php");
-	require("../macros.php");
-?>
 	<div class="header">
 		<div class="logo">
 		<h1>cainaoke</h1>
