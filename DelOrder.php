@@ -26,6 +26,6 @@ for ($i = 0; $i < $dishCount; $i++) {
 		die(ERR_DB_EXEC . "]");
 	}
 }
-
+echo "{\"succ\":true}";
 $dbOrder -> close();
 ?>

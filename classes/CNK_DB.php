@@ -335,7 +335,7 @@
 				return FALSE;
 			}
 			
-			return $permission;
+			return '['.$permission.']';
 		}
 		
 		public function getPhoneOrder($tid) {
@@ -377,8 +377,8 @@
 				if ($row = $resultSet->fetchArray()) {
 					$pwd = $row[0];
 				} else {
-				$this->setErrorMsg('query failed:'.$this->menuDB->lastErrorMsg().' #sql:'.$sql);
-				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+					$this->setErrorMsg('query failed:'.$this->menuDB->lastErrorMsg().' #sql:'.$sql);
+					$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 					return false;
 				}
 			} else {
