@@ -6,3 +6,9 @@ CREATE TABLE [sales_data] (
 [quantity] INTEGER  NOT NULL,
 [timestamp] TIMESTAMP NOT NULL
 );
+
+CREATE TABLE [table_info] (
+[id] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
+[table_id] INTEGER  NOT NULL,
+[timestamp] TIMESTAMP NOT NULL
+)

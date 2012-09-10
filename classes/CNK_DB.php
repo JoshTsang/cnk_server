@@ -118,6 +118,14 @@
 				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 				return false;
 			}
+			
+			$sqlInsert=sprintf("insert into [table_info] values(null, %s, '%s');", $tid, $timestamp);
+			if (!$this->salesDB->exec($sqlInsert)) {
+				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->salesDB).' #sql:'.$sqlInsert);
+				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+				return FALSE;
+			}
+			$this->setErrorNone();
 			return true;
 		}
 		

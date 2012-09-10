@@ -9,7 +9,7 @@
 	}
 	
 	$json_string = $_POST['json'];
-	//$json_string =  " {\"order\":[{\"quan\":1,\"id\":1,\"price\":7,\"name\":\"柠檬汁\"}],\"timestamp\":\"2012-07-03 23:31:21\",\"tableId\":1}";
+
 	$obj = json_decode($json_string); 
 	$dishCount = count($obj->order);
 	$tableId = $obj->tableId;
