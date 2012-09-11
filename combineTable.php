@@ -13,4 +13,5 @@
 	$json_string = $_POST['json'];
 	
 	$printer->printCombine($json_string);
+	echo "{\"succ\":true}";
 ?>
