@@ -14,3 +14,10 @@ CREATE TABLE [table_order] (
 [table_id] INTEGER  NOT NULL,
 [timestamp] TIMESTAMP  NOT NULL
 );
+
+DROP TABLE IF EXISTS [table_persons];
+CREATE TABLE [table_persons] (
+[id] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
+[table_id] INTEGER  NOT NULL,
+[persons] INTEGER  NOT NULL
+);

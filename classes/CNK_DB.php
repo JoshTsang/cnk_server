@@ -293,8 +293,47 @@
 				}
 			}
 
+			$sql = "DELETE FROM ".TABLE_PERSONS." WHERE ".TABLE_PERSONS_COLUM_TID."=".$tableId;
+			if (!$this->orderDB->exec($sql)) {
+				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+				return FALSE;
+			}
+			
+			$sql = "INSERT INTO ".TABLE_PERSONS." values(null, $tableId, $obj->persons)";
+			if (!$this->orderDB->exec($sql)) {
+				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+				return FALSE;
+			}
+				
 			$this->setErrorNone();
 			return TRUE;
+		}
+		
+		public function getPersons($tid) {
+			if ($this->orderDB == NULL) {
+				$this->connectOrderDB();
+			}
+			
+			$resultSet = $this->orderDB->query("SELECT ".TABLE_PERSONS_COLUM_PERSONS." from ".
+										  TABLE_PERSONS." WHERE ".TABLE_PERSONS_COLUM_TID."=".$tid);
+			if ($resultSet) {
+				if ($row = $resultSet->fetchArray()) {
+					$persons = $row[0];
+				} else {
+					$this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+					$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+					return FALSE;
+				}
+			} else {
+				$this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+				return FALSE;
+			}
+			
+			$this->setErrorNone();
+			return '['.$persons.']';
 		}
 		
 		public function updateDishStatus($tid, $did, $status) {

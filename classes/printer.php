@@ -73,7 +73,7 @@
 			
 		}
 		
-		private function printHeader($socket, $table, $waiter, $timestamp, $printerType) {
+		private function printHeader($socket, $table, $waiter, $persons, $timestamp, $printerType) {
 			if(file_exists("setting/shopname")) {
 				$shopname = file_get_contents("setting/shopname");
 			} else {
@@ -89,7 +89,7 @@
 				$this->printl($socket, $print);
 				$print = sprintf("桌号:%-4s                  %s", $table, $timestamp);
 				$this->printl($socket, $print);
-				$print = sprintf("服务员：%s", $waiter);
+				$print = sprintf("人数:%-4s                  服务员：%s", $persons, $waiter);
 				$this->printl($socket, $print);
 				$this->printl($socket, "----------------------------------------------");
 				$this->printl($socket, "品名                       单价  数量    小计");
@@ -99,7 +99,7 @@
 				$this->printl($socket, $print);
 				$print = sprintf("桌号:%-4s   %s", $table, $timestamp);
 				$this->printl($socket, $print);
-				$print = sprintf("服务员：%s", $waiter);
+				$print = sprintf("人数:%-4s   服务员：%s", $persons, $waiter);
 				$this->printl($socket, $print);
 				$this->printl($socket, "--------------------------------");
 				$this->printl($socket, "品名          单价  数量    小计");
@@ -137,8 +137,9 @@
 			$tableName = $obj->tableName;
 			$timestamp = $obj->timestamp;
 			$waiter = $obj->waiter;
+			$persons = $obj->persons;
 			
-			$this->printHeader($socket, $tableId, $waiter, $timestamp, $printerType);
+			$this->printHeader($socket, $tableId, $waiter, $persons, $timestamp, $printerType);
 			
 			$total = $this->printDishes($socket, $obj, $printerType);
 			$this->printFooter($socket, $total, $printerType);
@@ -168,7 +169,7 @@
 			$waiter = $obj->waiter;
 			
 			$this->printTitle($socket, $title, NULL);
-			$this->printHeader($socket, "并台", $waiter, $timestamp, $printerType);
+			$this->printHeader($socket, "并台", $waiter, "并台", $timestamp, $printerType);
 			
 			for ($i=0; $i<$count; $i++) {
 				$obj = json_decode($objAll[$i]);

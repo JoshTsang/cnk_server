@@ -21,6 +21,9 @@
 	define('TABLE_ORDER_TABLE_COLUM_ID', "id");
 	define('TABLE_ORDER_TABLE_COLUM_TABLE_ID', "table_id");
 	define('TABLE_ORDER_TABLE_COLUM_TIMESTAMP', "timestamp");
+	define('TABLE_PERSONS', 'table_persons');
+	define('TABLE_PERSONS_COLUM_TID', "table_id");
+	define('TABLE_PERSONS_COLUM_PERSONS', "persons");
 	
 	define('ORDER_DETAIL_TABLE', "order_detail");
 	define('ORDER_DETAIL_TABLE_COLUM_ID', "id");
