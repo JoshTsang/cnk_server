@@ -24,6 +24,9 @@
 			if (!$this->updateTableStatus($tid, 0)) {
 				return FALSE;
 			}
+			if (!$this->deletePersons($tid)) {
+				return FALSE;
+			}
 			
 			$this->setErrorNone();
 			return TRUE;
@@ -293,10 +296,7 @@
 				}
 			}
 
-			$sql = "DELETE FROM ".TABLE_PERSONS." WHERE ".TABLE_PERSONS_COLUM_TID."=".$tableId;
-			if (!$this->orderDB->exec($sql)) {
-				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
-				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+			if (!$this->deletePersons($tableId)) {
 				return FALSE;
 			}
 			
@@ -309,6 +309,21 @@
 				
 			$this->setErrorNone();
 			return TRUE;
+		}
+		
+		private function deletePersons($tid) {
+			if ($this->orderDB == NULL) {
+				$this->connectOrderDB();
+			}
+			
+			$sql = "DELETE FROM ".TABLE_PERSONS." WHERE ".TABLE_PERSONS_COLUM_TID."=".$tid;
+			if (!$this->orderDB->exec($sql)) {
+				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+				return FALSE;
+			}
+			
+			return true;
 		}
 		
 		public function getPersons($tid) {

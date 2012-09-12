@@ -139,7 +139,7 @@
 			$waiter = $obj->waiter;
 			$persons = $obj->persons;
 			
-			$this->printHeader($socket, $tableId, $waiter, $persons, $timestamp, $printerType);
+			$this->printHeader($socket, $tableName, $waiter, $persons, $timestamp, $printerType);
 			
 			$total = $this->printDishes($socket, $obj, $printerType);
 			$this->printFooter($socket, $total, $printerType);
