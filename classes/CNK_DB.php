@@ -351,20 +351,50 @@
 			return '['.$persons.']';
 		}
 		
-		public function updateDishStatus($tid, $did, $status) {
+		public function updateDishStatus($tid, $did) {
 			if($this->orderDB == NULL) {
 				$this->connectOrderDB();
 			}
-		
-			$sql=sprintf("update %s set %s=%s where %s in (select %s from %s where %s = %s) and %s = %s",
+			
+			$sql = sprintf("select %s from %s where %s in (select %s from %s where %s = %s) and %s < %s limit 1",
+							 ORDER_DETAIL_TABLE_COLUM_ID, ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_ORDER_ID,
+							 TABLE_ORDER_TABLE_COLUM_ID,TABLE_ORDER_TABLE,
+							 TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid,
+							 ORDER_DETAIL_TABLE_COLUM_STATUS, ORDER_DETAIL_TABLE_COLUM_QUANTITY);
+			
+			$sql = sprintf("select %s,%s from %s where %s = (select %s from %s where %s in (select %s from %s where %s = %s) and %s < %s limit 1) and %s = %s",
+							 ORDER_DETAIL_TABLE_COLUM_ID,
+							 ORDER_DETAIL_TABLE_COLUM_STATUS,
+							 ORDER_DETAIL_TABLE,
+							 ORDER_DETAIL_TABLE_COLUM_ID,
+							 ORDER_DETAIL_TABLE_COLUM_ID, ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_ORDER_ID,
+							 TABLE_ORDER_TABLE_COLUM_ID,TABLE_ORDER_TABLE,
+							 TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid,
+							 ORDER_DETAIL_TABLE_COLUM_STATUS, ORDER_DETAIL_TABLE_COLUM_QUANTITY,
+							 ORDER_DETAIL_TABLE_COLUM_DISH_ID, $did);
+							 
+			$resultSet = $this->orderDB->query($sql);
+			if ($resultSet) {
+				if ($row = $resultSet->fetchArray()) {
+					$orderId = $row[0];
+					$status = $row[1];
+				} else {
+					$this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+					$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+					return FALSE;
+				}
+			} else {
+				$this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+				return FALSE;
+			}
+			
+			$sql=sprintf("update %s set %s=%s where %s=%s and %s = %s",
 						 ORDER_DETAIL_TABLE, /*update*/
 						 ORDER_DETAIL_TABLE_COLUM_STATUS,
-						 $status,/*set*/
-						 ORDER_DETAIL_TABLE_COLUM_ORDER_ID,
-						 TABLE_ORDER_TABLE_COLUM_ID,TABLE_ORDER_TABLE,
-						 TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid,
-						 ORDER_DETAIL_TABLE_COLUM_DISH_ID, $did);	 
-
+						 $status+1,/*set*/
+						 ORDER_DETAIL_TABLE_COLUM_ID, $orderId,
+						 ORDER_DETAIL_TABLE_COLUM_DISH_ID, $did);
 			if(!$this->orderDB->exec($sql)) {
 				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
 				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
@@ -578,6 +608,10 @@
 			}
 			
 			if (!$this->updateTableStatus($src, 0)) {
+				return FALSE;
+			}
+			
+			if (!$this->deletePersons($src)) {
 				return FALSE;
 			}
 			
