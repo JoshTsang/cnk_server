@@ -638,7 +638,7 @@
 		}
 		
 		private function setErrorLocation($file, $func, $line) {
-			$this->err['location'] = "$file : $func : $line";	
+			$this->err['location'] = basename($file)." : $func : $line";	
 		}
 		
 		private function setErrorNone() {

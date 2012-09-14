@@ -1,0 +1,171 @@
+.clearfix:after {
+content: ".";
+display: block;
+height: 0;
+clear: both;
+visibility: hidden;
+}
+
+* html .clearfix {height: 1%;}
+
+body,td,th {
+	font-family: Tahoma, Verdana, Arial, sans-serif;
+	font-size: 12px;
+	color: #333333;
+}
+body {
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 0px;
+	margin-bottom: 0px;
+	font: 12px/1.5 tahoma,arial;
+}
+
+.header{
+	height:80px;
+	width:100%;
+	background:none repeat scroll 0 0 #EAEAEA;
+}
+.header .logo{
+	height:70px;
+	width:300px;
+}
+.header .logo h1{
+	margin:0;
+	padding-left:20px;
+	font-size:32px;
+}
+.header .logo span{
+	margin-left:20px;
+	margin-left:60px;
+}
+
+.logo {
+	float:left;
+}
+
+.navbar {
+	padding-right: 50px;
+	padding-top: 50px;
+	float:right;
+	font-size:20px;
+}
+
+.navbar ul
+{
+	width:100%;
+	padding:0;
+	margin:0;
+	list-style-type:none;
+}
+
+.navbar li {
+	display:inline;
+	margin-left: 10px;
+	padding-bottom: 3px;
+}
+
+#currentPage {
+	padding-bottom:2px;
+	border-bottom: 2px solid #6E6E6E;
+}
+
+.navbar a{
+	color: #6E6E6E;
+}
+.navbar a:hover {
+	color:#FFFFFF;
+	background: #6E6E6E;
+}
+.content{
+	width:100%;
+	height:100%;
+	margin:auto;
+	margin-top: 30px;
+}
+.content .content_page{
+	width:860px;
+	height:auto;
+	background:none repeat scroll 0 0 #FFF;
+	margin:auto;
+	overflow:hidden;
+	margin-top:8px;
+}
+
+.menu_bar{
+	height:auto;
+	width:170px;
+	border:0px solid #B2B2B2;
+	float:left;
+	background:none repeat scroll 0 0 #E0E0E0;
+}
+
+.menu_bar td{
+	height:40px;
+	font-size:20px;
+	padding-left:15px;
+	border:0px solid #6E6E6E;
+	border-collapse:collapse;
+	border-top:#C8C8C8;
+}
+
+.menu_bar th{
+	font-size:20px;
+	color: #FFFFFF;
+	background-color: #999999;
+}
+.db_data{
+	height:auto;
+	width:670px;
+	float:right;
+}
+
+.db_data_table{
+	border:1px solid #6E6E6E;
+	border-collapse:collapse;
+	width:100%;
+}
+.db_data_table th{
+	border:0px solid #6E6E6E;
+	background-color: #EAEAEA;
+	border-collapse:collapse;
+	border-top:#B2B2B2;
+	border-left:1px solid #999999;
+	font-size: 18px;
+}
+.db_data_table td{
+	height:40px;
+	padding-left:20px;
+	border:0px solid #6E6E6E;
+	border-left:1px solid #999999;
+	border-bottom:1px solid #6E6E6E;
+	border-collapse:collapse;
+	border-top:#C8C8C8;
+	font-size:15px;
+}
+
+#sql {
+	height:260px;
+	width:90%;
+	margin-top: 10px;
+}
+
+#dbTitle {
+	margin-bottom: 10px;
+	font-size:22px;
+}
+
+#shell {
+	height:460px;
+	width:90%;
+	color: #FFFFFF;
+	background-color: #000000;
+}
+
+a:link{
+	text-decoration:none;
+}
+
+a:hover {
+	color: #FF0000;
+}
