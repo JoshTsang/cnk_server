@@ -6,8 +6,8 @@
 	<div class="navbar">
 		<ul>
 		<?php
-			$filename = basename($PHP_SELF);
-			if ($filename == shell.php) {
+			$filename = basename($_SERVER['PHP_SELF']);
+			if ($filename == "shell.php") {
 				echo "<li><a href=\"db.php\">数据库</a></li>";
 				echo "<li><a href=\"#\" id=\"currentPage\">还没做</a></li>";
 			} else {
