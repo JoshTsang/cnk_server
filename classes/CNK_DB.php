@@ -362,7 +362,7 @@
 							 TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid,
 							 ORDER_DETAIL_TABLE_COLUM_STATUS, ORDER_DETAIL_TABLE_COLUM_QUANTITY);
 			
-			$sql = sprintf("select %s,%s from %s where %s = (select %s from %s where %s in (select %s from %s where %s = %s) and %s < %s limit 1) and %s = %s",
+			$sql = sprintf("select %s,%s from %s where %s = (select %s from %s where %s in (select %s from %s where %s = %s) and %s < %s and %s = %s limit 1) ",
 							 ORDER_DETAIL_TABLE_COLUM_ID,
 							 ORDER_DETAIL_TABLE_COLUM_STATUS,
 							 ORDER_DETAIL_TABLE,
@@ -639,7 +639,7 @@
 		}
 		
 		private function setErrorLocation($file, $func, $line) {
-			$this->err['location'] = "$file : $func : $line";	
+			$this->err['location'] = basename($file)." : $func : $line";	
 		}
 		
 		private function setErrorNone() {
