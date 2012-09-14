@@ -12,18 +12,30 @@
 	$obj = json_decode($json_string);
 	$dishCount = count($obj -> order);
 	$timestamp = $obj -> timestamp;
-	
+	$order = $obj -> order;
+	$waiter = $obj ->waiter;
+	$tableName = $obj -> tableName;
+	$tableId = $obj -> tableId;
 	if ($dishCount <= 0) {
 		die("[MORE_PARAM_NEEDED:" . MORE_PARAM_NEEDED . "]");
 	}
 	
 	$printer = new printer("setting/printerInfo.json");
-	$printer -> printDel($json_string);
+	
 	
 	$did = $_GET['DID'];
 	$tid = $_GET['TID'];
 	
 	$db = new CNK_DB();
-	$db->updateTableOrder($tid, $did);
+	$ret = $db->updateTableOrder($tid, $did);
+	
+	$item = array('timestamp' => $timestamp,
+				  'order' => $order,
+				  'waiter' => $waiter,
+				  'tableName' => $tableName,
+				  'tableId' => $tableId,
+				  'orderId' => $ret);
+	$jsonString = json_encode($item);
+	$printer -> printDel($jsonString);
 	echo $db->error();
 ?>

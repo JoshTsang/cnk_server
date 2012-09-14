@@ -542,30 +542,17 @@
 			if($this->orderDB == NULL){
 				$this->connectOrderDB();
 			}
-			$sql = sprintf("select %s,%s from %s,%s where %s.%s = %s.%s and %s.%s = %s
+			$sql = sprintf("select %s,%s,%s from %s,%s where %s.%s = %s.%s and %s.%s = %s
 							and %s.%s = %s",
 							ORDER_DETAIL_TABLE_COLUM_QUANTITY,ORDER_DETAIL_TABLE_COLUM_ORDER_ID,
-							ORDER_DETAIL_TABLE,TABLE_ORDER_TABLE,
+							ORDER_DETAIL_TABLE_COLUM_STATUS,ORDER_DETAIL_TABLE,TABLE_ORDER_TABLE,
 							ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_ORDER_ID,
 						 	TABLE_ORDER_TABLE,TABLE_ORDER_TABLE_COLUM_ID,
 						 	TABLE_ORDER_TABLE,TABLE_ORDER_TABLE_COLUM_TABLE_ID,$tid,
 							ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_DISH_ID,$did);
-			if ($this->orderDB->query($sql)) {
-				while($row = $this->orderDB->query($sql)->fetchArray()) {
-					if($row[0] > 1){
-						$sql = sprintf("update %s set %s = %s where %s = %s and %s = %s",
-										ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_QUANTITY,
-										($row[0]-1),ORDER_DETAIL_TABLE_COLUM_ORDER_ID,$row[1],
-										ORDER_DETAIL_TABLE_COLUM_DISH_ID,$did);
-						if (!$this->orderDB->exec($sql)) {
-							$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
-							$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
-							return FALSE;
-						}else{
-							break;
-						}
-						
-					}else if($row[0] == 1){
+			if ($ret = $this->orderDB->query($sql)) {
+				while($row = $ret->fetchArray()) {
+					if($row[0] == 1 && $row[2] == 0){
 						$sql = sprintf("DELETE from %s where %s.%s = %s and %s.%s = %s",
 										ORDER_DETAIL_TABLE,
 										ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_ORDER_ID,$row[1],
@@ -575,7 +562,21 @@
 							$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 							return FALSE;
 						}else{
-							break;
+							$this->setErrorNone();
+							return $row[1];
+						}
+					}else if($row[0] > $row[2]){
+						$sql = sprintf("update %s set %s = %s where %s = %s and %s = %s",
+										ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_QUANTITY,
+										($row[0]-1),ORDER_DETAIL_TABLE_COLUM_ORDER_ID,$row[1],
+										ORDER_DETAIL_TABLE_COLUM_DISH_ID,$did);
+						if (!$this->orderDB->exec($sql)) {
+							$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+							$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+							return FALSE;
+						}else{
+							$this->setErrorNone();
+							return $row[1];
 						}
 					}
 				}
