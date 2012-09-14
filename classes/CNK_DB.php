@@ -538,7 +538,7 @@
 			return TRUE;
 		}
 		
-		public  function updateTableOrder($tid, $did){
+		public  function updateTableOrder($tid, $did, $type){
 			if($this->orderDB == NULL){
 				$this->connectOrderDB();
 			}
@@ -566,9 +566,14 @@
 							return $row[1];
 						}
 					}else if($row[0] > $row[2]){
+						if($type == 1){
+							$quan = ($row[0]-1);
+						}else{
+							$quan = $row[2];
+						}
 						$sql = sprintf("update %s set %s = %s where %s = %s and %s = %s",
 										ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_QUANTITY,
-										($row[0]-1),ORDER_DETAIL_TABLE_COLUM_ORDER_ID,$row[1],
+										$quan,ORDER_DETAIL_TABLE_COLUM_ORDER_ID,$row[1],
 										ORDER_DETAIL_TABLE_COLUM_DISH_ID,$did);
 						if (!$this->orderDB->exec($sql)) {
 							$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);

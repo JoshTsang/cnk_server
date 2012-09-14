@@ -27,7 +27,7 @@
 	$tid = $_GET['TID'];
 	
 	$db = new CNK_DB();
-	$ret = $db->updateTableOrder($tid, $did);
+	$ret = $db->updateTableOrder($tid, $did, 1);
 	
 	$item = array('timestamp' => $timestamp,
 				  'order' => $order,
