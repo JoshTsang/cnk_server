@@ -6,6 +6,8 @@
 	define('MORE_PARAM_NEEDED', "504");
 	define('ERR_DB_EXEC', "505");
 	
+	define('DEL_ORDER','0');
+	define('UPDATE_ODRER','1');
 	
 	/* Database */
     define('DATABASE_MENU', "../db/test.db3");

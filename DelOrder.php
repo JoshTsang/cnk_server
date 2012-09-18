@@ -21,7 +21,7 @@
 	$db = new CNK_DB();
 	for ($i = 0; $i < $dishCount; $i++) {
 		$dishId = $obj -> order[$i] -> dishId;
-		$ret = $db->updateTableOrder($tableId, $dishId, 0);
+		$ret = $db->updateTableOrder($tableId, $dishId, DEL_ORDER);
 		$item = array('timestamp' => $timestamp,
 				  'order' => $order,
 				  'waiter' => $waiter,

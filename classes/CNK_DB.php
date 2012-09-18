@@ -552,7 +552,7 @@
 							ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_DISH_ID,$did);
 			if ($ret = $this->orderDB->query($sql)) {
 				while($row = $ret->fetchArray()) {
-					if($row[0] == 1 && $row[2] == 0){
+					if(($row[0] == 1 && $row[2] == 0) || $row[0] == $row[2]){
 						$sql = sprintf("DELETE from %s where %s.%s = %s and %s.%s = %s",
 										ORDER_DETAIL_TABLE,
 										ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_ORDER_ID,$row[1],
