@@ -101,11 +101,12 @@
 			if ($this->salesDB == NULL) {
 				$this->connectSalesDB();
 			}
-			$sql=sprintf("select %s.%s,%s.%s,%s.%s,%s.%s from %s,%s where %s.%s=%s.%s and %s=%s",
+			$sql=sprintf("select %s.%s,%s.%s,%s.%s,%s.%s, %s from %s,%s where %s.%s=%s.%s and %s=%s",
 					  ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_DISH_ID,
 					  ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_PRICE,
 					  ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_QUANTITY,
 					  TABLE_ORDER_TABLE, TABLE_ORDER_TABLE_COLUM_TIMESTAMP,
+					  TABLE_ORDER_TABLE_COLUM_WAITER,
 					  TABLE_ORDER_TABLE, ORDER_DETAIL_TABLE,
 					  TABLE_ORDER_TABLE, ORDER_DETAIL_TABLE_COLUM_ID,
 					  ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_ORDER_ID,
@@ -113,8 +114,12 @@
 			$resultSet = $this->orderDB->query($sql);
 			if ($resultSet) {
 				while($row = $resultSet->fetchArray()) {
-					$sqlInsert=sprintf("insert into [sales_data] values(null, %s, %s, %s, '%s');", $row[0],$row[1],$row[2],$timestamp);
-					$this->salesDB->exec($sqlInsert);
+					$sqlInsert=sprintf("insert into [sales_data] values(null, %s, %s, %s, %s, '%s');", $row[0],$row[1], $row[2], $row[4], $timestamp);
+					if (!$this->salesDB->exec($sqlInsert)) {
+						$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sqlInsert);
+						$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+						return false;
+					}
 				}
 			} else {
 				$this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
@@ -254,10 +259,11 @@
 			$dishCount = count($obj->order);
 			$tableId = $obj->tableId;
 			$timestamp = $obj->timestamp;
+			$waiter = $obj->waiterId;
 			$datetime = split(" ", $timestamp);
-			if (!$this->orderDB->exec("INSERT INTO ".TABLE_ORDER_TABLE."(".TABLE_ORDER_TABLE_COLUM_TABLE_ID.",". 
+			if (!$this->orderDB->exec("INSERT INTO ".TABLE_ORDER_TABLE."(".TABLE_ORDER_TABLE_COLUM_TABLE_ID.",".TABLE_ORDER_TABLE_COLUM_WAITER.",".
 											 TABLE_ORDER_TABLE_COLUM_TIMESTAMP.")".
-								"values('$tableId', '$datetime[0]T$datetime[1]')")){
+								"values('$tableId', '$waiter', '$datetime[0]T$datetime[1]')")){
 				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
 				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 				return FALSE;
@@ -462,12 +468,13 @@
 			}
 			
 		
-			$sql=sprintf("select %s from %s where %s.%s = '%s'",
-						 USER_PWD,USER_TABLE,USER_TABLE,USER_NAME,$uname);
+			$sql=sprintf("select %s, %s from %s where %s.%s = '%s'",
+						 USER_ID, USER_PWD,USER_TABLE,USER_TABLE,USER_NAME,$uname);
 			$resultSet = $this->menuDB->query($sql);
 			if ($resultSet) {
 				if ($row = $resultSet->fetchArray()) {
-					$pwd = $row[0];
+					$id = $row[0];
+					$pwd = $row[1];
 				} else {
 					$this->setErrorMsg('query failed:'.$this->menuDB->lastErrorMsg().' #sql:'.$sql);
 					$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
@@ -478,7 +485,7 @@
 				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 				return false;
 			}
-			return $pwd;
+			return $id.",".$pwd;
 		}
 		
 		public function getOrderedDishes($tid) {
