@@ -4,6 +4,7 @@ CREATE TABLE [sales_data] (
 [dish_id] INTEGER  NOT NULL,
 [price] FLOAT  NOT NULL,
 [quantity] INTEGER  NOT NULL,
+[waiter_id] INTEGER NOT NULL,
 [timestamp] TIMESTAMP NOT NULL
 );
 
