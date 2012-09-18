@@ -76,6 +76,7 @@
 		</div>
 		<div class="navbar">
 			<ul>
+			<li><a href="flavorSetting.php">口味设置</a></li>
 			<li><a href="#" id="currentPage">打印机设置</a></li>
 			<li><a href="upgrade.php">升级</a></li>
 			</ul>

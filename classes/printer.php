@@ -11,6 +11,50 @@
 		function __construct($param) {
 			$file = new file($param);
 			$this->printerInfo = json_decode($file->getContent());
+			// $obj = json_decode($file->getContent());
+			// $count = count($obj);
+			// for ($i=0; $i<$count; $i++) {
+				// $this->addPrinter($obj[$i]->ip, $obj[$i]->title, $obj[$i]->type, $obj[$i]->usefor);
+			// }
+			// print_r($this->printerInfo);
+		}
+		
+		private function addPrinter($ip, $title, $type, $usefor) {
+			if ($usefor < PRINT_ORDER) {
+				$count = count($this->printerInfo);
+				for ($i=0; $i<$count; $i++) {
+					if ($this->printerInfo[$i]->ip == $ip) {
+						$this->updateKitchenPrinter($i, $usefor);
+						break;
+					}
+				}
+				if ($i == $count) {
+					$this->addKitchenPrinter($ip, $title, $type, $usefor);
+				}
+			} else {
+				$this->addNewPrinter($ip, $title, $type, $usefor);
+			}
+		}
+		
+		private function addNewPrinter($ip, $title, $type, $usefor) {
+			$count = count($this->printerInfo);
+			$this->printerInfo[$count] = array('ip' => $ip,
+											   'title' => $title,
+											   'type' => $type,
+											   'usefor' => $usefor );
+		}
+		
+		private function addKitchenPrinter($ip, $title, $type, $usefor) {
+			$count = count($this->printerInfo);
+			$this->printerInfo[$count] = array('ip' => $ip,
+											   'title' => $title,
+											   'type' => $type,
+											   'usefor' => PRINT_KITCHEN,
+											   'categories' => $usefor );
+		}
+		
+		private function updateKitchenPrinter($index, $usefor) {
+			$this->printerInfo[$index]->categories = $this->printerInfo[$index]->categories.",".$usefor;
 		}
 		
 		public function printOrder($print) {
@@ -89,7 +133,11 @@
 				$this->printl($socket, $print);
 				$print = sprintf("桌号:%-4s                  %s", $table, $timestamp);
 				$this->printl($socket, $print);
-				$print = sprintf("人数:%-4s                  服务员：%s", $persons, $waiter);
+				if ($persons == 0) {
+					$print = sprintf("人数:%-4s                  服务员：%s", "未设置", $waiter);
+				} else {
+					$print = sprintf("人数:%-4s                  服务员：%s", $persons, $waiter);
+				}
 				$this->printl($socket, $print);
 				$this->printl($socket, "----------------------------------------------");
 				$this->printl($socket, "品名                       单价  数量    小计");
@@ -99,7 +147,11 @@
 				$this->printl($socket, $print);
 				$print = sprintf("桌号:%-4s   %s", $table, $timestamp);
 				$this->printl($socket, $print);
-				$print = sprintf("人数:%-4s   服务员：%s", $persons, $waiter);
+				if ($persons == 0) {
+					$print = sprintf("人数:%-4s   服务员：%s", "未设置", $waiter);
+				} else {
+					$print = sprintf("人数:%-4s   服务员：%s", $persons, $waiter);
+				}
 				$this->printl($socket, $print);
 				$this->printl($socket, "--------------------------------");
 				$this->printl($socket, "品名          单价  数量    小计");
@@ -253,6 +305,9 @@
 					}
 				}
 				$this->printl($socket, $printString);
+				if (isset($obj->order[$i]->flavor)) {
+					$this->printl($socket, "*口味：".$obj->order[$i]->flavor);
+				}
 			}
 			return $total;
 		}
@@ -321,7 +376,7 @@
 				header("HTTP/1.1 NO_ORDERED_DISH 'NO_ORDERED_DISH'");
 				exit();
 			}
-			$this->printTitle($socket, $title, "(删除)");
+			$this->printTitle($socket, $title, "(退菜)");
 			$this->printOrderedDishes($socket, $obj, $printerType);
 			
 			$this->printR($socket, PRINTER_COMMAND_CUT);
