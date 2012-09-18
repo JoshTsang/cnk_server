@@ -1,6 +1,6 @@
 <?php
     require("classes/file.php");
-	$file = new file("flavor.json");
+	$file = new file("setting/flavor.json");
 	$json = $file->getContent();
 	echo "$json";
 ?>
