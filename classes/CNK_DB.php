@@ -357,7 +357,7 @@
 			return '['.$persons.']';
 		}
 		
-		public function updateDishStatus($tid, $did) {
+		public function updateDishStatus($tid, $did, $statusValue) {
 			if($this->orderDB == NULL) {
 				$this->connectOrderDB();
 			}
@@ -395,10 +395,15 @@
 				return FALSE;
 			}
 			
+			if ($statusValue > 0) {
+				$status = $statusValue;
+			} else {
+				$status = $status+1;
+			}
 			$sql=sprintf("update %s set %s=%s where %s=%s and %s = %s",
 						 ORDER_DETAIL_TABLE, /*update*/
 						 ORDER_DETAIL_TABLE_COLUM_STATUS,
-						 $status+1,/*set*/
+						 $status,/*set*/
 						 ORDER_DETAIL_TABLE_COLUM_ID, $orderId,
 						 ORDER_DETAIL_TABLE_COLUM_DISH_ID, $did);
 			if(!$this->orderDB->exec($sql)) {
