@@ -23,6 +23,7 @@
 	define('TABLE_ORDER_TABLE_COLUM_ID', "id");
 	define('TABLE_ORDER_TABLE_COLUM_TABLE_ID', "table_id");
 	define('TABLE_ORDER_TABLE_COLUM_TIMESTAMP', "timestamp");
+	define('TABLE_ORDER_TABLE_COLUM_WAITER', "waiter_id");
 	define('TABLE_PERSONS', 'table_persons');
 	define('TABLE_PERSONS_COLUM_TID', "table_id");
 	define('TABLE_PERSONS_COLUM_PERSONS', "persons");
@@ -43,6 +44,7 @@
 	
 
 	define('USER_TABLE',"administrator");
+	define('USER_ID', "id");
 	define('USER_NAME',"username");
 	define('USER_PWD',"password");
 	define('USER_PERMISSION',"permission");
