@@ -552,11 +552,18 @@
 							ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_DISH_ID,$did);
 			if ($ret = $this->orderDB->query($sql)) {
 				while($row = $ret->fetchArray()) {
-					if(($row[0] == 1 && $row[2] == 0) || $row[0] == $row[2]){
-						$sql = sprintf("DELETE from %s where %s.%s = %s and %s.%s = %s",
-										ORDER_DETAIL_TABLE,
-										ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_ORDER_ID,$row[1],
-										ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_DISH_ID,$did);
+					if($row[0] >= $row[2]){
+						if($type == 1 && $row[0] > 1){
+							$quan = ($row[0]-1);
+						}else if($type == 1){
+							$quan = $row[0];
+						}else{
+							$quan = $row[2];
+						}
+						$sql = sprintf("update %s set %s = %s where %s = %s and %s = %s",
+										ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_QUANTITY,
+										$quan,ORDER_DETAIL_TABLE_COLUM_ORDER_ID,$row[1],
+										ORDER_DETAIL_TABLE_COLUM_DISH_ID,$did);
 						if (!$this->orderDB->exec($sql)) {
 							$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
 							$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
@@ -565,16 +572,11 @@
 							$this->setErrorNone();
 							return $row[1];
 						}
-					}else if($row[0] > $row[2]){
-						if($type == 1){
-							$quan = ($row[0]-1);
-						}else{
-							$quan = $row[2];
-						}
-						$sql = sprintf("update %s set %s = %s where %s = %s and %s = %s",
-										ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_QUANTITY,
-										$quan,ORDER_DETAIL_TABLE_COLUM_ORDER_ID,$row[1],
-										ORDER_DETAIL_TABLE_COLUM_DISH_ID,$did);
+					}else if($row[0] < 1.00001 && $row[0] > 0.99999 && $row[2] == 0){
+						$sql = sprintf("DELETE from %s where %s.%s = %s and %s.%s = %s",
+										ORDER_DETAIL_TABLE,
+										ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_ORDER_ID,$row[1],
+										ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_DISH_ID,$did);
 						if (!$this->orderDB->exec($sql)) {
 							$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
 							$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
