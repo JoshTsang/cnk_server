@@ -3,7 +3,7 @@ CREATE TABLE [sales_data] (
 [id] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
 [dish_id] INTEGER  NOT NULL,
 [price] FLOAT  NOT NULL,
-[quantity] INTEGER  NOT NULL,
+[quantity] FLOAT  NOT NULL,
 [waiter_id] INTEGER NOT NULL,
 [timestamp] TIMESTAMP NOT NULL
 );

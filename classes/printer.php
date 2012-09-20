@@ -93,6 +93,58 @@
 			}
 		}
 		
+		public function printCombine($json) {
+			$count = count($this->printerInfo);
+			for ($i=0; $i<$count; $i++) {
+				if($this->printerInfo[$i]->usefor == PRINT_ORDER) {
+					$this->printCombineReceipt($json, $this->printerInfo[$i]->ip, $this->printerInfo[$i]->title, $this->printerInfo[$i]->type);
+				}
+			}
+		}
+		
+		private function printCombineReceipt($json, $printerIP, $title, $printerType) {
+			$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
+			if ($socket < 0)
+			{
+				echo socket_strerror(socket_last_error())."\n";
+				die("Unable to connect printer.ip:$printerIP");
+			}
+			$connection = socket_connect($socket, $printerIP, 9100); 
+			if (!$connection) {
+				echo socket_strerror(socket_last_error())."\n";
+				die("Unable to connect printer.ip:$printerIP");
+			}
+			$json_string = $json;
+			$objAll = json_decode($json_string); 
+			$count = count($objAll);
+			if ($count <= 0) {
+				die("[MORE TABLE INFO NEED]");
+				return 0;
+			}
+			$obj = json_decode($objAll[0]);
+			$waiter = $obj->waiter;
+
+			$this->printTitle($socket, $title, NULL);
+			$this->printHeader($socket, "并台", $waiter, "并台", $timestamp, $printerType);
+			$total = 0;
+			for ($i=0; $i<$count; $i++) {
+				$obj = json_decode($objAll[$i]);
+				$this->printCombineSubtitle($socket, $obj->tableName);
+				$subTableTotal[$i] = $this->printDishes($socket, $obj, $printerType);
+				$total += $subTableTotal[$i];
+				//$tableName[$i] = $obj->tableName;
+			}
+
+			$this->printFooter($socket, $total, $printerType);
+			$this->printR($socket, PRINTER_COMMAND_CUT);
+			$this->printR($socket, PRINTER_COMMAND_ALARM);
+			socket_close($socket);
+		}
+
+		private function printCombineSubtitle($socket, $str) {
+			$this->printl($socket, $str." 桌：");
+		}
+		
 		public function printCheckout($json) {
 			$count = count($this->printerInfo);
 			for ($i=0; $i<$count; $i++) {
@@ -194,6 +246,9 @@
 			$this->printHeader($socket, $tableName, $waiter, $persons, $timestamp, $printerType);
 			
 			$total = $this->printDishes($socket, $obj, $printerType);
+			if (isset($obj->comment)) {
+				$this->printl($socket, "#备注:".$obj->comment);
+			}
 			$this->printFooter($socket, $total, $printerType);
 		}
 
@@ -223,6 +278,7 @@
 			
 			$this->printTitle($socket, $title, NULL);
 			$this->printHeader($socket, $checkout->tableName, $waiter, "并台", $timestamp, $printerType);
+			
 			
 			for ($i=0; $i<$count; $i++) {
 				$obj = json_decode($objAll[$i]);
@@ -296,17 +352,17 @@
 				$dishNameSpace = $zhLen*2 + $enLen;
 				if ($printerType == PRINTER_TYPE_80) {
 					if ($dishNameSpace > 24) {
-						$printString = sprintf("%s\n%24s%7.2f%6d%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
+						$printString = sprintf("%s\n%24s%7.2f%6.2f%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
 					} else {
 						$spaceLen = 24 - $dishNameSpace;
-						$printString = sprintf("%s%$spaceLen"."s%7.2f%6d%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
+						$printString = sprintf("%s%$spaceLen"."s%7.2f%6.2f%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
 					}
 				} else if($printerType == PRINTER_TYPE_58) {
 					if ($dishNameSpace > 12) {
-						$printString = sprintf("%s\n%12s%6.2f%6d%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
+						$printString = sprintf("%s\n%12s%6.2f%6.2f%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
 					} else {
 						$spaceLen = 12 - $dishNameSpace;
-						$printString = sprintf("%s%$spaceLen"."s%6.2f%6d%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
+						$printString = sprintf("%s%$spaceLen"."s%6.2f%6.2f%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
 					}
 				}
 				$this->printl($socket, $printString);

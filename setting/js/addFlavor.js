@@ -1,5 +1,7 @@
 var setting = new settings();
 var xmlHttp;
+var path = "";
+
 function hideFlavorBox(object){
 		$("div#flavorBoxMain").css("display","none");
 		$("body").css("height", "auto");
@@ -7,6 +9,10 @@ function hideFlavorBox(object){
 function hideFlavorBoxOn(object){
 		$("body").css("height", window.innerHeight);
 		$("div#flavorBoxMain").css("display","block");
+}
+
+function setPath(pa) {
+	path = pa;
 }
 
 function settings() {
@@ -65,7 +71,7 @@ function settings() {
 		alert(JSON.stringify(this.settings));
 		createXMLHttpRequest();
 		xmlHttp.onreadystatechange = handleFlavorSettingSave;
-		xmlHttp.open("POST", "saveFlavor.php");
+		xmlHttp.open("POST", path + "saveFlavor.php");
 		xmlHttp.setRequestHeader("cache-control","no-cache"); 
 		xmlHttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
 		xmlHttp.send("config=" + JSON.stringify(this.settings));
@@ -144,7 +150,7 @@ function createXMLHttpRequest() {
 function loadSetting() {
 	createXMLHttpRequest();
 	xmlHttp.onreadystatechange = handleSettingLoad;
-	xmlHttp.open("GET", "flavor.json");
+	xmlHttp.open("GET", path + "flavor.json");
 	xmlHttp.setRequestHeader("cache-control","no-cache"); 
 	xmlHttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
 	xmlHttp.send(null);
