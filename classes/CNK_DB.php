@@ -558,8 +558,24 @@
 						 	TABLE_ORDER_TABLE,TABLE_ORDER_TABLE_COLUM_TABLE_ID,$tid,
 							ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_DISH_ID,$did);
 			if ($ret = $this->orderDB->query($sql)) {
+				$i = 0;
 				while($row = $ret->fetchArray()) {
-					if($row[0] >= $row[2]){
+					if(($row[0] < 1.00001 && $row[0] > 0.00001 && $row[2] == 0) || ($row[0]<= $row[2]) || $type = 2){
+						$sql = sprintf("DELETE from %s where %s.%s = %s and %s.%s = %s",
+										ORDER_DETAIL_TABLE,
+										ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_ORDER_ID,$row[1],
+										ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_DISH_ID,$did);
+						if (!$this->orderDB->exec($sql)) {
+							$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+							$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+							return FALSE;
+						}else if($type == 1){
+							$this->setErrorNone();
+							return $row[1];
+						}else{
+							$orderId[$i] = $row[1];
+						}
+					}else if($row[0] >= $row[2] ){
 						if($type == 1 && $row[0] > 1){
 							$quan = ($row[0]-1);
 						}else if($type == 1){
@@ -575,24 +591,14 @@
 							$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
 							$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 							return FALSE;
-						}else{
+						}else if($type == 1){
 							$this->setErrorNone();
 							return $row[1];
-						}
-					}else if($row[0] < 1.00001 && $row[0] > 0.99999 && $row[2] == 0){
-						$sql = sprintf("DELETE from %s where %s.%s = %s and %s.%s = %s",
-										ORDER_DETAIL_TABLE,
-										ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_ORDER_ID,$row[1],
-										ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_DISH_ID,$did);
-						if (!$this->orderDB->exec($sql)) {
-							$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
-							$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
-							return FALSE;
 						}else{
-							$this->setErrorNone();
-							return $row[1];
+							$orderId[$i] = $row[1];
 						}
 					}
+					$i++; 
 				}
 			} else {
 				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
@@ -600,7 +606,7 @@
 				return FALSE;
 			}	
 			$this->setErrorNone();
-			return TRUE;
+			return $orderId;
 		}
 		
 		public function changeTable($src, $dest) {
