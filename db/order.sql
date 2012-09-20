@@ -3,7 +3,7 @@ CREATE TABLE [order_detail] (
 [id] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
 [dish_id] INTEGER  NOT NULL,
 [price] FLOAT  NOT NULL,
-[quantity] INTEGER  NOT NULL,
+[quantity] FLOAT  NOT NULL,
 [status] INTEGER DEFAULT '0' NOT NULL,
 [order_id] INTEGER  NOT NULL
 );
