@@ -357,6 +357,31 @@
 			return '['.$persons.']';
 		}
 		
+		public function getCurrentPersons() {
+			if ($this->orderDB == NULL) {
+				$this->connectOrderDB();
+			}
+			
+			$resultSet = $this->orderDB->query("SELECT sum(".TABLE_PERSONS_COLUM_PERSONS.") from ".
+										  TABLE_PERSONS);
+			if ($resultSet) {
+				if ($row = $resultSet->fetchArray()) {
+					$persons = $row[0];
+				} else {
+					$this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+					$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+					return FALSE;
+				}
+			} else {
+				$this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+				return FALSE;
+			}
+			
+			$this->setErrorNone();
+			return '['.$persons.']';
+		}
+		
 		public function updateDishStatus($tid, $did, $statusValue) {
 			if($this->orderDB == NULL) {
 				$this->connectOrderDB();

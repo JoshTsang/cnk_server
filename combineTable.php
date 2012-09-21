@@ -18,7 +18,7 @@
 	$printer = new printer("setting/printerInfo.json");
 	
 	if ($dishCount > 0) {
-	  	$printer->printeCombine($json_string);
+	  	$printer->printCombine($json_string);
 	}
 	
 	$db = new CNK_DB();
