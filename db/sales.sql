@@ -11,5 +11,6 @@ CREATE TABLE [sales_data] (
 CREATE TABLE [table_info] (
 [id] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
 [table_id] INTEGER  NOT NULL,
+[persons] INTERGER NOT NULL,
 [timestamp] TIMESTAMP NOT NULL
 )

@@ -3,13 +3,14 @@
 	require('setting/defines.php');
 	require('classes/CNK_DB.php');
 	
-	if (!isset($_GET['TID'])) {
-		die("{MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED."}");
-	}
-	
 	$db = new CNK_DB();
 	
-	$ret = $db->getPersons($_GET['TID']);
+	if (!isset($_GET['TID'])) {
+		$ret = $db->getCurrentPersons();
+	} else {
+		$ret = $db->getPersons($_GET['TID']);
+	}
+	
 	if (!$ret) {
 		echo $db->error();
 	} else {
