@@ -8,7 +8,7 @@
 	
 	define('DEL_ORDER','0');
 	define('UPDATE_ODRER','1');
-	
+	define('DEL_ITME_ORDER','2');
 	/* Database */
     define('DATABASE_MENU', "../db/test.db3");
 	
