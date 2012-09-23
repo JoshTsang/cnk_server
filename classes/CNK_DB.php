@@ -11,7 +11,7 @@
 		private $err = array('succ' => false,
 							 'error' => 'unknown');
 		
-		public function cleanTable($tid, $timestamp, $persons) {
+		public function cleanTable($tid, $timestamp) {
 			if (!$this->saveSalesData($tid, $timestamp)) {
 				return FALSE;
 			}
@@ -27,9 +27,7 @@
 			if (!$this->deletePersons($tid)) {
 				return FALSE;
 			}
-			if (!$this->setPersons($tid, $persons)) {
-				return FALSE;
-			}
+			
 			$this->setErrorNone();
 			return TRUE;
 		}
