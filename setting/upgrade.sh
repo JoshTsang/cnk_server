@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "remove\ upgrade\ dir"
-rmdir -rvf ../../upgrade
+rm -rf ../../upgrade
 
 echo "make dirs"
 mkdir ../../upgrade

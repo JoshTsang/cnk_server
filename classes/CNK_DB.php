@@ -11,7 +11,7 @@
 		private $err = array('succ' => false,
 							 'error' => 'unknown');
 		
-		public function cleanTable($tid, $timestamp) {
+		public function cleanTable($tid, $timestamp, $persons) {
 			if (!$this->saveSalesData($tid, $timestamp)) {
 				return FALSE;
 			}
@@ -27,7 +27,9 @@
 			if (!$this->deletePersons($tid)) {
 				return FALSE;
 			}
-			
+			if (!$this->setPersons($tid, $persons)) {
+				return FALSE;
+			}
 			$this->setErrorNone();
 			return TRUE;
 		}
@@ -306,14 +308,26 @@
 				return FALSE;
 			}
 			
-			$sql = "INSERT INTO ".TABLE_PERSONS." values(null, $tableId, $obj->persons)";
+			if (!$this->setPersons($tableId, $obj->persons)) {
+				return FALSE;
+			}
+				
+			$this->setErrorNone();
+			return TRUE;
+		}
+		
+		private function setPersons($tid, $persons) {
+			if ($this->orderDB == NULL) {
+				$this->connectOrderDB();
+			}
+			$this->deletePersons($tid);
+			$sql = "INSERT INTO ".TABLE_PERSONS." values(null, $tid, $persons)";
 			if (!$this->orderDB->exec($sql)) {
 				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
 				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 				return FALSE;
 			}
-				
-			$this->setErrorNone();
+			
 			return TRUE;
 		}
 		
@@ -639,7 +653,7 @@
 			return $orderId;
 		}
 		
-		public function changeTable($src, $dest) {
+		public function changeTable($src, $dest, $persons) {
 			if (!$this->moveDishes($src, $dest)) {
 				return false;
 			}
@@ -666,6 +680,9 @@
 				return FALSE;
 			}
 			
+			if (!$this->setPersons($dest, $persons)) {
+				return FALSE;
+			}
 			$this->setErrorNone();
 			return TRUE;
 		}
