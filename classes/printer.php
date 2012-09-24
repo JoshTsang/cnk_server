@@ -165,16 +165,11 @@
 			$zhLen = (strlen($shopname) - iconv_strlen($shopname, "UTF-8"))/2;
 			$enLen = iconv_strlen($shopname, "UTF-8") - $zhLen;
 			$space = $zhLen*2 + $enLen;
-			
 			if ($printerType == PRINTER_TYPE_80) {
 				$spaceLen = (48 - $space)/2;
 				$print = sprintf("%".$spaceLen."s%s\r\n", "", $shopname);
 				$this->printl($socket, $print);
-				if (isset($orderId)) {
-					$orders = implode(",", $orderId);
-					$print = sprintf("%s", "流水号:".$orders);
-					$this->printl($socket, $print);
-				}
+				$this->printOrderId($socket, $orderId);
 				$print = sprintf("桌号:%-4s                  %s", $table, $timestamp);
 				$this->printl($socket, $print);
 				if ($persons == 0) {
@@ -189,11 +184,7 @@
 				$spaceLen = (34 - $space)/2;
 				$print = sprintf("%".$spaceLen."s%s\r\n", "", $shopname);
 				$this->printl($socket, $print);
-				if (isset($orderId)) {
-					$orders = implode(",", $orderId);
-					$print = sprintf("%s", "流水号:".$orders);
-					$this->printl($socket, $print);
-				}
+				$this->printOrderId($socket, $orderId);
 				$print = sprintf("桌号:%-4s   %s", $table, $timestamp);
 				$this->printl($socket, $print);
 				if ($persons == 0) {
@@ -207,6 +198,14 @@
 			}
 		}
 
+		private function printOrderId($socket, $orderId) {
+			if (isset($orderId)) {
+				$orders = implode(",", $orderId);
+				$print = sprintf("%s", "流水号:".$orders);
+				$this->printl($socket, $print);
+			}
+		}
+		
 		private function printFooter($socket, $total, $printerType) {
 			if ($printerType == PRINTER_TYPE_80) {
 				$print = sprintf("----------------------------------------------\r\n".

@@ -15,6 +15,7 @@
 	$tableId = $obj->tableId;
 	$timestamp = $obj->timestamp;
 	$datetime = split(" ", $timestamp);
+	$persons = $obj->persons;
 	$printer = new printer("setting/printerInfo.json");
 	
 	if ($dishCount > 0) {
@@ -22,6 +23,6 @@
 	}
 	
 	$db = new CNK_DB();
-	$db->changeTable($_GET['srcTID'], $_GET['destTID']);
+	$db->changeTable($_GET['srcTID'], $_GET['destTID'], $persons);
 	echo $db->error();
 ?>

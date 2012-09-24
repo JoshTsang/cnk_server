@@ -127,7 +127,13 @@
 				return false;
 			}
 			
-			$sqlInsert=sprintf("insert into [table_info] values(null, %s, '%s');", $tid, $timestamp);
+			$persons = $this->getPersons($tid);
+			if (!$persons) {
+				return FALSE;
+			}
+			
+			$persons = substr($persons, 1, strlen($persons) - 2);
+			$sqlInsert=sprintf("insert into [table_info] values(null, %s, %s, '%s');", $tid, $persons, $timestamp);
 			if (!$this->salesDB->exec($sqlInsert)) {
 				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->salesDB).' #sql:'.$sqlInsert);
 				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
@@ -306,14 +312,26 @@
 				return FALSE;
 			}
 			
-			$sql = "INSERT INTO ".TABLE_PERSONS." values(null, $tableId, $obj->persons)";
+			if (!$this->setPersons($tableId, $obj->persons)) {
+				return FALSE;
+			}
+				
+			$this->setErrorNone();
+			return TRUE;
+		}
+		
+		private function setPersons($tid, $persons) {
+			if ($this->orderDB == NULL) {
+				$this->connectOrderDB();
+			}
+			$this->deletePersons($tid);
+			$sql = "INSERT INTO ".TABLE_PERSONS." values(null, $tid, $persons)";
 			if (!$this->orderDB->exec($sql)) {
 				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
 				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 				return FALSE;
 			}
-				
-			$this->setErrorNone();
+			
 			return TRUE;
 		}
 		
@@ -333,6 +351,7 @@
 		}
 		
 		public function getPersons($tid) {
+			$persons = 0;
 			if ($this->orderDB == NULL) {
 				$this->connectOrderDB();
 			}
@@ -343,9 +362,7 @@
 				if ($row = $resultSet->fetchArray()) {
 					$persons = $row[0];
 				} else {
-					$this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
-					$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
-					return FALSE;
+				   	return '['.$persons.']';
 				}
 			} else {
 				$this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
@@ -640,7 +657,7 @@
 			return $orderId;
 		}
 		
-		public function changeTable($src, $dest) {
+		public function changeTable($src, $dest, $persons) {
 			if (!$this->moveDishes($src, $dest)) {
 				return false;
 			}
@@ -667,6 +684,9 @@
 				return FALSE;
 			}
 			
+			if (!$this->setPersons($dest, $persons)) {
+				return FALSE;
+			}
 			$this->setErrorNone();
 			return TRUE;
 		}
