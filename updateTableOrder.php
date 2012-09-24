@@ -35,6 +35,7 @@
 					  'tableId' => $tableId,
 					  'orderId' => $ret);
 	$jsonString = json_encode($item);
+	echo "$jsonString";
 	$printer -> printDel($jsonString);
 	echo $db->error();
 ?>

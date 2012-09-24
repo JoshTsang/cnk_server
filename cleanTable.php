@@ -12,8 +12,8 @@
 	
 	$order = $obj->order;
 	$timestamp = $obj->timestamp;
-	$dishCount = count($obj->order);
-	if ($dishCount <= 0) {
+	$tableIdCount = count($obj->order);
+	if ($tableIdCount <= 0) {
 	  	die("[MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED."]");
 	}
 	for($i = 0;$i < $dishCount;$i++){
