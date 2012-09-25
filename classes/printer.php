@@ -4,6 +4,7 @@
 	define('PRINTER_COMMAND_CUT', "\x1D\x56\x42\5\n");
 	define('PRINTER_COMMAND_2X', "\x1D\x21\x11");
 	define('PRINTER_COMMAND_1X', "\x1D\x21\x0");
+	define('PRINTER_OPEN_CASHIER', "\x10\x14\1\0\10");
 	
 	class printer {
 		private $printerInfo;
@@ -292,6 +293,7 @@
 			$this->printCheckoutFooter($socket, $subTableTotal, $tableName, $checkout->income, $checkout->change, $i, $printerType);
 			$this->printR($socket, PRINTER_COMMAND_CUT);
 			$this->printR($socket, PRINTER_COMMAND_ALARM);
+			$this->printR($socket, PRINTER_OPEN_CASHIER);
 			socket_close($socket);
 		}
 		
