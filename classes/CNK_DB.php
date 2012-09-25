@@ -819,8 +819,9 @@
 		}
 		
 		private function getAllTableStatus() {
-			$sql=sprintf("select %s,%s,%s from %s",
-						 TABLE_ID ,TABLE_STATUS,TABLE_NAME,TABLE_INFO);
+			$sql=sprintf("select %s,%s,%s from %s order by %s",
+						 TABLE_ID ,TABLE_STATUS,TABLE_NAME,TABLE_INFO,TABLE_NAME);
+			
 			if ($this->phoneDB == NULL) {
 				$this->connectPhoneDB();
 			}
