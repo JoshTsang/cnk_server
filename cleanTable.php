@@ -16,7 +16,7 @@
 	if ($tableIdCount <= 0) {
 	  	die("[MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED."]");
 	}
-	for($i = 0;$i < $dishCount;$i++){
+	for($i = 0;$i < $tableIdCount;$i++){
 		$tableId = $order[$i] -> TID;
 		$db->cleanTable($tableId, $timestamp);
 	}

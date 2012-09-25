@@ -1,6 +1,7 @@
 var xmlHttp;
 var setting = new settings();
 var shopname = new shopnameSetting();
+var path = "";
 function printerSetting(name, ip, type, title, usefor) {
 	this.name = name;
 	this.ip = ip;
@@ -9,6 +10,9 @@ function printerSetting(name, ip, type, title, usefor) {
 	this.usefor = usefor;	
 }
 
+function setPath(p) {
+	path = p;
+}
 function shopnameSetting() {
 	this.init = function(name) {
 		var shopname = document.getElementById("shopName");
@@ -19,7 +23,7 @@ function shopnameSetting() {
 		var shopname = document.getElementById("shopName");
 		createXMLHttpRequest();
 		xmlHttp.onreadystatechange = handleShopNameSave;
-		xmlHttp.open("GET", "setShopName.php?shopname=" + shopname.value);
+		xmlHttp.open("GET", path + "setShopName.php?shopname=" + shopname.value);
 		xmlHttp.setRequestHeader("cache-control","no-cache"); 
 		xmlHttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
 		xmlHttp.send(null);
@@ -115,7 +119,7 @@ function settings() {
 	
 	this.save = function() {
 		xmlHttp.onreadystatechange = handlePrinterSettingSave;
-		xmlHttp.open("POST", "saveSettings.php");
+		xmlHttp.open("POST", path + "saveSettings.php");
 		xmlHttp.setRequestHeader("cache-control","no-cache"); 
 		xmlHttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
 		xmlHttp.send("config=" + this.settings.toJSONString());
@@ -196,7 +200,7 @@ function sendTestingRequest() {
 	alert("测试命令已发送，请等待测试结果...")
 	createXMLHttpRequest();
 	xmlHttp.onreadystatechange = handlePrinterTest;
-	xmlHttp.open("GET", "testPrinter.php");
+	xmlHttp.open("GET", path + "testPrinter.php");
 	xmlHttp.setRequestHeader("cache-control","no-cache"); 
 	xmlHttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
 	xmlHttp.send(null);	
@@ -224,7 +228,7 @@ function loadPrinterSetting() {
 function loadShopName() {
 	createXMLHttpRequest();
 	xmlHttp.onreadystatechange = handleShopNameLoad;
-	xmlHttp.open("GET", "getShopName.php");
+	xmlHttp.open("GET", path + "getShopName.php");
 	xmlHttp.setRequestHeader("cache-control","no-cache"); 
 	xmlHttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
 	xmlHttp.send(null);

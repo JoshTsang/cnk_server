@@ -279,7 +279,7 @@
 			$waiter = $checkout->waiter;
 			
 			$this->printTitle($socket, $title, NULL);
-			$this->printHeader($socket, null, $checkout->tableName, $waiter, "并台", $timestamp, $printerType);
+			$this->printHeader($socket, null, $checkout->tableName, $waiter, "结账", $timestamp, $printerType);
 			
 			
 			for ($i=0; $i<$count; $i++) {
