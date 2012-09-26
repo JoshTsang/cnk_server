@@ -608,7 +608,7 @@
 			if ($ret = $this->orderDB->query($sql)) {
 				$i = 0;
 				while($row = $ret->fetchArray()) {
-					if(($row[0] < 1.00001 && $row[0] > 0.00001 && $row[2] == 0) || ($row[0]<= $row[2]) || $type == 2){
+					if(($row[0] < 1.00001 && $row[0] > 0.00001 && $row[2] == 0) || $type == 0 || $type == 2){
 						$sql = sprintf("DELETE from %s where %s.%s = %s and %s.%s = %s",
 										ORDER_DETAIL_TABLE,
 										ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_ORDER_ID,$row[1],
