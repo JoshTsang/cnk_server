@@ -94,6 +94,26 @@
 			return TRUE;
 		}
 		
+		public function getOrderIds($tid) {
+			if ($this->orderDB == NULL) {
+				$this->connectOrderDB();
+			}
+			
+			$sql=sprintf("select %s from %s where %s=%s",
+					  TABLE_ORDER_TABLE_COLUM_ID, TABLE_ORDER_TABLE,
+					  TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid);
+			$resultSet = $this->orderDB->query($sql);
+			if ($resultSet) {
+				$i = 0;
+				while($row = $resultSet->fetchArray()) {
+					$orderId[$i] = $row[0];
+					$i++;
+				}
+			}
+			
+			return $orderId;
+		}
+		
 		public function saveSalesData($tid, $timestamp) {
 			if ($this->orderDB == NULL) {
 				$this->connectOrderDB();
@@ -317,7 +337,7 @@
 			}
 				
 			$this->setErrorNone();
-			return TRUE;
+			return $orderId;
 		}
 		
 		private function setPersons($tid, $persons) {

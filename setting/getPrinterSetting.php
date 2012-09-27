@@ -4,4 +4,5 @@
 	$file = new file("printerInfo.json");
 	$json = $file->getContent();
 	echo "$json";
+
 ?>
