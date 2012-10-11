@@ -18,11 +18,13 @@
 	$persons = $obj->persons;
 	$printer = new printer("setting/printerInfo.json");
 	
+	$db = new CNK_DB();
+	$db->changeTable($_GET['srcTID'], $_GET['destTID'], $persons);
+	
+	
 	if ($dishCount > 0) {
 	  	$printer->printChangeTable($json_string);
 	}
 	
-	$db = new CNK_DB();
-	$db->changeTable($_GET['srcTID'], $_GET['destTID'], $persons);
 	echo $db->error();
 ?>

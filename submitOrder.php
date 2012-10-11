@@ -19,7 +19,10 @@
 	  	die("[MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED."]");
 	}
 	
-	$printer->printOrder($json_string);
-	$db->submitOrder($obj);
+	$orderId = $db->submitOrder($obj);
+	if ($orderId > 0) {
+		$printer->printOrder($json_string, $orderId);
+	}
+	
 	echo $db->error();
 ?>

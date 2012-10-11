@@ -18,11 +18,12 @@
 	$datetime = split(" ", $timestamp);
 	$printer = new printer("setting/printerInfo.json");
 	
+	$db = new CNK_DB();
+	$db->changeTable($_GET['srcTID'], $_GET['destTID'], $persons);
+	
+	
 	if ($dishCount > 0) {
 	  	$printer->printCombine($json_string);
 	}
-	
-	$db = new CNK_DB();
-	$db->changeTable($_GET['srcTID'], $_GET['destTID'], $persons);
 	echo $db->error();
 ?>

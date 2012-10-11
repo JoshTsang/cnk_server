@@ -3,7 +3,8 @@
 	define('PRINTER_COMMAND_ALARM', "\x1B\x43\1\x13\3\n");
 	define('PRINTER_COMMAND_CUT', "\x1D\x56\x42\5\n");
 	define('PRINTER_COMMAND_2X', "\x1D\x21\x11");
-	define('PRINTER_COMMAND_1X', "\x1D\x21\x0");
+	define('PRINTER_COMMAND_1X', "\x1D\x21\x01");
+	define('PRINTER_OPEN_CASHIER', "\x10\x14\1\0\10");
 	
 	class printer {
 		private $printerInfo;
@@ -57,11 +58,11 @@
 			$this->printerInfo[$index]->categories = $this->printerInfo[$index]->categories.",".$usefor;
 		}
 		
-		public function printOrder($print) {
+		public function printOrder($print, $orderId) {
 			$count = count($this->printerInfo);
 			for ($i=0; $i<$count; $i++) {
 				if($this->printerInfo[$i]->usefor <= PRINT_ORDER) {
-					$this->printOrderReceipt($print, $this->printerInfo[$i]->ip, $this->printerInfo[$i]->title, $this->printerInfo[$i]->type);
+					$this->printOrderReceipt($print, $this->printerInfo[$i]->ip, $this->printerInfo[$i]->title, $this->printerInfo[$i]->type, $orderId);
 				}
 			}
 		}
@@ -103,6 +104,7 @@
 		}
 		
 		private function printCombineReceipt($json, $printerIP, $title, $printerType) {
+			$db = new CNK_DB();
 			$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
 			if ($socket < 0)
 			{
@@ -122,7 +124,9 @@
 				die("NO_ORDERED_DISH 'NO_ORDERED_DISH'");
 			}
 			$this->printTitle($socket, $title, "(并台)");
-			$this->printOrderedDishes($socket, $obj, $printerType);
+			//TODO orderId
+			$orderId = $db->getOrderIds($obj->tableId);
+			$this->printOrderedDishes($socket, $obj, $printerType, $orderId);
 			$this->printR($socket, PRINTER_COMMAND_CUT);
 			$this->printR($socket, PRINTER_COMMAND_ALARM);
 			socket_close($socket);
@@ -142,7 +146,6 @@
 		}
 		
 		private function printTitle($socket, $title, $subTitle) {
-			socket_write($socket,"\x1b\x21\x0");
 			$print = iconv("UTF-8","GB18030", $title.$subTitle);
 			if (isset($subTitle)) {
 				socket_write($socket, PRINTER_COMMAND_2X);
@@ -150,6 +153,7 @@
 				socket_write($socket, "\r\n\r\n");
 				socket_write($socket, PRINTER_COMMAND_1X);
 			} else {
+				socket_write($socket,PRINTER_COMMAND_1X);
 				socket_write($socket, $print);
 				socket_write($socket, "\r\n\r\n");
 			}
@@ -170,12 +174,12 @@
 				$print = sprintf("%".$spaceLen."s%s\r\n", "", $shopname);
 				$this->printl($socket, $print);
 				$this->printOrderId($socket, $orderId);
-				$print = sprintf("桌号:%-4s                  %s", $table, $timestamp);
+				$print = sprintf("桌号:%-4s                %s", $table, $timestamp);
 				$this->printl($socket, $print);
 				if ($persons == 0) {
-					$print = sprintf("人数:%-4s              服务员：%s", "未设置", $waiter);
+					$print = sprintf("人数:未设置           服务员：%s", $waiter);
 				} else {
-					$print = sprintf("人数:%-4s                  服务员：%s", $persons, $waiter);
+					$print = sprintf("人数:%-4s              服务员：%s", $persons, $waiter);
 				}
 				$this->printl($socket, $print);
 				$this->printl($socket, "----------------------------------------------");
@@ -232,13 +236,12 @@
 			socket_write($socket, $str);
 		}
 
-		private function printOrderedDishes($socket, $obj, $printerType) {
+		private function printOrderedDishes($socket, $obj, $printerType, $orderId) {
 			$tableId = $obj->tableId;
 			$tableName = $obj->tableName;
 			$timestamp = $obj->timestamp;
 			$waiter = $obj->waiter;
 			$persons = $obj->persons;
-			$orderId = $obj->orderId;
 			
 			$this->printHeader($socket, $orderId, $tableName, $waiter, $persons, $timestamp, $printerType);
 			
@@ -292,6 +295,7 @@
 			$this->printCheckoutFooter($socket, $subTableTotal, $tableName, $checkout->income, $checkout->change, $i, $printerType);
 			$this->printR($socket, PRINTER_COMMAND_CUT);
 			$this->printR($socket, PRINTER_COMMAND_ALARM);
+			$this->printR($socket, PRINTER_OPEN_CASHIER);
 			socket_close($socket);
 		}
 		
@@ -375,7 +379,7 @@
 			return $total;
 		}
 		
-		private function printOrderReceipt($json, $printerIP, $title, $printerType) {
+		private function printOrderReceipt($json, $printerIP, $title, $printerType, $orderId) {
 			$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
 			if ($socket < 0)
 			{
@@ -395,13 +399,15 @@
 				die("NO_ORDERED_DISH 'NO_ORDERED_DISH'");
 			}
 			$this->printTitle($socket, $title, NULL);
-			$this->printOrderedDishes($socket, $obj, $printerType);
+			$oId = array($orderId);
+			$this->printOrderedDishes($socket, $obj, $printerType, $oId);
 			$this->printR($socket, PRINTER_COMMAND_CUT);
 			$this->printR($socket, PRINTER_COMMAND_ALARM);
 			socket_close($socket);
 		}
 		
 		private function printChangeTableReceipt($json, $printerIP, $title, $printerType) {
+			$db = new CNK_DB();
 			$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
 			if ($socket < 0)
 			{
@@ -421,7 +427,8 @@
 				die("NO_ORDERED_DISH 'NO_ORDERED_DISH'");
 			}
 			$this->printTitle($socket, $title, "(转台)");
-			$this->printOrderedDishes($socket, $obj, $printerType);
+			$orderId = $db->getOrderIds($obj->tableId);
+			$this->printOrderedDishes($socket, $obj, $printerType, $orderId);
 			$this->printR($socket, PRINTER_COMMAND_CUT);
 			$this->printR($socket, PRINTER_COMMAND_ALARM);
 			socket_close($socket);
@@ -440,7 +447,7 @@
 				exit();
 			}
 			$this->printTitle($socket, $title, "(退菜)");
-			$this->printOrderedDishes($socket, $obj, $printerType);
+			$this->printOrderedDishes($socket, $obj, $printerType, $obj->orderId);
 			
 			$this->printR($socket, PRINTER_COMMAND_CUT);
 			$this->printR($socket, PRINTER_COMMAND_ALARM);

@@ -10,7 +10,7 @@
 <script>        
         function createUploader(){            
             var uploader = new qq.FileUploader({
-                element: document.getElementById('file-uploader-demo1'),
+                element: document.getElementById('file-uploader'),
                 action: 'upgrade_file.php',
                 debug: true,
                 extraDropzones: [qq.getByClass(document, 'qq-upload-extra-drop-area')[0]]
@@ -71,7 +71,7 @@
 					</span>
 				</div>
 				<div class="printer_setting">
-					<div id="file-uploader-demo1">		
+					<div id="file-uploader">		
 						<noscript>			
 							<p>Please enable JavaScript to use file uploader.</p>
 							<!-- or put a simple form for upload here -->
@@ -79,16 +79,7 @@
 					</div>
 				
 					<div class="qq-upload-extra-drop-area">Drop files here too</div>
-					<!-- <form action="javascript: uploadAndSubmit();"" method="post"
-					enctype="multipart/form-data" id="uploadUpgradePack">
-					<label for="file">升级包:</label>
-					<input type="file" name="file" id="file" /> 
-					<input type="submit" name="submit" value="上传" id="uploadBtn"/>
-					</form>
-					<div id="progress">
-						<span id="progressbar"><span id="done"></span></span>
-						<span id="percentage">0%</span>
-					</div> -->
+					
 				</div>
 			</div>
 		</div>

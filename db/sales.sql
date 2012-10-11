@@ -8,6 +8,7 @@ CREATE TABLE [sales_data] (
 [timestamp] TIMESTAMP NOT NULL
 );
 
+DROP TABLE IF EXISTS [table_info];
 CREATE TABLE [table_info] (
 [id] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
 [table_id] INTEGER  NOT NULL,
