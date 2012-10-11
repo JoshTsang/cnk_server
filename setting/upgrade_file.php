@@ -128,6 +128,7 @@ class qqFileUploader {
 		system("rm *.apk");
 		system("/bin/tar xvf ./upgrade/upgrade.tar -C ../../ > null", $res);
 		system("rm -rf upgrade");
+		system("sh do_upgrade.sh");
 		return $res;
 	}
     

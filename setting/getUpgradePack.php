@@ -10,7 +10,7 @@
 	<title>打印设置--菜脑壳电子点菜系统</title>
 	</head>
 	<body>
-		<a href="../../upgrade/cnk.bin">download</a>
+		<a href="../../cnk.bin">download</a>
 		<pre>
 			<?php
 				system("sh upgrade.sh");

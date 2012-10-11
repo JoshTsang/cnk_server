@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "remove\ upgrade\ dir"
+echo "remove upgrade dir"
 rm -rf ../../upgrade
 
 echo "make dirs"

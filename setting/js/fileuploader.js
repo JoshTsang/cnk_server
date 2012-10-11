@@ -1052,7 +1052,7 @@ qq.UploadHandlerAbstract = function(o){
 		// maximum number of concurrent uploads
 		maxConnections: 999,
 		onProgress: function(id, fileName, loaded, total){},
-		onComplete: function(id, fileName, response){},
+		onComplete: uploadFileComplete(id, fileName, response),
 		onCancel: function(id, fileName){},
 		onUpload: function(id, fileName, xhr){}
 	};
@@ -1497,3 +1497,8 @@ qq.DisposeSupport = {
 		this.addDisposer(qq.attach.apply(this, arguments));
 	}
 };
+
+/* Josh define functions */
+funciont uploadFileComplete(id, fileName, response) {
+	alert("update complete");
+}

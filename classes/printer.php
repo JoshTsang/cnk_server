@@ -3,7 +3,7 @@
 	define('PRINTER_COMMAND_ALARM', "\x1B\x43\1\x13\3\n");
 	define('PRINTER_COMMAND_CUT', "\x1D\x56\x42\5\n");
 	define('PRINTER_COMMAND_2X', "\x1D\x21\x11");
-	define('PRINTER_COMMAND_1X', "\x1D\x21\x0");
+	define('PRINTER_COMMAND_1X', "\x1D\x21\x01");
 	define('PRINTER_OPEN_CASHIER', "\x10\x14\1\0\10");
 	
 	class printer {
@@ -146,7 +146,6 @@
 		}
 		
 		private function printTitle($socket, $title, $subTitle) {
-			socket_write($socket,"\x1b\x21\x0");
 			$print = iconv("UTF-8","GB18030", $title.$subTitle);
 			if (isset($subTitle)) {
 				socket_write($socket, PRINTER_COMMAND_2X);
@@ -154,6 +153,7 @@
 				socket_write($socket, "\r\n\r\n");
 				socket_write($socket, PRINTER_COMMAND_1X);
 			} else {
+				socket_write($socket,PRINTER_COMMAND_1X);
 				socket_write($socket, $print);
 				socket_write($socket, "\r\n\r\n");
 			}
@@ -174,12 +174,12 @@
 				$print = sprintf("%".$spaceLen."s%s\r\n", "", $shopname);
 				$this->printl($socket, $print);
 				$this->printOrderId($socket, $orderId);
-				$print = sprintf("桌号:%-4s                  %s", $table, $timestamp);
+				$print = sprintf("桌号:%-4s                %s", $table, $timestamp);
 				$this->printl($socket, $print);
 				if ($persons == 0) {
-					$print = sprintf("人数:%-4s              服务员：%s", "未设置", $waiter);
+					$print = sprintf("人数:未设置           服务员：%s", $waiter);
 				} else {
-					$print = sprintf("人数:%-4s                  服务员：%s", $persons, $waiter);
+					$print = sprintf("人数:%-4s              服务员：%s", $persons, $waiter);
 				}
 				$this->printl($socket, $print);
 				$this->printl($socket, "----------------------------------------------");
