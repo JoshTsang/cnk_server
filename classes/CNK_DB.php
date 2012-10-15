@@ -7,9 +7,9 @@
     	private $menuDB;
 		private $orderDB;
 		private $salesDB;
-		private $phoneDB;
+		//private $phoneDB;
 		private $userinfoDB;
-		private $oderinfoDB;
+		private $orderInfoDB;
 		private $err = array('succ' => false,
 							 'error' => 'unknown');
 		
@@ -43,11 +43,11 @@
 				TABLE_PHONE_ORDERED_DISH, PHONE_COLUM_TID, $tid,TABLE_PHONE_ORDERED_DID, $did);
 			}
 			
-			if ($this->phoneDB == NULL) {
-				$this->connectPhoneDB();
+			if ($this->orderInfoDB == NULL) {
+				$this->connectOrderInfoDB();
 			}
-			if (!$this->phoneDB->exec($sql)) {
-				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->phoneDB).' #sql:'.$sql);
+			if (!$this->orderInfoDB->exec($sql)) {
+				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderInfoDB).' #sql:'.$sql);
 				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 				return FALSE;
 			}
@@ -66,11 +66,11 @@
 		public function cleanPhoneOrder($tid) {
 			$sql=sprintf("delete from %s where %s=%s", 
 				TABLE_PHONE_ORDERED_DISH, PHONE_COLUM_TID, $tid);
-			if($this->phoneDB == NULL) {
-				$this->connectPhoneDB();
+			if($this->orderInfoDB == NULL) {
+				$this->connectOrderInfoDB();
 			}
-			if (!$this->phoneDB->exec($sql)) {
-				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->phoneDB).' #sql:'.$sql);
+			if (!$this->orderInfoDB->exec($sql)) {
+				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderInfoDB).' #sql:'.$sql);
 				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 				return false;
 			}
@@ -83,11 +83,11 @@
 						 TABLE_INFO,
 						 TABLE_STATUS, $status,
 						 TABLE_ID, $tid);
-			if ($this->phoneDB == NULL) {
-				$this->connectPhoneDB();
+			if ($this->orderInfoDB == NULL) {
+				$this->connectOrderInfoDB();
 			}
-			if(!$this->phoneDB->exec($sql)) {
-				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->phoneDB).' #sql:'.$sql);
+			if(!$this->orderInfoDB->exec($sql)) {
+				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderInfoDB).' #sql:'.$sql);
 				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 				return FALSE;
 			}
@@ -194,14 +194,14 @@
 		}
 		
 		public function cleanNotification($tid) {
-			if ($this->phoneDB == NULL) {
-				$this->connectPhoneDB();
+			if ($this->orderInfoDB == NULL) {
+				$this->connectOrderInfoDB();
 			}
 			
 			$sql=sprintf("delete from %s where %s=%s", TABLE_NOTIFICATION, NOTIFICATION_COLUM_TID, $tid);
 			
-			if (!$this->phoneDB->exec($sql)) {
-				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->phoneDB).' #sql:'.$sql);
+			if (!$this->orderInfoDB->exec($sql)) {
+				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderInfoDB).' #sql:'.$sql);
 				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 				return FALSE;
 			}
@@ -221,15 +221,15 @@
 		public function getNotifications() {
 			$sql=sprintf("select %s from %s group by %s", NOTIFICATION_COLUM_TID, TABLE_NOTIFICATION, NOTIFICATION_COLUM_TID);
 			
-			if ($this->oderinfoDB == NULL) {
-				$this->connectOderinfoDB();
+			if ($this->orderInfoDB == NULL) {
+				$this->connectOrderInfoDB();
 			}
-			$resultSet = $this->oderinfoDB->query($sql);
+			$resultSet = $this->orderInfoDB->query($sql);
 			if ($resultSet) {
 				$j = 0;
 				while($row = $resultSet->fetchArray()) {
 					$sql=sprintf("select * from %s where %s=%s", TABLE_NOTIFICATION, NOTIFICATION_COLUM_TID, $row[0]);
-					$resultSet2 = $this->oderinfoDB->query($sql);
+					$resultSet2 = $this->orderInfoDB->query($sql);
 					if ($resultSet2) {
 						$i = 0;
 						while($rowNotification = $resultSet2->fetchArray()) {
@@ -237,7 +237,7 @@
 							$i++;
 						}
 					} else {
-						$this->setErrorMsg('query failed:'.$this->oderinfoDB->lastErrorMsg().' #sql:'.$sql);
+						$this->setErrorMsg('query failed:'.$this->orderInfoDB->lastErrorMsg().' #sql:'.$sql);
 						$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 						return FALSE;
 					}
@@ -247,7 +247,7 @@
 					$j++;
 				}
 			} else {
-				$this->setErrorMsg('query failed:'.sqlite_last_error($this->oderinfoDB).' #sql:'.$sql);
+				$this->setErrorMsg('query failed:'.sqlite_last_error($this->orderInfoDB).' #sql:'.$sql);
 				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 				return FALSE;
 			}
@@ -258,10 +258,10 @@
 		
 		public function getNotificationTypes() {
 			$sql=sprintf("select * from %s", TABLE_NOTIFICATION_TYPES);
-			if ($this->oderinfoDB == NULL) {
-				$this->connectOderinfoDB();
+			if ($this->orderInfoDB == NULL) {
+				$this->connectOrderInfoDB();
 			}
-			@$resultSet = $this->oderinfoDB->query($sql);
+			@$resultSet = $this->orderInfoDB->query($sql);
 			if ($resultSet) {
 				$j = 0;
 				while($row = $resultSet->fetchArray()) {
@@ -271,7 +271,7 @@
 					$j++;
 				}
 			} else {
-				$this->setErrorMsg('query failed:'.sqlite_last_error($this->oderinfoDB).' #sql:'.$sql);
+				$this->setErrorMsg('query failed:'.sqlite_last_error($this->orderInfoDB).' #sql:'.$sql);
 				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 				return FALSE;
 			}
@@ -508,11 +508,11 @@
 		public function getPhoneOrder($tid) {
 			$sql=sprintf("select * from %s where %s=%s", TABLE_PHONE_ORDERED_DISH, PHONE_COLUM_TID, $tid);
 			
-			if ($this->phoneDB == NULL) {
-				$this->connectPhoneDB();
+			if ($this->orderInfoDB == NULL) {
+				$this->connectOrderInfoDB();
 			}
 			
-			$resultSet = $this->phoneDB->query($sql);
+			$resultSet = $this->orderInfoDB->query($sql);
 			if ($resultSet) {
 				$i = 0;
 				while($row = $resultSet->fetchArray()) {
@@ -523,7 +523,7 @@
 				}
 				$jsonString = json_encode($table);
 			} else {
-				$this->setErrorMsg('query failed:'.sqlite_last_error($this->phoneDB).' #sql:'.$sql);
+				$this->setErrorMsg('query failed:'.sqlite_last_error($this->orderInfoDB).' #sql:'.$sql);
 				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 				return false;
 			}
@@ -595,8 +595,8 @@
 		}
 		
 		public function updatePhoneOrder($tid, $did, $quantity) {
-			if ($this->phoneDB == NULL) {
-				$this->connectPhoneDB();
+			if ($this->orderInfoDB == NULL) {
+				$this->connectOrderInfoDB();
 			}
 			$sql=sprintf("UPDATE %s SET %s = %s where %s = %s and %s = %s",
 				 TABLE_PHONE_ORDERED_DISH,
@@ -604,8 +604,8 @@
 				 TABLE_PHONE_ORDERED_DID,$did,
 				 PHONE_COLUM_TID,$tid);
 
-			if (!$this->phoneDB->exec($sql)) {
-				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->phoneDB).' #sql:'.$sql);
+			if (!$this->orderInfoDB->exec($sql)) {
+				$this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderInfoDB).' #sql:'.$sql);
 				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 				return FALSE;
 			}
@@ -759,16 +759,6 @@
 			return true;
 		}
 		
-		private function connectPhoneDB() {
-			$this->phoneDB = new SQLite3(DATABASE_PHONE);
-			$this->phoneDB->busyTimeout(2000);
-			if (!$this->phoneDB) {
-				$this->setErrorMsg('could not connect db:'.DATABASE_PHONE);
-				return false;
-			}	
-			return true;
-		}
-		
 		private function connectUserInfoDB(){
 			$this->userinfoDB = new SQLite3(USER_INFO_DB);
 			$this->userinfoDB->busyTimeout(2000);
@@ -779,10 +769,10 @@
 			return true;
 		}
 		
-		private function connectOderinfoDB(){
-			$this->oderinfoDB = new SQLite3(ORDER_INFO_DB);
-			$this->oderinfoDB->busyTimeout(2000);
-			if (!$this->oderinfoDB) {
+		private function connectOrderInfoDB(){
+			$this->orderInfoDB = new SQLite3(ORDER_INFO_DB);
+			$this->orderInfoDB->busyTimeout(2000);
+			if (!$this->orderInfoDB) {
 				$this->setErrorMsg('could not connect db:'.ORDER_INFO_DB);
 				return false;
 			}
@@ -864,10 +854,10 @@
 			$sql=sprintf("select %s,%s,%s,%s,%s,%s,%s from %s",
 						 TABLE_ID ,TABLE_STATUS,TABLE_NAME,TABLE_CATEGORY,TABLE_INDEX,TABLE_AREA,TABLE_FLOOR,TABLE_INFO);
 			
-			if ($this->oderinfoDB == NULL) {
-				$this->connectOderinfoDB();
+			if ($this->orderInfoDB == NULL) {
+				$this->connectOrderInfoDB();
 			}
-			@$resultSet = $this->oderinfoDB->query($sql);
+			@$resultSet = $this->orderInfoDB->query($sql);
 			if ($resultSet) {
 				$i = 0;
 				while($row = $resultSet->fetchArray()) {
@@ -883,7 +873,7 @@
 				}
 				$jsonString = json_encode($Table);
 			} else {
-				$this->setErrorMsg('query failed:'.sqlite_last_error($this->oderinfoDB).' #sql:'.$sql);
+				$this->setErrorMsg('query failed:'.sqlite_last_error($this->orderInfoDB).' #sql:'.$sql);
 				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 				return FALSE;
 			}
@@ -892,18 +882,18 @@
 		}
 		
 		private function getTableStatusByTid($tid) {
-			if ($this->oderinfoDB == NULL) {
-				$this->connectOderinfoDB();
+			if ($this->orderInfoDB == NULL) {
+				$this->connectOrderInfoDB();
 			}
 			$sql=sprintf("select %s from %s where id = %s",
 						 TABLE_STATUS,TABLE_INFO,$tid);
-			@$resultSet = $this->oderinfoDB->query($sql);
+			@$resultSet = $this->orderInfoDB->query($sql);
 			if ($resultSet) {
 				if ($row = $resultSet->fetchArray()) {
 					$status = $row[0];
 					return '['.$status.']';
 				} else {
-					$this->setErrorMsg('query failed:'.$this->oderinfoDB->lastErrorMsg().' #sql:'.$sql);
+					$this->setErrorMsg('query failed:'.$this->orderInfoDB->lastErrorMsg().' #sql:'.$sql);
 					$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 					return FALSE;
 				}
@@ -922,14 +912,14 @@
 			if (isset($this->salesDB)) {
 				$this->salesDB->close();
 			}
-			if (isset($this->phoneDB)) {
-				$this->phoneDB->close();
+			if (isset($this->orderInfoDB)) {
+				$this->orderInfoDB->close();
 			}
 			if (isset($this->$userinfoDB)) {
 				$this->$userinfoDB->close();
 			}
-			if (isset($this->oderinfoDB)) {
-				$this->oderinfoDB->close();
+			if (isset($this->orderInfoDB)) {
+				$this->orderInfoDB->close();
 			}
 		}
     }

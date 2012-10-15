@@ -14,7 +14,9 @@
 			$db->close();
 			die(0);
 		}
+		echo "[1]";
 	} else {
+		echo "query failed";
 		$db->close();
 		die(ERR_DB_QUERY);
 	}
