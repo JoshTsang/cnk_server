@@ -10,7 +10,7 @@
 	define('UPDATE_ODRER','1');
 	define('DEL_ITME_ORDER','2');
 	/* Database */
-    define('DATABASE_MENU', "../db/test.db3");
+    define('DATABASE_MENU', "../db/dish.db3");
 	
 	define('CATEGROY_TABLE', "table_show");
 	define('CATEGROY_TABLE_COLUM_TABLE_NAME', "tablename");
@@ -37,17 +37,17 @@
 	define('ORDER_DETAIL_TABLE_COLUM_QUANTITY', "quantity");
 	
 	define('DATABASE_SALES', "../db/sales.db");
-	define('TABLE_INFO', "table_info");
-	define('TABLE_NAME', "tablenum");
-	define('TABLE_ID', "id");
-	define('TABLE_STATUS', "status");
+	// define('TABLE_INFO', "table_info");
+	// define('TABLE_NAME', "tablenum");
+	// define('TABLE_ID', "id");
+	// define('TABLE_STATUS', "status");
 	
 
-	define('USER_TABLE',"administrator");
-	define('USER_ID', "id");
-	define('USER_NAME',"username");
-	define('USER_PWD',"password");
-	define('USER_PERMISSION',"permission");
+	// define('USER_TABLE',"administrator");
+	// define('USER_ID', "id");
+	// define('USER_NAME',"username");
+	// define('USER_PWD',"password");
+	// define('USER_PERMISSION',"permission");
 	
 	//TODO update db path
 	define('DATABASE_PHONE', '../db/temporary/temp.db3');
@@ -55,14 +55,14 @@
 
 	define('PHONE_COLUM_TID', 'tableID');
 	
-	define('TABLE_NOTIFICATION', 'callWaiter');
-	define('NOTIFICATION_COLUM_TID', 'tableID');
-
-	define('NOTIFICATION_COLUM_STATUS', 'callStatus');
-	
-	define('TABLE_NOTIFICATION_TYPES', 'serviceList');
-	define('NOTIFICATION_TYPE_COLUM_ID', 'id');
-	define('NOTIFICATION_TYPE_COLUM_VALUE', 'serviceName');
+	// define('TABLE_NOTIFICATION', 'callWaiter');
+	// define('NOTIFICATION_COLUM_TID', 'tableID');
+// 
+	// define('NOTIFICATION_COLUM_STATUS', 'callStatus');
+// 	
+	// define('TABLE_NOTIFICATION_TYPES', 'serviceList');
+	// define('NOTIFICATION_TYPE_COLUM_ID', 'id');
+	// define('NOTIFICATION_TYPE_COLUM_VALUE', 'serviceName');
 
 	define('DATABASE_TEMP', '../db/temporary/temp.db3');
 	
@@ -76,4 +76,32 @@
 	define('PRINTER_TYPE_80', 2);
 	define('PRINTER_FOR_KITCHEN', '192.168.0.8');
 	define('PRINTER_FOE_CHECKEOUT', '192.168.0.9');
+	
+	//orderInfo
+	define('ORDER_INFO_DB', "../db/temporary/orderInfo.db3");
+	/*tableInfo*/
+	define('TABLE_INFO', "tableInfo");
+	define('TABLE_NAME', "tableName");
+	define('TABLE_ID', "id");
+	define('TABLE_STATUS', "status");
+	define('TABLE_CATEGORY',"tableCategory");
+	define('TABLE_INDEX',"tableOrder");
+	define('TABLE_AREA',"tableArea");
+	define('TABLE_FLOOR',"tableFloor");
+	/*callWaiter*/
+	define('TABLE_NOTIFICATION', 'callWaiter');
+	define('NOTIFICATION_COLUM_TID', 'tableID');
+	define('NOTIFICATION_COLUM_STATUS', 'callStatus');
+	
+	define('TABLE_NOTIFICATION_TYPES', 'serviceList');
+	define('NOTIFICATION_TYPE_COLUM_ID', 'id');
+	define('NOTIFICATION_TYPE_COLUM_VALUE', 'serviceName');
+
+	//userInfo
+	define('USER_INFO_DB', "../db/temporary/userInfo.db3");
+	define('USER_INFO',"userInfo");
+	define('USER_ID', "id");
+	define('USER_NAME',"username");
+	define('USER_PWD',"password");
+	define('USER_PERMISSION',"permission");	
 ?>
