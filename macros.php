@@ -98,7 +98,7 @@
 	define('NOTIFICATION_TYPE_COLUM_VALUE', 'serviceName');
 
 	//userInfo
-	define('USER_INFO_DB', "../db/temporary/userInfo.db3");
+	define('USER_INFO_DB', "../db/user.db3");
 	define('USER_INFO',"userInfo");
 	define('USER_ID', "id");
 	define('USER_NAME',"username");

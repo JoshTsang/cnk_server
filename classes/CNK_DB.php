@@ -481,23 +481,23 @@
 		}
 		
 		public function getPermission($username) {
-			if ($this->menuDB == NULL) {
-				$this->connectMenuDB();
+			if ($this->userinfoDB == NULL) {
+				$this->connectUserInfoDB();
 			}
 			
 			$sql=sprintf("select %s from %s where %s.%s = '%s'",
-						 USER_PERMISSION,USER_TABLE,USER_TABLE,USER_NAME,$username);
-			$resultSet = $this->menuDB->query($sql);
+						 USER_PERMISSION,USER_INFO,USER_INFO,USER_NAME,$username);
+			$resultSet = $this->userinfoDB->query($sql);
 			if ($resultSet) {
 				if ($row = $resultSet->fetchArray()) {
 					$permission = $row[0];
 				} else {
-					$this->setErrorMsg('query failed:'.sqlite_last_error($this->menuDB).' #sql:'.$sql);
+					$this->setErrorMsg('query failed:'.sqlite_last_error($this->userinfoDB).' #sql:'.$sql);
 					$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 					return FALSE;
 				}
 			} else {
-				$this->setErrorMsg('query failed:'.sqlite_last_error($this->menuDB).' #sql:'.$sql);
+				$this->setErrorMsg('query failed:'.sqlite_last_error($this->userinfoDB).' #sql:'.$sql);
 				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 				return FALSE;
 			}
@@ -532,25 +532,25 @@
 		}
 		
 		public function getPWD($uname) {
-			if($this->menuDB == NULL) {
-				$this->connectMenuDB();
+			if($this->userinfoDB == NULL) {
+				$this->connectUserInfoDB();
 			}
 			
 		
 			$sql=sprintf("select %s, %s from %s where %s.%s = '%s'",
-						 USER_ID, USER_PWD,USER_TABLE,USER_TABLE,USER_NAME,$uname);
-			$resultSet = $this->menuDB->query($sql);
+						 USER_ID, USER_PWD,USER_INFO,USER_INFO,USER_NAME,$uname);
+			$resultSet = $this->userinfoDB->query($sql);
 			if ($resultSet) {
 				if ($row = $resultSet->fetchArray()) {
 					$id = $row[0];
 					$pwd = $row[1];
 				} else {
-					$this->setErrorMsg('query failed:'.$this->menuDB->lastErrorMsg().' #sql:'.$sql);
+					$this->setErrorMsg('query failed:'.$this->userinfoDB->lastErrorMsg().' #sql:'.$sql);
 					$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 					return false;
 				}
 			} else {
-				$this->setErrorMsg('query failed:'.sqlite_last_error($this->menuDB).' #sql:'.$sql);
+				$this->setErrorMsg('query failed:'.sqlite_last_error($this->userinfoDB).' #sql:'.$sql);
 				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 				return false;
 			}
