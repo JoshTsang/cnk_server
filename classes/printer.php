@@ -77,7 +77,11 @@
 			$count = count($this->printerInfo);
 			for ($i=0; $i<$count; $i++) {
 				if($this->printerInfo[$i]->usefor == PRINT_CASHIER) {
-					$this->printDelReceipt($print, $this->printerInfo[$i]->ip, $this->printerInfo[$i]->title, $this->printerInfo[$i]->type);
+					$this->printDelReceipt($print, $this->printerInfo[$i]->ip, 
+							$this->printerInfo[$i]->title, $this->printerInfo[$i]->type);
+				} else if ($this->printerInfo[$i]->usefor == PRINT_KITCHEN) {
+					$this->printDelReceiptCategory($print, $this->printerInfo[$i]->ip,
+					 		$this->printerInfo[$i]->title, $this->printerInfo[$i]->type, $this->printerInfo[$i]->id);
 				}
 				//TODO kitchen
 			}
@@ -506,7 +510,7 @@
 				die("Unable to connect printer.ip:$printerIP");
 			}
 			
-			$this->printTitle($socket, $title, NULL);
+			$this->printTitle($socket, "分单-".$title, NULL);
 			$oId = array($orderId);
 			$this->printOrderedDishesByPrinterId($socket, $obj, $printerType, $oId, $printerId);
 			socket_close($socket);
@@ -544,7 +548,6 @@
 			$json_string = $json;
 			$obj = json_decode($json_string); 
 			$dishCount = count($obj->order);
-			$total = 0;
 			
 			if ($dishCount <= 0) {
 				die("HTTP/1.1 NO_ORDERED_DISH 'NO_ORDERED_DISH'");
@@ -552,6 +555,22 @@
 			}
 			$this->printTitle($socket, $title, "(退菜)");
 			$this->printOrderedDishes($socket, $obj, $printerType, $obj->orderId);
+			
+			socket_close($socket);
+		}
+		
+		private function printDelReceiptCategory($json, $printerIP, $title, $printerType, $printerId) {
+			$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
+			$connection = socket_connect($socket, $printerIP, 9100); 
+			$json_string = $json;
+			$obj = json_decode($json_string); 
+			$dishCount = count($obj->order);
+			
+			if (!$this->isPrintNeed($obj, $printerId, $dishCount)) {
+				return;
+			}
+			$this->printTitle($socket, "分单-".$title, "(退菜)");
+			$this->printOrderedDishesByPrinterId($socket, $obj, $printerType, $obj->orderId, $printerId);
 			
 			socket_close($socket);
 		}
