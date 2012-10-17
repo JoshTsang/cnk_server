@@ -55,24 +55,30 @@
 		}
 		
 		private function updateKitchenPrinter($index, $usefor) {
-			$this->printerInfo[$index]->categories = $this->printerInfo[$index]->categories.",".$usefor;
-		}
-		
-		public function printOrder($print, $orderId) {
+			$this->printerInfo[$index]->categories = $this->printerInfo[$index]->categories."," .$usefor;
+			}
+
+			public function printOrder($print, $orderId) {
 			$count = count($this->printerInfo);
-			for ($i=0; $i<$count; $i++) {
-				if($this->printerInfo[$i]->usefor <= PRINT_ORDER) {
-					$this->printOrderReceipt($print, $this->printerInfo[$i]->ip, $this->printerInfo[$i]->title, $this->printerInfo[$i]->type, $orderId);
-				}
+			for ($i=0; $i<$count; $i++) {if($this->printerInfo[$i]->usefor == PRINT_CASHIER) {
+				$this->printOrderReceipt($print, $this->printerInfo[$i]->ip, $this->printerInfo[$i]->title, 
+							$this->printerInfo[$i]->type, $orderId);
+			} else if ($this->printerInfo[$i]->usefor == PRINT_KITCHEN) {
+				$this->printOrderReceiptCategory($print, $this->printerInfo[$i]->ip, $this->printerInfo[$i]->title,
+							$this->printerInfo[$i]->type, $orderId, $this->printerInfo[$i]->id);
+			}
+				//TODO kitchen
+				
 			}
 		}
 		
 		public function printDel($print) {
 			$count = count($this->printerInfo);
 			for ($i=0; $i<$count; $i++) {
-				if($this->printerInfo[$i]->usefor <= PRINT_ORDER) {
+				if($this->printerInfo[$i]->usefor == PRINT_CASHIER) {
 					$this->printDelReceipt($print, $this->printerInfo[$i]->ip, $this->printerInfo[$i]->title, $this->printerInfo[$i]->type);
 				}
+				//TODO kitchen
 			}
 		}
 		
@@ -88,18 +94,20 @@
 		public function printChangeTable($print) {
 			$count = count($this->printerInfo);
 			for ($i=0; $i<$count; $i++) {
-				if($this->printerInfo[$i]->usefor <= PRINT_ORDER) {
+				if($this->printerInfo[$i]->usefor == PRINT_CASHIER) {
 					$this->printChangeTableReceipt($print, $this->printerInfo[$i]->ip, $this->printerInfo[$i]->title, $this->printerInfo[$i]->type);
 				}
+				//TODO kitchen
 			}
 		}
 		
 		public function printCombine($json) {
 			$count = count($this->printerInfo);
 			for ($i=0; $i<$count; $i++) {
-				if($this->printerInfo[$i]->usefor == PRINT_ORDER) {
+				if($this->printerInfo[$i]->usefor == PRINT_CASHIER) {
 					$this->printCombineReceipt($json, $this->printerInfo[$i]->ip, $this->printerInfo[$i]->title, $this->printerInfo[$i]->type);
 				}
+				//TODO kitchen
 			}
 		}
 		
@@ -257,6 +265,26 @@
 			$this->printFooter($socket, $total, $printerType);
 		}
 
+		private function printOrderedDishesByPrinterId($socket, $obj, $printerType, $orderId, $printerId) {
+			$tableId = $obj->tableId;
+			$tableName = $obj->tableName;
+			$timestamp = $obj->timestamp;
+			$waiter = $obj->waiter;
+			$persons = $obj->persons;
+			
+			$this->printHeader($socket, $orderId, $tableName, $waiter, $persons, $timestamp, $printerType);
+			
+			$total = $this->printDishesByPrinterId($socket, $obj, $printerType, $printerId);
+			if (isset($obj->comment)) {
+				if ($printerType == PRINTER_TYPE_80) {
+					$this->printl($socket, "**********************************************");
+				} else {
+					$this->printl($socket, "********************************");
+				}
+				$this->printl($socket, "#备注:".$obj->comment);
+			}
+			$this->printFooter($socket, $total, $printerType);
+		}
 		
 		private function printChecktoutReceipt($json, $printerIP, $title, $printerType) {
 			$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
@@ -379,6 +407,43 @@
 			return $total;
 		}
 		
+		private function printDishesByPrinterId($socket, $obj, $printerType, $printerId) {
+			$dishCount = count($obj->order);
+			$total = 0;
+			for ($i=0; $i<$dishCount; $i++) {
+				if ($obj->order[$i]->printer == $printerId) {
+					$dishId = $obj->order[$i]->dishId;
+					$price = $obj->order[$i]->price;
+					$dishQuantity = $obj->order[$i]->quan;
+					$dishName = $obj->order[$i]->name;
+					$total += $price * $dishQuantity;
+					$zhLen = (strlen($dishName) - iconv_strlen($dishName, "UTF-8"))/2;
+					$enLen = iconv_strlen($dishName, "UTF-8") - $zhLen;
+					$dishNameSpace = $zhLen*2 + $enLen;
+					if ($printerType == PRINTER_TYPE_80) {
+						if ($dishNameSpace > 24) {
+							$printString = sprintf("%s\n%24s%7.2f%6.2f%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
+						} else {
+							$spaceLen = 24 - $dishNameSpace;
+							$printString = sprintf("%s%$spaceLen"."s%7.2f%6.2f%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
+						}
+					} else if($printerType == PRINTER_TYPE_58) {
+						if ($dishNameSpace > 12) {
+							$printString = sprintf("%s\n%12s%6.2f%6.2f%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
+						} else {
+							$spaceLen = 12 - $dishNameSpace;
+							$printString = sprintf("%s%$spaceLen"."s%6.2f%6.2f%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
+						}
+					}
+					$this->printl($socket, $printString);
+					if (isset($obj->order[$i]->flavor)) {
+						$this->printl($socket, "*口味：".$obj->order[$i]->flavor);
+					}
+				}
+			}
+			return $total;
+		}
+
 		private function printOrderReceipt($json, $printerIP, $title, $printerType, $orderId) {
 			$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
 			if ($socket < 0)
@@ -401,6 +466,47 @@
 			$this->printTitle($socket, $title, NULL);
 			$oId = array($orderId);
 			$this->printOrderedDishes($socket, $obj, $printerType, $oId);
+			$this->printR($socket, PRINTER_COMMAND_CUT);
+			$this->printR($socket, PRINTER_COMMAND_ALARM);
+			socket_close($socket);
+		}
+		
+		private function printOrderReceiptCategory($json, $printerIP, $title, $printerType, $orderId, $printerId) {
+			$isPrintNeed = FALSE;
+			$json_string = $json;
+			$obj = json_decode($json_string); 
+			$dishCount = count($obj->order);
+			
+			for ($i=0; $i<$dishCount; $i++) {
+				if ($obj->order[$i]->printer == $printerId) {
+					$isPrintNeed = TRUE;
+					break;
+				}
+			}
+			
+			if (!$isPrintNeed) {
+				return ;
+			}
+			
+			$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
+			if ($socket < 0)
+			{
+				echo socket_strerror(socket_last_error())."\n";
+				die("Unable to connect printer.ip:$printerIP");
+			}
+			$connection = socket_connect($socket, $printerIP, 9100); 
+			if (!$connection) {
+				echo socket_strerror(socket_last_error())."\n";
+				die("Unable to connect printer.ip:$printerIP");
+			}
+			
+			
+			if ($dishCount <= 0) {
+				die("NO_ORDERED_DISH 'NO_ORDERED_DISH'");
+			}
+			$this->printTitle($socket, $title, NULL);
+			$oId = array($orderId);
+			$this->printOrderedDishesByPrinterId($socket, $obj, $printerType, $oId, $printerId);
 			$this->printR($socket, PRINTER_COMMAND_CUT);
 			$this->printR($socket, PRINTER_COMMAND_ALARM);
 			socket_close($socket);
