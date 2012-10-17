@@ -36,6 +36,9 @@
 	define('ORDER_DETAIL_TABLE_COLUM_ORDER_ID', "order_id");
 	define('ORDER_DETAIL_TABLE_COLUM_QUANTITY', "quantity");
 	
+	define('PRINTER_TABLE', "sortPrint");
+	define('PRINTER_COLUMN_NAME', "sortPrintName");
+	
 	define('DATABASE_SALES', "../db/sales.db");
 	// define('TABLE_INFO', "table_info");
 	// define('TABLE_NAME', "tablenum");

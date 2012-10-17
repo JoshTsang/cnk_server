@@ -737,6 +737,73 @@
 			return TRUE;
 		}
 		
+		public function removeUnusedPrinter($obj) {
+			$count = count($obj);
+			for ($i=0; $i<$count; $i++) {
+				if ($obj[i]->usefor == PRINT_KITCHEN && $obj[i]->id == 0) {
+					$printers += $obj[i]->id.",";
+				}
+			}
+			if (strlen($printers) <= 0) {
+				return ;
+			}
+			$sql = "DELETE FROM ".PRINTER_TABLE." WHERE id NOT IN ".substr($printers, 0, strlen($printers)-1);
+			echo "$sql\n";
+			$this->menuDB->exec($sql);
+		}
+		
+		public function addPrinter($name) {
+			$sql = sprint("INSERT INTO %s(%s) VALUES('%s')", PRINTER_TABLE, PRINTER_COLUMN_NAME, $name);
+			$this->menuDB->exec($sql);
+			$resultSet=$this->menuDB->query("Select id"." from ".PRINTER_TABLE
+				 ." where ".PRINTER_COLUMN_NAME."="
+				 ."'".$name."'");
+			
+			if ($resultSet) {
+				if ($row = $resultSet->fetchArray()) {
+					return $row[0];
+				} else {
+					return 0;
+				}
+			} else {
+				$this->setErrorMsg('query failed:'.sqlite_last_error($this->menuDB).' #sql:'.$sql);
+				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+				return 0;
+			}
+		}
+		
+		public function updatePrinter($id, $name) {
+			$sql = sprintf("UPDATE %s SET %s='%s' WHERE id=%s", PRINTER_TABLE, PRINTER_COLUMN_NAME, $name, $id);
+			$this->menuDB->exec($sql);
+		}
+		
+		public function updatePrinterSetting($obj) {
+			if ($this->menuDB == null) {
+				$this->connectMenuDB();
+			}
+			
+			$count = count($obj);
+			//TODO check for delete
+			$this->removeUnusedPrinter();
+			
+			for ($i=0; $i<$count; $i++) {
+				if ($obj[i]->usefor == PRINT_KITCHEN) {
+					if ($obj[i]->id == 0) {
+						//TODO imple this
+						$id = $this->addPrinter($obj[i]->name);
+						if (!$id) {
+							$obj[i]->id = $id;
+						}
+					} else {
+						//TODO imple this
+						$this->updatePrinter($obj[i]->id, $obj[i]->name);
+					}
+				}
+			}
+			
+			return $obj;
+		}
+		
 		public function error() {
 			return json_encode($this->err);
 		}
