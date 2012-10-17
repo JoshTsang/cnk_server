@@ -2,12 +2,13 @@ var xmlHttp;
 var setting = new settings();
 var shopname = new shopnameSetting();
 var path = "";
-function printerSetting(name, ip, type, title, usefor) {
+function printerSetting(name, ip, type, title, usefor, id) {
 	this.name = name;
 	this.ip = ip;
 	this.type = type;
 	this.title = title;
 	this.usefor = usefor;	
+	this.id = id;
 }
 
 function setPath(p) {
@@ -38,7 +39,7 @@ function settings() {
 		var json_obj = json.parseJSON();
 		var i = 0;
 		for (; i<json_obj.length; i++) {
-			this.settings[i] = new printerSetting(json_obj[i].name, json_obj[i].ip, json_obj[i].type, json_obj[i].title, json_obj[i].usefor);	
+			this.settings[i] = new printerSetting(json_obj[i].name, json_obj[i].ip, json_obj[i].type, json_obj[i].title, json_obj[i].usefor, json_obj[i].id);	
 		}
 		this.loaded = 1;
 	}
@@ -72,7 +73,11 @@ function settings() {
 					break;
 				case 100:
 				case "100":
-					printerData += "菜单";
+					printerData += "收银";
+					break;
+				case 102:
+				case "102":
+					printerData += "厨打";
 					break;
 				case 200:
 				case "200":
@@ -98,14 +103,14 @@ function settings() {
 		});
 	}
 	
-	this.add = function(name, ip, type, title, usefor) {
+	this.add = function(name, ip, type, title, usefor, id) {
 		var i = this.settings.length;
-		this.settings[i] = new printerSetting(name, ip, type, title, usefor);
+		this.settings[i] = new printerSetting(name, ip, type, title, usefor, id);
 		this.updateView();
 	}
 	
-	this.modify = function(index, name, ip, type, title, usefor) {
-		this.settings[index] = new printerSetting(name, ip, type, title, usefor);
+	this.modify = function(index, name, ip, type, title, usefor, id) {
+		this.settings[index] = new printerSetting(name, ip, type, title, usefor, id);
 		this.updateView();
 	}
 	
@@ -119,7 +124,7 @@ function settings() {
 	
 	this.save = function() {
 		xmlHttp.onreadystatechange = handlePrinterSettingSave;
-		xmlHttp.open("POST", path + "saveSettings.php");
+		xmlHttp.open("POST", path + "../savePrinterSettings.php");
 		xmlHttp.setRequestHeader("cache-control","no-cache"); 
 		xmlHttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
 		xmlHttp.send("config=" + this.settings.toJSONString());
@@ -192,7 +197,8 @@ function modifyPrinter(index) {
 	receiptTitle.value = setting.settings[index].title;
 	printerType.value = setting.settings[index].type;
 	usefor.value = setting.settings[index].usefor;
-	document.getElementById("submitPrinterSetting").innerHTML = "<input style=\"width:60px;height:30px;\" type=\"button\" name=\"submit\" value=\"确定\" onClick=\"validFormAndSubmit("+index+")\"/>";
+	var id = setting.settings[index].id;
+	document.getElementById("submitPrinterSetting").innerHTML = "<input style=\"width:60px;height:30px;\" type=\"button\" name=\"submit\" value=\"确定\" onClick=\"validFormAndSubmit("+index+","+id+")\"/>";
 	hideLoginBoxOn();
 }
 
@@ -248,6 +254,7 @@ function handlePrinterSettingSave() {
 	if (xmlHttp.readyState == 4) {
 		if (xmlHttp.status == 200) {
 			alert("保存成功");
+			console.log(xmlHttp.responseText);
 		} else {
 			alert("保存失败");
 		}

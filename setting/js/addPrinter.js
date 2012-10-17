@@ -20,7 +20,7 @@ function validate_required(field, errMsg)
 		}
 }
 
-function validFormAndSubmit(index) {
+function validFormAndSubmit(index, id) {
 	var nameTag = document.getElementById("nameID");
 	var ipTag = document.getElementById("ipID");
 	var receiptTitle = document.getElementById("receiptTitle");
@@ -38,9 +38,9 @@ function validFormAndSubmit(index) {
 		return false;
 	}
 	if (index == null) {
-		setting.add(nameTag.value, ipTag.value, printerType.value, receiptTitle.value, usefor.value);
+		setting.add(nameTag.value, ipTag.value, printerType.value, receiptTitle.value, usefor.value, 0);
 	} else {
-		setting.modify(index, nameTag.value, ipTag.value, printerType.value, receiptTitle.value, usefor.value);
+		setting.modify(index, nameTag.value, ipTag.value, printerType.value, receiptTitle.value, usefor.value, id);
 	}
 	
 	hideLoginBox();

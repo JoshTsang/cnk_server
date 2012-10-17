@@ -44,7 +44,8 @@
 			            <select id="usefor">
 			            	<?php
 			            		echo "<option value=".PRINT_STATISTICS.">".PRINT_STATISTICS_NAME."</option>";
-			            		echo "<option value=".PRINT_ORDER.">".PRINT_ORDER_NAME."</option>";
+			            		echo "<option value=".PRINT_CASHIER.">".PRINT_CASHIER_NAME."</option>";
+								echo "<option value=".PRINT_KITCHEN.">".PRINT_KITCHEN_NAME."</option>";
 								echo "<option value=200>停用</option>";
 			            	?>
 			            </select>

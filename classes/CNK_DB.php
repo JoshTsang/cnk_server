@@ -739,21 +739,22 @@
 		
 		public function removeUnusedPrinter($obj) {
 			$count = count($obj);
+			$printers = "";
 			for ($i=0; $i<$count; $i++) {
-				if ($obj[i]->usefor == PRINT_KITCHEN && $obj[i]->id == 0) {
-					$printers += $obj[i]->id.",";
+				if ($obj[$i]->id != 0) {
+					if ($obj[$i]->usefor == PRINT_KITCHEN || $obj[$i]->usefor == 200) {
+						$printers = $printers.$obj[$i]->id.",";
+					}
 				}
 			}
-			if (strlen($printers) <= 0) {
-				return ;
+			if (strlen($printers) > 1) {
+				$sql = "DELETE FROM ".PRINTER_TABLE." WHERE id NOT IN (".substr($printers, 0, strlen($printers)-1).")";
+				$this->menuDB->exec($sql);
 			}
-			$sql = "DELETE FROM ".PRINTER_TABLE." WHERE id NOT IN ".substr($printers, 0, strlen($printers)-1);
-			echo "$sql\n";
-			$this->menuDB->exec($sql);
 		}
 		
 		public function addPrinter($name) {
-			$sql = sprint("INSERT INTO %s(%s) VALUES('%s')", PRINTER_TABLE, PRINTER_COLUMN_NAME, $name);
+			$sql = sprintf("INSERT INTO %s(%s) VALUES('%s')", PRINTER_TABLE, PRINTER_COLUMN_NAME, $name);
 			$this->menuDB->exec($sql);
 			$resultSet=$this->menuDB->query("Select id"." from ".PRINTER_TABLE
 				 ." where ".PRINTER_COLUMN_NAME."="
@@ -782,21 +783,21 @@
 				$this->connectMenuDB();
 			}
 			
-			$count = count($obj);
 			//TODO check for delete
-			$this->removeUnusedPrinter();
+			$this->removeUnusedPrinter($obj);
 			
+			$count = count($obj);
 			for ($i=0; $i<$count; $i++) {
-				if ($obj[i]->usefor == PRINT_KITCHEN) {
-					if ($obj[i]->id == 0) {
+				if ($obj[$i]->usefor == PRINT_KITCHEN) {
+					if ($obj[$i]->id == 0) {
 						//TODO imple this
-						$id = $this->addPrinter($obj[i]->name);
-						if (!$id) {
-							$obj[i]->id = $id;
+						$id = $this->addPrinter($obj[$i]->name);
+						if ($id) {
+							$obj[$i]->id = $id;
 						}
 					} else {
 						//TODO imple this
-						$this->updatePrinter($obj[i]->id, $obj[i]->name);
+						$this->updatePrinter($obj[$i]->id, $obj[$i]->name);
 					}
 				}
 			}
