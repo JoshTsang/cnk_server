@@ -14,6 +14,21 @@ function printerSetting(name, ip, type, title, usefor, id) {
 function setPath(p) {
 	path = p;
 }
+
+function checkChar(str){
+	var pattern=new RegExp("[`~%!@#^=''?~！@#￥……&——‘”“'？*\ ，,。.、]"); 
+	var rs="";
+	
+	for(var i=0; i<str.length; i++){
+	  	rs+=str.substr(i,1).replace(pattern,'');
+	}
+	
+	if(rs != str){
+		return false;
+	}
+	return true;
+}
+
 function shopnameSetting() {
 	this.init = function(name) {
 		var shopname = document.getElementById("shopName");
@@ -22,12 +37,14 @@ function shopnameSetting() {
 	
 	this.save = function() {
 		var shopname = document.getElementById("shopName");
-		createXMLHttpRequest();
-		xmlHttp.onreadystatechange = handleShopNameSave;
-		xmlHttp.open("GET", path + "setShopName.php?shopname=" + shopname.value);
-		xmlHttp.setRequestHeader("cache-control","no-cache"); 
-		xmlHttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
-		xmlHttp.send(null);
+		if (checkChar(shopname.value)) {
+			createXMLHttpRequest();
+			xmlHttp.onreadystatechange = handleShopNameSave;
+			xmlHttp.open("GET", path + "setShopName.php?shopname=" + shopname.value);
+			xmlHttp.setRequestHeader("cache-control","no-cache"); 
+			xmlHttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
+			xmlHttp.send(null);
+		}
 	}
 }
 

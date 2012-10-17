@@ -34,6 +34,10 @@ function validFormAndSubmit(index, id) {
 		return false;
 	}
 	
+	if (validatePrinterName(nameTag.value) == false) {
+		return false;
+	}
+	
 	if (isIP(ipTag.value) == false) {
 		return false;
 	}
@@ -44,6 +48,14 @@ function validFormAndSubmit(index, id) {
 	}
 	
 	hideLoginBox();
+	return true;
+}
+
+function validatePrinterName(name) {
+	if (name.length > 6) {
+		alert("打印机名不能超过6个字！");
+		return false;
+	}
 	return true;
 }
 
