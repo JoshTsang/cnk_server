@@ -286,7 +286,7 @@
 			socket_write($socket, $str);
 		}
 		
-		private function printComment($socket, $commnet, $printerType) {
+		private function printComment($socket, $comment, $printerType) {
 			if (isset($comment)) {
 				if ($printerType == PRINTER_TYPE_80) {
 					$this->printl($socket, "**********************************************");
@@ -307,7 +307,7 @@
 			$this->printHeader($socket, $orderId, $tableName, $waiter, $persons, $timestamp, $printerType);
 			
 			$total = $this->printDishes($socket, $obj, $printerType);
-			$this->printComment($socket, $obj->commnet, $printerType);		
+			$this->printComment($socket, $obj->comment, $printerType);		
 			$this->printFooter($socket, $total, $printerType);
 		}
 
@@ -321,7 +321,7 @@
 			$this->printHeader($socket, $orderId, $tableName, $waiter, $persons, $timestamp, $printerType);
 			
 			$total = $this->printDishesByPrinterId($socket, $obj, $printerType, $printerId);
-			$this->printComment($socket, $obj->commnet, $printerType);
+			$this->printComment($socket, $obj->comment, $printerType);
 			$this->printFooter($socket, $total, $printerType);
 		}
 		
