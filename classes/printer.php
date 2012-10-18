@@ -100,8 +100,11 @@
 			$count = count($this->printerInfo);
 			for ($i=0; $i<$count; $i++) {
 				if($this->printerInfo[$i]->usefor == PRINT_CASHIER) {
-					$this->printChangeTableReceipt($print, $this->printerInfo[$i]->ip, $this->printerInfo[$i]->title, $this->printerInfo[$i]->type);
-				}
+					$this->printChangeTableReceipt($print, $this->printerInfo[$i]->ip, 
+						$this->printerInfo[$i]->title, $this->printerInfo[$i]->type);
+				} else if($this->printerInfo[$i]->usefor == PRINT_KITCHEN)
+					$this->printChangeTableReceiptCategory($print, $this->printerInfo[$i]->ip, 
+						$this->printerInfo[$i]->title, $this->printerInfo[$i]->type, $this->printerInfo[$i]->id);
 				//TODO kitchen
 			}
 		}
@@ -110,7 +113,11 @@
 			$count = count($this->printerInfo);
 			for ($i=0; $i<$count; $i++) {
 				if($this->printerInfo[$i]->usefor == PRINT_CASHIER) {
-					$this->printCombineReceipt($json, $this->printerInfo[$i]->ip, $this->printerInfo[$i]->title, $this->printerInfo[$i]->type);
+					$this->printCombineReceipt($json, $this->printerInfo[$i]->ip, 
+					   $this->printerInfo[$i]->title, $this->printerInfo[$i]->type);
+				} else if ($this->printerInfo[$i]->usefor == PRINT_KITCHEN) {
+					$this->printCombineReceiptCategory($json, $this->printerInfo[$i]->ip,
+					    $this->printerInfo[$i]->title, $this->printerInfo[$i]->type, $this->printerInfo[$i]->id);
 				}
 				//TODO kitchen
 			}
@@ -143,6 +150,35 @@
 			socket_close($socket);
 		}
 
+		private function printCombineReceiptCategory($json, $printerIP, $title, $printerType, $printerId) {
+			$json_string = $json;
+			$obj = json_decode($json_string); 
+			$dishCount = count($obj->order);
+			
+			if (!$this->isPrintNeed($obj, $printerId, $dishCount)) {
+				return;
+			}
+			
+			$db = new CNK_DB();
+			$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
+			if ($socket < 0)
+			{
+				echo socket_strerror(socket_last_error())."\n";
+				die("Unable to connect printer.ip:$printerIP");
+			}
+			$connection = socket_connect($socket, $printerIP, 9100); 
+			if (!$connection) {
+				echo socket_strerror(socket_last_error())."\n";
+				die("Unable to connect printer.ip:$printerIP");
+			}
+			
+			$this->printTitle($socket, "分单-".$title, "(并台)");
+			//TODO orderId
+			$orderId = $db->getOrderIds($obj->tableId);
+			$this->printOrderedDishesByPrinterId($socket, $obj, $printerType, $orderId, $printerId);
+			socket_close($socket);
+		}
+		
 		private function printCombineSubtitle($socket, $str) {
 			$this->printl($socket, $str." 桌：");
 		}
@@ -542,6 +578,35 @@
 			socket_close($socket);
 		}
 		
+        private function printChangeTableReceiptCategory($json, $printerIP, $title, $printerType, $printerId) {
+            $json_string = $json;
+            $obj = json_decode($json_string); 
+            $dishCount = count($obj->order);
+            
+            if (!$this->isPrintNeed($obj, $printerId, $dishCount)) {
+                return ;
+            }
+            
+            $db = new CNK_DB();
+            $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
+            if ($socket < 0)
+            {
+                echo socket_strerror(socket_last_error())."\n";
+                die("Unable to connect printer.ip:$printerIP");
+            }
+            $connection = socket_connect($socket, $printerIP, 9100); 
+            if (!$connection) {
+                echo socket_strerror(socket_last_error())."\n";
+                die("Unable to connect printer.ip:$printerIP");
+            }
+            
+            $this->printTitle($socket, "分单-".$title, "(转台)");
+            $orderId = $db->getOrderIds($obj->tableId);
+            $this->printOrderedDishesByPrinterId($socket, $obj, $printerType, $orderId, $printerId);
+            
+            socket_close($socket);
+        }
+
 		private function printDelReceipt($json, $printerIP, $title, $printerType) {
 			$socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
 			$connection = socket_connect($socket, $printerIP, 9100); 
