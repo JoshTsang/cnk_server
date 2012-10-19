@@ -186,7 +186,7 @@
 		public function printCheckout($json) {
 			$count = count($this->printerInfo);
 			for ($i=0; $i<$count; $i++) {
-				if($this->printerInfo[$i]->usefor == PRINT_ORDER) {
+				if($this->printerInfo[$i]->usefor == PRINT_CASHIER) {
 					$this->printChecktoutReceipt($json, $this->printerInfo[$i]->ip, $this->printerInfo[$i]->title, $this->printerInfo[$i]->type);
 				}
 			}
