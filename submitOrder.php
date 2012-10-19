@@ -21,7 +21,7 @@
 	
 	$orderId = $db->submitOrder($obj);
 	if ($orderId > 0) {
-		$printer->printOrder($json_string, $orderId);
+		$printer->printOrder($json_string, $orderId, isset($_GET['action']));
 	}
 	
 	echo $db->error();
