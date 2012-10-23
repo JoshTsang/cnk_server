@@ -3,7 +3,8 @@
 	define('PRINTER_COMMAND_ALARM', "\x1B\x43\1\x13\3\n");
 	define('PRINTER_COMMAND_CUT', "\x1D\x56\x42\5\n");
 	define('PRINTER_COMMAND_2X', "\x1D\x21\x11");
-	define('PRINTER_COMMAND_1X', "\x1D\x21\x01");
+    define('PRINTER_OPEN_CASHIER', "\x10\x14\1\0\10");
+	//define('PRINTER_COMMAND_1X', "\x1D\x21\x01");
 	define('PRINTER_OPEN_CASHIER', "\x10\x14\1\0\10");
 	
 	class printer {

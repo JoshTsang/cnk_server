@@ -82,6 +82,8 @@
 	
 	//orderInfo
 	define('ORDER_INFO_DB', "../db/temporary/orderInfo.db3");
+    define('DEV_DIR', "../db/temporary/dev/");
+    
 	/*tableInfo*/
 	define('TABLE_INFO', "tableInfo");
 	define('TABLE_NAME', "tableName");
