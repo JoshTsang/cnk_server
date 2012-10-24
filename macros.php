@@ -109,4 +109,10 @@
 	define('USER_NAME',"username");
 	define('USER_PWD',"password");
 	define('USER_PERMISSION',"permission");	
+    
+    //config files
+    define("LISENCE_CONF", "conf/Lisence.conf");
+    define("FLAVOR_CONF", "conf/flavor.conf");
+    define("PRINTER_CONF", "conf/printer.conf");
+    define("SHOPNAME_CONF", "conf/shopname.conf");
 ?>

@@ -49,7 +49,7 @@
         
         private function getPermittedPadNum() 
         {
-            @$num = file_get_contents("Lisence.conf");
+            @$num = file_get_contents(LISENCE_CONF);
             if ($num) {
                 return $num;
             } else {

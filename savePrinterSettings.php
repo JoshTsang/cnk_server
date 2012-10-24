@@ -9,7 +9,7 @@
     }
 	
 	$db = new CNK_DB();
-	$file = new file("./setting/printerInfo.json");
+	$file = new file(PRINTER_CONF);
 	$config = $_POST['config'];
 	$jsonObj = json_decode($config);
 	

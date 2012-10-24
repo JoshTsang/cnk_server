@@ -150,7 +150,7 @@ function createXMLHttpRequest() {
 function loadSetting() {
 	createXMLHttpRequest();
 	xmlHttp.onreadystatechange = handleSettingLoad;
-	xmlHttp.open("GET", path + "flavor.json");
+	xmlHttp.open("GET", path + "../getFlavor.php");
 	xmlHttp.setRequestHeader("cache-control","no-cache"); 
 	xmlHttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
 	xmlHttp.send(null);

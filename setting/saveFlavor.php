@@ -5,7 +5,7 @@
     	die("parameter needed");
     }
 	
-	$file = new file("flavor.json");
+	$file = new file(FLAVOR_CONF);
 	$config = $_POST['config'];
 	$obj = json_decode($config);
 	

@@ -5,6 +5,7 @@
 	define('PRINTER_COMMAND_2X', "\x1D\x21\x11");
     define('PRINTER_OPEN_CASHIER', "\x10\x14\1\0\10");
 	//define('PRINTER_COMMAND_1X', "\x1D\x21\x01");
+	define('PRINTER_COMMAND_1X', "\x1D\x21\x1");
 	define('PRINTER_OPEN_CASHIER', "\x10\x14\1\0\10");
 	
 	class printer {
@@ -209,8 +210,8 @@
 		}
 		
 		private function printHeader($socket, $orderId, $table, $waiter, $persons, $timestamp, $printerType) {
-			if(file_exists("setting/shopname")) {
-				$shopname = file_get_contents("setting/shopname");
+			if(file_exists(SHOPNAME_CONF)) {
+				$shopname = file_get_contents(SHOPNAME_CONF);
 			} else {
 				$shopname = "菜脑壳电子点菜系统";
 			}

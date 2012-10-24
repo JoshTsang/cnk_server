@@ -241,7 +241,7 @@ function loadPrinterSetting() {
 	if (setting.loaded == 0) {
 		createXMLHttpRequest();
 		xmlHttp.onreadystatechange = handlePrinterSettingLoad;
-		xmlHttp.open("GET", "printerInfo.json");
+		xmlHttp.open("GET", "getPrinterSetting.php");
 		xmlHttp.setRequestHeader("cache-control","no-cache"); 
 		xmlHttp.setRequestHeader("Content-Type","application/x-www-form-urlencoded");
 		xmlHttp.send(null);

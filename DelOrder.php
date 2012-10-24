@@ -17,7 +17,7 @@
 		die("[MORE_PARAM_NEEDED:" . MORE_PARAM_NEEDED . "]");
 	}
 	
-	$printer = new printer("setting/printerInfo.json");
+	$printer = new printer(PRINTER_CONF);
 	$db = new CNK_DB();
 	for ($i = 0; $i < $dishCount; $i++) {
 		$dishId = $obj -> order[$i] -> dishId;

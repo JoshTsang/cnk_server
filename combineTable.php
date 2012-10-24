@@ -16,7 +16,7 @@
 	$timestamp = $obj->timestamp;
 	$persons = $obj->persons;
 	$datetime = split(" ", $timestamp);
-	$printer = new printer("setting/printerInfo.json");
+	$printer = new printer(PRINTER_CONF);
 	
 	$db = new CNK_DB();
 	$db->changeTable($_GET['srcTID'], $_GET['destTID'], $persons);

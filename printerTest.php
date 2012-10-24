@@ -3,5 +3,5 @@
 	require('setting/defines.php');
 	require('classes/printer.php');
 	
-	$printer = new printer("setting/printerInfo.json");
+	$printer = new printer(PRINTER_CONF);
 ?>

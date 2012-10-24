@@ -9,7 +9,7 @@
 		$for = 0;
 	}
 	
-	$file = new file("setting/printerInfo.json");
+	$file = new file(PRINTER_CONF);
 	$jsonObj = json_decode($file->getContent());
 	$count = count($jsonObj);
 	if ($for == 0) {

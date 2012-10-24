@@ -9,10 +9,16 @@
 			$filename = basename($_SERVER['PHP_SELF']);
 			if ($filename == "shell.php") {
 				echo "<li><a href=\"db.php\">数据库</a></li>";
+                echo "<li><a href=\"pad_setting.php\">Pad设置</a></li>";
 				echo "<li><a href=\"#\" id=\"currentPage\">Shell</a></li>";
-			} else {
+			} else if ($filename == "db.php"){
 				echo "<li><a href=\"#\" id=\"currentPage\">数据库</a></li>";
+                echo "<li><a href=\"pad_setting.php\">Pad设置</a></li>";
 				echo "<li><a href=\"shell.php\">Shell</a></li>";
+			} else {
+                echo "<li><a href=\"db.php\">数据库</a></li>";
+                echo "<li><a href=\"#\" id=\"currentPage\">Pad设置</a></li>";
+                echo "<li><a href=\"shell.php\">Shell</a></li>";
 			}
 		?>
 		<li><a href="../setting/index.php">打印机</a></li>
