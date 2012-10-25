@@ -337,7 +337,11 @@
 			if (!$this->setPersons($tableId, $obj->persons)) {
 				return FALSE;
 			}
-				
+            
+		     //TODO set table status to 1 directly might cause err
+             if (!$this->updateTableStatus($tableId, 1)) {
+                 return FALSE;
+             }
 			$this->setErrorNone();
 			return $orderId;
 		}
