@@ -339,9 +339,22 @@
 			}
             
 		     //TODO set table status to 1 directly might cause err
-             if (!$this->updateTableStatus($tableId, 1)) {
-                 return FALSE;
-             }
+		     $tableStatusStr = $this->getTableStatusByTid($tableId);
+		     if (!$tableStatusStr) {
+		         $tableStatus = 1;
+		         if (!$this->updateTableStatus($tableId, $tableStatus)) {
+                        return FALSE;
+                 }
+		     } else {
+		         $tableStatus = substr($tableStatusStr, 1, strlen($tableStatusStr)-2);
+                 if ($tableStatus%10 == 0) {
+                     $tableStatus += 1;
+                     if (!$this->updateTableStatus($tableId, $tableStatus)) {
+                        return FALSE;
+                     }
+                 }
+		     }
+             
 			$this->setErrorNone();
 			return $orderId;
 		}
