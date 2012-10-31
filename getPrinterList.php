@@ -19,13 +19,13 @@
 		}
 	} else if ($for == PRINT_ORDER) {
 		for ($i=0; $i<$count; $i++) {
-			if($jsonObj[$i]->usefor <= PRINT_ORDER) {
+			if($jsonObj[$i]->usefor == PRINT_ORDER || $jsonObj[$i]->usefor == PRINT_KITCHEN) {
 				$printerList = $jsonObj[$i]->ip;
 				break;
 			}
 		}
 		for ($i += 1; $i<$count; $i++) {
-			if($jsonObj[$i]->usefor <= PRINT_ORDER) {
+			if($jsonObj[$i]->usefor <= PRINT_ORDER || $jsonObj[$i]->usefor == PRINT_KITCHEN) {
 				$printerList = $printerList.",".$jsonObj[$i]->ip;
 			}
 		}
