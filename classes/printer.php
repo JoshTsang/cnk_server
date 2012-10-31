@@ -656,7 +656,6 @@
             
             if ($dishCount <= 0) {
                 die("HTTP/1.1 NO_ORDERED_DISH 'NO_ORDERED_DISH'");
-                exit();
             }
             $this->printTitle($socket, $title, "(退菜)");
             $this->printOrderedDishes($socket, $obj, $printerType, $obj->orderId);

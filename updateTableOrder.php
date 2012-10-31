@@ -20,7 +20,7 @@
 		die("[MORE_PARAM_NEEDED:" . MORE_PARAM_NEEDED . "]");
 	}
 	
-	$printer = new printer("setting/printerInfo.json");
+	$printer = new printer(PRINTER_CONF);
 	
 	
 	$did = $_GET['DID'];
