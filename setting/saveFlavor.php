@@ -1,5 +1,6 @@
 <?php
 	require("../classes/file.php");
+    require("../macros.php");
 	
     if(!isset($_POST['config'])) {
     	die("parameter needed");

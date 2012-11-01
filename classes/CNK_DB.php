@@ -293,7 +293,7 @@
 			$tableId = $obj->tableId;
 			$timestamp = $obj->timestamp;
 			$waiter = $obj->waiterId;
-			$datetime = split(" ", $timestamp);
+			@$datetime = split(" ", $timestamp);
 			if (!$this->orderDB->exec("INSERT INTO ".TABLE_ORDER_TABLE."(".TABLE_ORDER_TABLE_COLUM_TABLE_ID.",".TABLE_ORDER_TABLE_COLUM_WAITER.",".
 											 TABLE_ORDER_TABLE_COLUM_TIMESTAMP.")".
 								"values('$tableId', '$waiter', '$datetime[0]T$datetime[1]')")){
@@ -626,6 +626,7 @@
 				 TABLE_ORDER_TABLE,TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid);
 		 
 			$resultSet = $this->orderDB->query($sql);
+            $table = null;
 			if ($resultSet) {
 				$i = 0;
 				while($row = $resultSet->fetchArray()) {
