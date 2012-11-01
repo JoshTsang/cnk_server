@@ -334,18 +334,14 @@
             $tableName = $obj->tableName;
             $timestamp = $obj->timestamp;
             $waiter = $obj->waiter;
-            if (isset($obj->persons)) {
-                $persons = $obj->persons;
-            } else {
-                $persons = null;
-            }
+            $persons = $obj->persons;
             
             $this->printHeader($socket, $orderId, $tableName, $waiter, $persons, $timestamp, $printerType);
             
             $total = $this->printDishes($socket, $obj, $printerType);
             if (isset($obj->comment)) {
-                $this->printComment($socket, $obj->comment, $printerType);  
-            }    
+                $this->printComment($socket, $obj->comment, $printerType);   
+            }   
             $this->printFooter($socket, $total, $printerType);
         }
 
