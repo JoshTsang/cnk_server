@@ -8,6 +8,10 @@
 	if (!$ret) {
 		echo $db->error();
 	} else {
-		echo $ret;
+	    if ($ret == "[]") {
+	        echo "null";
+	    } else {
+		  echo $ret;
+        }
 	}
 ?>
