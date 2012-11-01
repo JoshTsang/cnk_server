@@ -6,4 +6,5 @@
 	define('PRINT_STATISTICS_NAME', "统计");
 	define('PRINT_CASHIER_NAME', "收银");
 	define('PRINT_KITCHEN_NAME', "厨打");
+    define('PRINT_ORDER_NAME', "点菜");
 ?>

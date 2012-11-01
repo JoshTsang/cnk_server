@@ -5,7 +5,7 @@
 	$db = new CNK_DB();
 	
 	$ret = $db->getNotifications();
-	if (!ret) {
+	if (!$ret) {
 		echo $db->error();
 	} else {
 		echo $ret;

@@ -225,6 +225,7 @@
 				$this->connectOrderInfoDB();
 			}
 			$resultSet = $this->orderInfoDB->query($sql);
+            $table = null;
 			if ($resultSet) {
 				$j = 0;
 				while($row = $resultSet->fetchArray()) {
@@ -251,9 +252,13 @@
 				$this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
 				return FALSE;
 			}
-			$jsonString = json_encode($table);
+            if ($table == null) {
+                return "[]";
+            } else {
+    			$jsonString = json_encode($table);
+	       		return $jsonString;
+            }
 		
-			return $jsonString;
 		}
 		
 		public function getNotificationTypes() {
@@ -349,9 +354,15 @@
 		         $tableStatus = substr($tableStatusStr, 1, strlen($tableStatusStr)-2);
                  if ($tableStatus%10 == 0) {
                      $tableStatus += 1;
-                     if (!$this->updateTableStatus($tableId, $tableStatus)) {
-                        return FALSE;
+                 }
+                 if ($obj->type == "phone") {
+                     if (($tableStatus/10)%10 == 5) {
+                         $tableStatus -= 50;
                      }
+                     $this->cleanPhoneOrder($tableId);
+                 }
+                 if (!$this->updateTableStatus($tableId, $tableStatus)) {
+                        return FALSE;
                  }
 		     }
              
@@ -1024,7 +1035,7 @@
 			if (isset($this->orderInfoDB)) {
 				$this->orderInfoDB->close();
 			}
-			if (isset($this->$userinfoDB)) {
+			if (isset($this->userinfoDB)) {
 				$this->$userinfoDB->close();
 			}
 			if (isset($this->orderInfoDB)) {

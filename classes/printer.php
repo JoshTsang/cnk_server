@@ -737,5 +737,31 @@
             $this->printFooter($socket, $total, $printerType);
             
         }
+
+        public function printTestPage($printerIP, $title, $usefor, $type) {
+            $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
+            if ($socket < 0)
+            {
+                echo socket_strerror(socket_last_error())."\n";
+                die("Unable to connect printer.ip:$printerIP");
+            }
+            $connection = socket_connect($socket, $printerIP, 9100); 
+            if (!$connection) {
+                echo socket_strerror(socket_last_error())."\n";
+                die("Unable to connect printer.ip:$printerIP");
+            }
+            $this->printl($socket, "菜脑壳电子点菜系统\r\n打印机测试\r\n");
+            
+            $printerType = $type==PRINTER_TYPE_58?"58打印机":"80打印机";
+            $this-> printl($socket, "打印机IP:".$printerIP);
+            $this->printl($socket, "打印机类型:".$printerType);
+            $this->printl($socket, "小票抬头:".$title);
+            $this->printl($socket, "打印内容码:".$usefor);
+            $this->printl($socket, "\r\n");
+            
+            $this->printR($socket, PRINTER_COMMAND_CUT);
+            $this->printR($socket, PRINTER_COMMAND_ALARM);
+            socket_close($socket);
+        }
     }
 ?>
