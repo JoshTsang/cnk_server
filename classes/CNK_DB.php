@@ -624,7 +624,7 @@
                  ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_ORDER_ID,/*from*/
                  TABLE_ORDER_TABLE,TABLE_ORDER_TABLE_COLUM_ID,
                  TABLE_ORDER_TABLE,TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid);
-
+            $table = null;
             $resultSet = $this->orderDB->query($sql);
             if ($resultSet) {
                 $i = 0;

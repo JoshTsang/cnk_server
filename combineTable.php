@@ -15,7 +15,7 @@
 	$tableId = $obj->tableId;
 	$timestamp = $obj->timestamp;
 	$persons = $obj->persons;
-	$datetime = split(" ", $timestamp);
+	@$datetime = split(" ", $timestamp);
 	$printer = new printer(PRINTER_CONF);
 	
 	$db = new CNK_DB();

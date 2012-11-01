@@ -355,7 +355,9 @@
             $this->printHeaderForKichen($socket, $orderId, $tableName, $waiter, $persons, $timestamp, $printerType);
             
             $total = $this->printDishesByPrinterId($socket, $obj, $printerType, $printerId);
-            $this->printComment($socket, $obj->comment, $printerType);
+            if (isset($obj->comment)) {
+                $this->printComment($socket, $obj->comment, $printerType);
+            }
             $this->printFooterForKichen($socket, $printerType);
         }
         

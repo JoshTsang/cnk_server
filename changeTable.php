@@ -14,7 +14,7 @@
 	$dishCount = count($obj->order);
 	$tableId = $obj->tableId;
 	$timestamp = $obj->timestamp;
-	$datetime = split(" ", $timestamp);
+	@$datetime = split(" ", $timestamp);
 	$persons = $obj->persons;
 	$printer = new printer(PRINTER_CONF);
 	
