@@ -6,6 +6,7 @@
     define('PRINTER_OPEN_CASHIER', "\x10\x14\1\0\10");
     //define('PRINTER_COMMAND_1X', "\x1D\x21\x01");
     define('PRINTER_COMMAND_1X', "\x1D\x21\x1");
+    define('PRINTER_OPEN_CASHIER', "\x10\x14\1\0\10");
     
     class printer {
         private $printerInfo;
@@ -339,9 +340,7 @@
             $this->printHeader($socket, $orderId, $tableName, $waiter, $persons, $timestamp, $printerType);
             
             $total = $this->printDishes($socket, $obj, $printerType);
-            if (isset($obj->comment)) {
-                $this->printComment($socket, $obj->comment, $printerType);   
-            }   
+            $this->printComment($socket, $obj->comment, $printerType);      
             $this->printFooter($socket, $total, $printerType);
         }
 
@@ -383,7 +382,7 @@
             $waiter = $checkout->waiter;
             
             $this->printTitle($socket, $title, NULL);
-            $this->printHeader($socket, null, $checkout->tableName, $waiter, "结账", null, $printerType);
+            $this->printHeader($socket, null, $checkout->tableName, $waiter, "结账", $timestamp, $printerType);
             
             
             for ($i=0; $i<$count; $i++) {
