@@ -534,7 +534,7 @@
                     if (isset($obj->order[$i]->flavor)) {
                         $this->printl($socket, "*口味：".$obj->order[$i]->flavor);
                     }
-                    if ($this->$paddingDish) {
+                    if ($this->paddingDish) {
                         $this->printl($socket, "");
                     }
                 }
