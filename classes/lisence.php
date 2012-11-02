@@ -2,6 +2,10 @@
    class Lisence {
        public function validatePad($uuid)
        {
+           if ($uuid == null && $uuid == "null") {
+               return 1;
+           }
+           
            $this->removeNotUsedPad();
            $currentPadNum = $this->getCurrentPadNum();
            $permittedPadNum = $this->getPermittedPadNum();
@@ -82,7 +86,9 @@
         }   
         
         public function updatePadInfo($uuid) {
-            file_put_contents(DEV_DIR.$uuid, time());
+            if (file_exists(DEV_DIR.$uuid)) {
+                file_put_contents(DEV_DIR.$uuid, time());
+            }
         }
    }
 ?>

@@ -2,17 +2,20 @@
     require 'file.php';
     define('PRINTER_COMMAND_ALARM', "\x1B\x43\1\x13\3\n");
     define('PRINTER_COMMAND_CUT', "\x1D\x56\x42\5\n");
+    define('PRINTER_COMMAND_1X', "\x1D\x21\x01");
     define('PRINTER_COMMAND_2X', "\x1D\x21\x11");
+    define('PRINTER_COMMAND_3X', "\x1D\x21\x22");
     define('PRINTER_OPEN_CASHIER', "\x10\x14\1\0\10");
-    //define('PRINTER_COMMAND_1X', "\x1D\x21\x01");
-    define('PRINTER_COMMAND_1X', "\x1D\x21\x1");
+    //define('PRINTER_COMMAND_1X', "\x1D\x21\x1");
     
     class printer {
         private $printerInfo;
+        private $paddingDish;
         
         function __construct($param) {
             $file = new file($param);
             $this->printerInfo = json_decode($file->getContent());
+            $this->paddingDish = TRUE;
             // $obj = json_decode($file->getContent());
             // $count = count($obj);
             // for ($i=0; $i<$count; $i++) {
@@ -185,6 +188,7 @@
         }
         
         public function printCheckout($json) {
+            $this->paddingDish = FALSE;
             $count = count($this->printerInfo);
             for ($i=0; $i<$count; $i++) {
                 if($this->printerInfo[$i]->usefor == PRINT_CASHIER) {
@@ -221,8 +225,9 @@
                 $spaceLen = (48 - $space)/2;
                 $print = sprintf("%".$spaceLen."s%s\r\n", "", $shopname);
                 $this->printl($socket, $print);
+                $this->printTableId($socket, $table);
                 $this->printOrderId($socket, $orderId);
-                $print = sprintf("桌号:%-4s                %s", $table, $timestamp);
+                $print = sprintf("%s", $timestamp);
                 $this->printl($socket, $print);
                 if ($persons == 0) {
                     $print = sprintf("人数:未设置           服务员：%s", $waiter);
@@ -236,8 +241,10 @@
                 $spaceLen = (34 - $space)/2;
                 $print = sprintf("%".$spaceLen."s%s\r\n", "", $shopname);
                 $this->printl($socket, $print);
+                
+                $this->printTableId($socket, $table);
                 $this->printOrderId($socket, $orderId);
-                $print = sprintf("桌号:%-4s   %s", $table, $timestamp);
+                $print = sprintf("%s", $timestamp);
                 $this->printl($socket, $print);
                 if ($persons == 0) {
                     $print = sprintf("人数:%-4s   服务员：%s", "未设置", $waiter);
@@ -271,6 +278,15 @@
                 $orders = implode(",", $orderId);
                 $print = sprintf("%s", "流水号:".$orders);
                 $this->printl($socket, $print);
+            }
+        }
+        
+        private function printTableId($socket, $table) {
+            if (isset($table)) {
+                socket_write($socket, PRINTER_COMMAND_3X);
+                $print = sprintf("桌号:%-4s", $table);
+                $this->printl($socket, $print);
+                socket_write($socket, PRINTER_COMMAND_1X);
             }
         }
         
@@ -479,6 +495,9 @@
                 if (isset($obj->order[$i]->flavor)) {
                     $this->printl($socket, "*口味：".$obj->order[$i]->flavor);
                 }
+                if ($this->paddingDish) {
+                    $this->printl($socket, "");
+                }
             }
             return $total;
         }
@@ -514,6 +533,9 @@
                     $this->printl($socket, $printString);
                     if (isset($obj->order[$i]->flavor)) {
                         $this->printl($socket, "*口味：".$obj->order[$i]->flavor);
+                    }
+                    if ($this->$paddingDish) {
+                        $this->printl($socket, "");
                     }
                 }
             }
