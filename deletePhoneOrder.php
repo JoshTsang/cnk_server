@@ -7,7 +7,11 @@
 	}
 
 	$tableId = $_GET['TID'];
-	$tableDishId = $_GET['DID'];
+	
+	if (!isset($_GET['DID'])) {
+		$tableDishId = $_GET['DID'];
+	}
+	
 	$db = new CNK_DB();
 	if(isset($tableDishId)){
 		$db->deletePhoneOrder($tableId, $tableDishId);
