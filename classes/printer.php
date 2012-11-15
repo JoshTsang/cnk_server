@@ -3,7 +3,7 @@
     define('PRINTER_COMMAND_ALARM', "\x1B\x43\1\x13\3\n");
     define('PRINTER_COMMAND_CUT', "\x1D\x56\x42\5\n");
     //define('PRINTER_COMMAND_1X', "\x1D\x21\x01");
-    define('PRINTER_COMMAND_2X', "\x1D\x21\x12");
+    define('PRINTER_COMMAND_2X', "\x1D\x21\x11");
     define('PRINTER_COMMAND_3X', "\x1D\x21\x22");
     define('PRINTER_OPEN_CASHIER', "\x10\x14\1\0\10");
     define('PRINTER_COMMAND_1X', "\x1D\x21\x1");
@@ -16,8 +16,6 @@
             $file = new file($param);
             $this->printerInfo = json_decode($file->getContent());
             $this->paddingDish = FALSE;
-            $this->fontSize = PRINTER_COMMAND_1X;
-            $this->dishFontSize = PRINTER_COMMAND_1X;
             // $obj = json_decode($file->getContent());
             // $count = count($obj);
             // for ($i=0; $i<$count; $i++) {
@@ -183,15 +181,12 @@
         
         public function printCheckout($json) {
             $this->paddingDish = FALSE;
-            $dishFontSize = $this->dishFontSize;
-            $this->dishFontSize = PRINTER_COMMAND_1X;
             $count = count($this->printerInfo);
             for ($i=0; $i<$count; $i++) {
                 if($this->printerInfo[$i]->usefor == PRINT_CASHIER) {
                     $this->printChecktoutReceipt($json, $this->printerInfo[$i]->ip, $this->printerInfo[$i]->title, $this->printerInfo[$i]->type);
                 }
             }
-            $this->dishFontSize = $dishFontSize;
         }
         
         private function printTitle($socket, $title, $subTitle) {
@@ -200,9 +195,9 @@
                 socket_write($socket, PRINTER_COMMAND_2X);
                 socket_write($socket, $print);
                 socket_write($socket, "\r\n\r\n");
-                socket_write($socket, $this->fontSize);
+                socket_write($socket, PRINTER_COMMAND_1X);
             } else {
-                socket_write($socket, $this->fontSize);
+                socket_write($socket,PRINTER_COMMAND_1X);
                 socket_write($socket, $print);
                 socket_write($socket, "\r\n\r\n");
             }
@@ -285,7 +280,7 @@
                 socket_write($socket, PRINTER_COMMAND_3X);
                 $print = sprintf("桌号:%-4s", $table);
                 $this->printl($socket, $print);
-                socket_write($socket, $this->fontSize);
+                socket_write($socket, PRINTER_COMMAND_1X);
             }
         }
         
@@ -356,12 +351,11 @@
             }
             
             $this->printHeader($socket, $orderId, $tableName, $waiter, $persons, $timestamp, $printerType);
-            $this->printR($socket, $this->dishFontSize);
+            
             $total = $this->printDishes($socket, $obj, $printerType);
             if (isset($obj->comment)) {
                 $this->printComment($socket, $obj->comment, $printerType);   
-            }
-            $this->printR($socket, $this->fontSize);
+            }   
             $this->printFooter($socket, $total, $printerType);
         }
 
@@ -374,12 +368,10 @@
             
             $this->printHeaderForKichen($socket, $orderId, $tableName, $waiter, $persons, $timestamp, $printerType);
             
-            $this->printR($socket, $this->dishFontSize);
             $total = $this->printDishesByPrinterId($socket, $obj, $printerType, $printerId);
             if (isset($obj->comment)) {
                 $this->printComment($socket, $obj->comment, $printerType);
             }
-            $this->printR($socket, $this->fontSize);
             $this->printFooterForKichen($socket, $printerType);
         }
         
@@ -522,22 +514,17 @@
                     $enLen = iconv_strlen($dishName, "UTF-8") - $zhLen;
                     $dishNameSpace = $zhLen*2 + $enLen;
                     if ($printerType == PRINTER_TYPE_80) {
-                        $dishNameLen = 36;
-                        if ($this->dishFontSize == PRINTER_COMMAND_2X) {
-                            $dishNameLen = 16;
-                        }
-                        if ($dishNameSpace > $dishNameLen) {
-                            $printString = sprintf("%s\n%".$dishNameLen."s%6.2f",$dishName, "", $dishQuantity);
+                        if ($dishNameSpace > 38) {
+                            $printString = sprintf("%s\n%48s%6.2f",$dishName, "", $dishQuantity);
                         } else {
-                            $spaceLen = $dishNameLen - $dishNameSpace;
+                            $spaceLen = 38 - $dishNameSpace;
                             $printString = sprintf("%s%$spaceLen"."s%6.2f",$dishName, "", $dishQuantity);
                         }
                     } else if($printerType == PRINTER_TYPE_58) {
-                        $dishNameLen = 22;
-                        if ($dishNameSpace > $dishNameLen) {
-                            $printString = sprintf("%s\n%".$dishNameLen."s6.2f",$dishName, "", $dishQuantity);
+                        if ($dishNameSpace > 22) {
+                            $printString = sprintf("%s\n%12s6.2f",$dishName, "", $dishQuantity);
                         } else {
-                            $spaceLen = $dishNameLen - $dishNameSpace;
+                            $spaceLen = 22 - $dishNameSpace;
                             $printString = sprintf("%s%$spaceLen"."s%6.2f",$dishName, "", $dishQuantity);
                         }
                     }
