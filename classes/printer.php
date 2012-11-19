@@ -3,7 +3,7 @@
     define('PRINTER_COMMAND_ALARM', "\x1B\x43\1\x13\3\n");
     define('PRINTER_COMMAND_CUT', "\x1D\x56\x42\5\n");
     //define('PRINTER_COMMAND_1X', "\x1D\x21\x01");
-    define('PRINTER_COMMAND_2X', "\x1D\x21\x12");
+    define('PRINTER_COMMAND_2X', "\x1D\x21\x11");
     define('PRINTER_COMMAND_3X', "\x1D\x21\x22");
     define('PRINTER_OPEN_CASHIER', "\x10\x14\1\0\10");
     define('PRINTER_COMMAND_1X', "\x1D\x21\x1");
@@ -340,7 +340,9 @@
                 } else {
                     $this->printl($socket, "********************************");
                 }
+                $this->printR($socket, $this->dishFontSize);
                 $this->printl($socket, "#备注:".$comment);
+                $this->printR($socket, $this->fontSize);
             }
         }
 
@@ -358,10 +360,10 @@
             $this->printHeader($socket, $orderId, $tableName, $waiter, $persons, $timestamp, $printerType);
             $this->printR($socket, $this->dishFontSize);
             $total = $this->printDishes($socket, $obj, $printerType);
+            $this->printR($socket, $this->fontSize);
             if (isset($obj->comment)) {
                 $this->printComment($socket, $obj->comment, $printerType);   
             }
-            $this->printR($socket, $this->fontSize);
             $this->printFooter($socket, $total, $printerType);
         }
 
@@ -376,10 +378,10 @@
             
             $this->printR($socket, $this->dishFontSize);
             $total = $this->printDishesByPrinterId($socket, $obj, $printerType, $printerId);
+            $this->printR($socket, $this->fontSize);
             if (isset($obj->comment)) {
                 $this->printComment($socket, $obj->comment, $printerType);
             }
-            $this->printR($socket, $this->fontSize);
             $this->printFooterForKichen($socket, $printerType);
         }
         

@@ -4,6 +4,7 @@
     }
 
     class CNK_DB {
+        private $debug = FALSE;
         private $menuDB;
         private $orderDB;
         private $salesDB;
@@ -13,6 +14,26 @@
         private $err = array('succ' => false,
                              'error' => 'unknown');
 
+
+        // function __construct() {
+            // if ($this->debug) {
+                // error_reporting(E_ALL);
+                // ini_set("display_errors", TRUE);
+            // } else {
+                // ini_set("display_errors", FALSE);
+            // }
+        // }
+        
+        public function install() {
+            $this->connectOrderDB();
+            $this->connectSalesDB();
+            $order = file_get_contents("db/order.sql");
+            $sales = file_get_contents("db/sales.sql");
+            
+            $this->orderDB->exec($order);
+            $this->salesDB->exec($sales);
+        }
+        
         public function cleanTable($tid, $timestamp) {
             if (!$this->saveSalesData($tid, $timestamp)) {
                 return FALSE;
@@ -549,7 +570,11 @@
                     $table[$i] = $item;
                     $i++;
                 }
-                $jsonString = json_encode($table);
+                if (isset($table)) {
+                    $jsonString = json_encode($table);
+                } else {
+                    $jsonString = "null";
+                }
             } else {
                 $this->setErrorMsg('query failed:'.sqlite_last_error($this->orderInfoDB).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
