@@ -13,12 +13,14 @@
 		$dbName = "../".DATABASE_ORDER;
 	} else if($dbName == "sales"){
 		$dbName = "../".DATABASE_SALES;
-	} else {
+	} else if($dbName == "receipt"){
+        $dbName = "../"."../db/temporary/receipt.db";
+    } else {
 		die("unknown db");
 	}
 	
 	$db = new SQLite3($dbName);
-	$results = $db->query($sql) or die("query failed, sql:".$sql);
+	$results = $db->query($sql) or die("query failed, sql:".$sql.",db:".$dbName);
 	$num_columns = $results->numColumns();
 	for ($i=0; $i<$num_columns; $i++) {
 		echo "<th>".$results->columnName($i)."</th>";

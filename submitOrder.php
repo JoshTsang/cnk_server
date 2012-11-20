@@ -19,9 +19,9 @@
 	  	die("[MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED."]");
 	}
 	
-	$orderId = $db->submitOrder($obj);
+	$orderId = $db->submitOrder($obj, $_GET['MD5']);
 	if ($orderId > 0) {
-		$printer->printOrder($json_string, $orderId, isset($_GET['action']));
+		$printer->savePrintOrder($json_string, $orderId, isset($_GET['action']));
 	}
 	
 	echo $db->error();

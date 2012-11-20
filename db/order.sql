@@ -13,7 +13,8 @@ CREATE TABLE [table_order] (
 [id] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
 [table_id] INTEGER  NOT NULL,
 [waiter_id] INTEGER NOT NULL,
-[timestamp] TIMESTAMP  NOT NULL
+[timestamp] TIMESTAMP  NOT NULL,
+[MD5] CHAR(33) NOT NULL
 );
 
 DROP TABLE IF EXISTS [table_persons];
