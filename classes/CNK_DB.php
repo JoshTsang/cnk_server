@@ -304,20 +304,44 @@
             $jsonString = json_encode($table);
             return $jsonString; 
         }
-
-        public function submitOrder($obj) {
+        
+        private function isOrderSubmited($tid, $MD5) {
             if ($this->orderDB == NULL) {
                 $this->connectOrderDB();
             }
+            
+            $sql = sprintf("select * from %s where %s='%s' and %s=%s", 
+                        TABLE_ORDER_TABLE, "MD5", $MD5,
+                         TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid);
+            $resultSet = $this->orderDB->query($sql);
+            if ($resultSet) {
+                if ($row = $resultSet->fetchArray()) {
+                    return TRUE;
+                } else {
+                    return FALSE;
+                }
+            } else {
+                return FALSE;
+            }
+        }
 
+        public function submitOrder($obj, $MD5) {
+            if ($this->orderDB == NULL) {
+                $this->connectOrderDB();
+            }
+            
             $dishCount = count($obj->order);
             $tableId = $obj->tableId;
             $timestamp = $obj->timestamp;
             $waiter = $obj->waiterId;
+            if ($this->isOrderSubmited($tableId, $MD5)) {
+                $this->setErrorNone();
+                return -1;
+            }
             @$datetime = split(" ", $timestamp);
             if (!$this->orderDB->exec("INSERT INTO ".TABLE_ORDER_TABLE."(".TABLE_ORDER_TABLE_COLUM_TABLE_ID.",".TABLE_ORDER_TABLE_COLUM_WAITER.",".
-                                             TABLE_ORDER_TABLE_COLUM_TIMESTAMP.")".
-                                "values('$tableId', '$waiter', '$datetime[0]T$datetime[1]')")){
+                                             TABLE_ORDER_TABLE_COLUM_TIMESTAMP.",MD5)".
+                                "values('$tableId', '$waiter', '$datetime[0]T$datetime[1]','$MD5')")){
                 $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
