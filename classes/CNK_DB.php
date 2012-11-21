@@ -775,7 +775,7 @@
                 $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
-            }   
+            }
             $this->setErrorNone();
             return $orderId;
         }
