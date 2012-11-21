@@ -1071,6 +1071,65 @@
             }
         }
 
+        public function getKitchenTodo() {
+            $sql = sprintf("SELECT %s, %s.%s, %s, (%s-%s) FROM %s, %s Where %s<%s and %s.%s=%s",
+                        "table_id", "order_detail", "id", "dish_id", "quantity", "status", "order_detail", "table_order",
+                        "status", "quantity", "table_order", "id", "order_id");
+            if ($this->orderDB == NULL) {
+                $this->connectOrderDB();
+            }
+            $ret = $this->orderDB->query($sql);
+            $todos = null;
+            $i = 0;
+            if ($ret) {
+                $i = 0;
+                while($row = $ret->fetchArray()) {
+                    $dishInfo = $this->getDishInfo($row[2]);
+                    if ($dishInfo) {
+                        $todos[$i] = array('id' => $row[1],
+                                           'dishId' => $row[2],
+                                           'num' => $row[3],
+                                           'tid' => $row[0],
+                                           'dishName' => $dishInfo[0],
+                                           'displayCate' => $dishInfo[1],
+                                           'unitName' => $dishInfo[2] );
+                       $i++;
+                    }
+                }
+            } else {
+                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+                return FALSE;
+            }   
+            $this->setErrorNone();
+            return json_encode($todos);
+        }
+        
+        private function getDishInfo($dishId) {
+            $sql = sprintf("SELECT %s, %s, %s FROM %s,%s Where %s.%s=%s and %s.%s=%d",
+                        "name", "sortPrintID", "unitName", 
+                        "dishInfo", "unit",
+                        "unit", "id", "unitID",
+                        "dishInfo", "id", $dishId);
+            if ($this->menuDB == NULL) {
+                $this->connectMenuDB();
+            }
+            
+            @$resultSet = $this->menuDB->query($sql);
+            if ($resultSet) {
+                if ($row = $resultSet->fetchArray()) {
+                    $dishInfo = array($row[0],$row[1], $row[2]);
+                    return $dishInfo;
+                } else {
+                    $this->setErrorMsg('query failed:'.$this->orderInfoDB->lastErrorMsg().' #sql:'.$sql);
+                    $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+                    return FALSE;
+                }
+            } else {
+                return FALSE;
+            }
+        }
+        
         function __destruct() {
             if (isset($this->menuDB)) {
                 $this->menuDB->close();
