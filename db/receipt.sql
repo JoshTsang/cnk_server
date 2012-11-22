@@ -5,5 +5,6 @@ CREATE TABLE [receipt] (
 [json] TEXT  NOT NULL,
 [orderId] TEXT NOT NULL,
 [isAdd] BOOLEAN NOT NULL,
-[useFor] INTERGER NOT NULL
+[useFor] INTERGER NOT NULL,
+[pend] BOOLEAN NOT NULL
 );
