@@ -1072,9 +1072,15 @@
         }
 
         public function getKitchenTodo() {
-            $sql = sprintf("SELECT %s, %s.%s, %s, (%s-%s) FROM %s, %s Where %s<%s and %s.%s=%s",
-                        "table_id", "order_detail", "id", "dish_id", "quantity", "status", "order_detail", "table_order",
-                        "status", "quantity", "table_order", "id", "order_id");
+            $sql = sprintf("SELECT %s, %s.%s, %s, (%s-%s) FROM %s, %s "
+                        ."Where %s<%s and %s.%s=%s",
+                        TABLE_ORDER_TABLE_COLUM_TABLE_ID, 
+                        ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_ID,
+                        ORDER_DETAIL_TABLE_COLUM_DISH_ID,
+                        ORDER_DETAIL_TABLE_COLUM_QUANTITY, ORDER_DETAIL_TABLE_COLUM_COOKED,
+                        ORDER_DETAIL_TABLE, TABLE_ORDER_TABLE,
+                        ORDER_DETAIL_TABLE_COLUM_COOKED, ORDER_DETAIL_TABLE_COLUM_QUANTITY,
+                        TABLE_ORDER_TABLE, TABLE_ORDER_TABLE_COLUM_ID, ORDER_DETAIL_TABLE_COLUM_ORDER_ID);
             if ($this->orderDB == NULL) {
                 $this->connectOrderDB();
             }
@@ -1102,7 +1108,11 @@
                 return FALSE;
             }   
             $this->setErrorNone();
-            return json_encode($todos);
+            if ($todos == null) {
+                return "[]";
+            } else {
+                return json_encode($todos);
+            }
         }
         
         private function getDishInfo($dishId) {
@@ -1121,7 +1131,7 @@
                     $dishInfo = array($row[0],$row[1], $row[2]);
                     return $dishInfo;
                 } else {
-                    $this->setErrorMsg('query failed:'.$this->orderInfoDB->lastErrorMsg().' #sql:'.$sql);
+                    $this->setErrorMsg('query failed:'.$this->menuDB->lastErrorMsg().' #sql:'.$sql);
                     $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                     return FALSE;
                 }
@@ -1129,6 +1139,92 @@
                 return FALSE;
             }
         }
+        
+        public function getTables() {
+            $sql=sprintf("select %s,%s from %s",
+                         TABLE_ID , TABLE_NAME, TABLE_INFO);
+
+            if ($this->orderInfoDB == NULL) {
+                $this->connectOrderInfoDB();
+            }
+            $jsonString = "";
+            
+            @$resultSet = $this->orderInfoDB->query($sql);
+            if ($resultSet) {
+                $i = 0;
+                while($row = $resultSet->fetchArray()) {
+                    $item = array('id' => $row[0],
+                                  'name' => $row[1]);
+                    $table[$i] = $item;
+                    $i++;
+                }
+                $jsonString = json_encode($table);
+            } else {
+                $this->setErrorMsg('query failed:'.sqlite_last_error($this->orderInfoDB).' #sql:'.$sql);
+                $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+                return FALSE;
+            }
+
+            return $jsonString;
+        }
+
+        public function markCookedDish($id, $flag) {
+            $dishStatus = $this->getOrderedDishStatus($id);
+            
+            $status = 0;
+            if ($dishStatus) {
+                switch($flag) {
+                    case 0:
+                        $status = $dishStatus['cooked'] + 1;
+                        break;
+                    case 1:
+                        //TODO round
+                        $status = $dishStatus['quan'] - $dishStatus['cooked'];
+                        break;
+                    default:
+                        $status = $dishStatus['cooked'] + 1;
+                        break;
+                }
+            }
+            
+            $sql = sprintf("UPDATE %s SET %s = %s where %s = %d",
+                            ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_COOKED, $status,
+                            ORDER_DETAIL_TABLE_COLUM_ID, $id);
+                            
+            if ($this->orderDB == NULL) {
+                $this->connectOrderDB();
+            }
+            
+            $ret = $this->orderDB->exec($sql);
+            return $ret;
+        }
+        
+        private function getOrderedDishStatus($id) {
+            $sql=sprintf("select %s,%s from %s where %s = %s",
+                         ORDER_DETAIL_TABLE_COLUM_QUANTITY ,
+                         ORDER_DETAIL_TABLE_COLUM_COOKED, ORDER_DETAIL_TABLE,
+                         ORDER_DETAIL_TABLE_COLUM_ID, $id);
+
+            if ($this->orderDB == NULL) {
+                $this->connectOrderDB();
+            }
+            
+            $status = FALSE;
+            @$resultSet = $this->orderDB->query($sql);
+            if ($resultSet) {
+                if ($row = $resultSet->fetchArray()) {
+                    $status = array('quan' => $row[0],
+                                  'cooked' => $row[1]);
+                }
+            } else {
+                $this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+                return FALSE;
+            }
+            
+            return $status;
+        }
+        
         
         function __destruct() {
             if (isset($this->menuDB)) {

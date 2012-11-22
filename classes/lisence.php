@@ -71,7 +71,8 @@
         }
         
         private function getDirFiles()   
-        {   
+        {
+            $files = FALSE;   
             if ($handle = opendir(DEV_DIR)){
                 while (false !== ($file = readdir($handle))) {
                     if ($file == ".." || $file == ".") {
