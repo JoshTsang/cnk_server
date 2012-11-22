@@ -35,6 +35,7 @@
 	define('ORDER_DETAIL_TABLE_COLUM_STATUS', "status");
 	define('ORDER_DETAIL_TABLE_COLUM_ORDER_ID', "order_id");
 	define('ORDER_DETAIL_TABLE_COLUM_QUANTITY', "quantity");
+    define('ORDER_DETAIL_TABLE_COLUM_COOKED', "cooked");
 	
 	define('PRINTER_TABLE', "sortPrint");
 	define('PRINTER_COLUMN_NAME', "sortPrintName");
