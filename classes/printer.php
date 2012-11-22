@@ -426,7 +426,11 @@
             $tableName = $obj->tableName;
             $timestamp = $obj->timestamp;
             $waiter = $obj->waiter;
-            $persons = $obj->persons;
+            if (isset($obj->persons)) {
+                $persons = $obj->persons;
+            } else {
+                $persons = 0;
+            }
             
             $this->printHeaderForKichen($socket, $orderId, $tableName, $waiter, $persons, $timestamp, $printerType);
             
