@@ -14,6 +14,7 @@
         private $paddingDish;
         private $fontSize;
         private $dishFontSize;
+        private $categrayPrintFontSize;
         private $receiptDB;
         
         function __construct($param) {
@@ -312,7 +313,11 @@
                 }
                 $this->printl($socket, $print);
                 $this->printl($socket, "--------------------------------");
-                $this->printl($socket, "品名          单价  数量    小计");
+                if ($printPrice) {
+                    $this->printl($socket, "品名          单价  数量    小计");
+                } else {
+                    $this->printl($socket, "品名                     数量");
+                }
             }
         }
 
@@ -565,6 +570,7 @@
                         $printString = sprintf("%s%$spaceLen"."s%7.2f%6.2f%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
                     }
                 } else if($printerType == PRINTER_TYPE_58) {
+                    $this->printR($socket, PRINTER_COMMAND_1X);
                     if ($dishNameSpace > 12) {
                         $printString = sprintf("%s\n%12s%6.2f%6.2f%8.2f",$dishName, "", $price, $dishQuantity, $price*$dishQuantity);
                     } else {
@@ -629,12 +635,12 @@
                     $printString = sprintf("%s%$spaceLen"."s%6.2f",$dishName, "", $dishQuantity);
                 }
             } else if($printerType == PRINTER_TYPE_58) {
-                $dishNameLen = 22;
+                $dishNameLen = 10;
                 if ($dishNameSpace > $dishNameLen) {
-                    $printString = sprintf("%s\n%".$dishNameLen."s6.2f",$dishName, "", $dishQuantity);
+                    $printString = sprintf("%s\n%".$dishNameLen."s%5.2f",$dishName, "", $dishQuantity);
                 } else {
                     $spaceLen = $dishNameLen - $dishNameSpace;
-                    $printString = sprintf("%s%$spaceLen"."s%6.2f",$dishName, "", $dishQuantity);
+                    $printString = sprintf("%s%$spaceLen"."s%5.2f",$dishName, "", $dishQuantity);
                 }
             }
             $this->printl($socket, $printString);
