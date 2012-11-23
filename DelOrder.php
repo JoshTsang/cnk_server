@@ -29,10 +29,13 @@
 			$orderID = $ret;		
 		}else{
 			for($k = 0;$k < $quan;$k++){
-				if($order[$i]->unit == "斤"){
+				if($order[$i]->unit){
 					$ret = $db->updateTableOrder($tableId, $dishId, DEL_ITME_ORDER);
 				}else{
 					$ret = $db->updateTableOrder($tableId, $dishId, $type);
+				}
+				if(empty($ret)){
+					break;					
 				}
 				if(!isset($orderID))
 				$orderID = $ret;
