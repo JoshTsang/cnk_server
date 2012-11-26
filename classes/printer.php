@@ -253,10 +253,7 @@
             $this->dishFontSize = $dishFontSize;
         }
         
-        private function printTitle($socket, $title, $subTitle, $appdix) {
-            if (!isset($appdix)) {
-                $appdix = "";
-            }
+        private function printTitle($socket, $title, $subTitle, $appdix = "") {
             $print = iconv("UTF-8","GB18030", $title.$subTitle."           ".$appdix);
             if (isset($subTitle)) {
                 socket_write($socket, PRINTER_COMMAND_2X);
