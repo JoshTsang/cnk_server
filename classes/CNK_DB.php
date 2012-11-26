@@ -55,6 +55,30 @@
             return TRUE;
         }
 
+        public function getCheckoutNo() {
+            $checkoutNo = FALSE;
+            if ($this->orderDB == NULL) {
+                $this->connectOrderDB();
+            }
+            $sign = time().rand(100000, 999999);
+            $sql = sprintf("INSERT INTO %s VALUES(null,'%s')", "checkout", $sign);
+            if (!$this->orderDB->exec($sql)) {
+                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+                return FALSE;
+            }
+            
+            $sql = sprintf("SELECT id FROM %s WHERE sign='%s'", "checkout", $sign);
+            $resultSet = $this->orderDB->query($sql);
+            if ($resultSet) {
+               if($row = $resultSet->fetchArray()) {
+                    $checkoutNo = $row[0];
+                }
+            }
+            $this->setErrorNone();
+            return $checkoutNo;
+        }
+        
         public function deletePhoneOrder($tid, $did) {
             if($did < 0 || $did == NULL){
                 $sql=sprintf("delete from %s where %s=%s", 
@@ -95,6 +119,7 @@
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return false;
             }
+            
             $this->setErrorNone();
             return true;
         }

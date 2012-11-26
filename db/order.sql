@@ -24,3 +24,9 @@ CREATE TABLE [table_persons] (
 [table_id] INTEGER  NOT NULL,
 [persons] INTEGER  NOT NULL
 );
+
+DROP TABLE IF EXISTS [checkout];
+CREATE TABLE [checkout] (
+[id] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
+[sign] CHAR(33)  NOT NULL
+);

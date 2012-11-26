@@ -9,9 +9,11 @@
 	}
 	
 	$printer = new printer(PRINTER_CONF);
-	
+    $db = new CNK_DB();
+    
+    $checkoutNo = $db->getCheckoutNo();
 	$json_string = $_POST['json'];
 	
-	$printer->printCheckout($json_string);
+	$printer->printCheckout($json_string, $checkoutNo);
 	echo "{\"succ\":true}";
 ?>

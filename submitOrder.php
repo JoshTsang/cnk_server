@@ -5,7 +5,7 @@
 	require('classes/CNK_DB.php');
 	
 	if (!isset($_POST['json'])) {
-	  	die("[MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED."]");
+	  	die("[MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED.",json]");
 	}
 	
 	$printer = new printer(PRINTER_CONF);
@@ -16,7 +16,7 @@
 	$dishCount = count($obj->order);
 	
 	if ($dishCount <= 0) {
-	  	die("[MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED."]");
+	  	die("[MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED.",dishes]");
 	}
 	
 	$orderId = $db->submitOrder($obj, $_GET['MD5']);
