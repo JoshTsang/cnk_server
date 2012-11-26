@@ -19,7 +19,7 @@
             $printer->printCheckout($_POST['print']);
             break;
         case 'ORDER':
-            $printer->savePrintOrder($_POST['json'], array(0), FALSE);
+            $printer->savePrintOrder($_POST['json'], "0", FALSE);
             break;
         default:
             die("{\"succ\":\"false\", \"err\":\"unsupporrtted action:$action\"}");

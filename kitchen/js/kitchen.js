@@ -9,6 +9,7 @@ $('#todoDishes').live('pageinit',function(event){
 	loadSetting();
 	getTableInfo();
 });
+
 $('#setting').live('pagebeforecreate',function(event){
 	loadPrinterSetting();
 });
@@ -147,18 +148,19 @@ function saveSetting() {
 	showPart = $("#slider option:selected").attr("value")=="on"?true:false;
 	localStorage.showPart = showPart;
 	
-	printIds = [];
+	printerIds = [];
 	$.each(printers, function(index, printer) {
 		if (printer.id != 0 && printer.usefor != 200) {
 			if ($('#'+printer.id).prop("checked") == true) {
-				printIds.push(printer.id);
+				printerIds.push(printer.id);
 			}
 		}
 	});
-	localStorage.printers = JSON.stringify(printIds);
+	localStorage.printers = JSON.stringify(printerIds);
 	
 	console.log("printers:" + localStorage.printers);
-	refreshTodo();
+	window.location.href = "index.html";
+	// refreshTodo();
 }
 
 function loadSetting() {
