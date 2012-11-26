@@ -4,7 +4,9 @@
     require 'classes/printer.php';
     
     if (!isset($_GET['action']) || !isset($_POST['print'])) {
-        die("{\"succ\":\"false\", \"err\":\"more param needed\"}");
+        if (!isset($_POST['json'])) {
+            die("{\"succ\":\"false\", \"err\":\"more param needed\"}");
+        }
     }
     
     $printer = new printer(PRINTER_CONF);
@@ -15,6 +17,9 @@
             break;
         case 'CHECKOUT':
             $printer->printCheckout($_POST['print']);
+            break;
+        case 'ORDER':
+            $printer->savePrintOrder($_POST['json'], array(0), FALSE);
             break;
         default:
             die("{\"succ\":\"false\", \"err\":\"unsupporrtted action:$action\"}");

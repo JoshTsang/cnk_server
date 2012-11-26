@@ -11,22 +11,49 @@
 	</head>
 
 	<body>
-		<div data-role="page">
-			<div data-role="header" data-position="fixed">
+		<div data-role="page" id="todoDishes">
+			<div data-role="header" data-position="fixed" data-tap-toggle="false">
 				<h1>厨房</h1>
-				<a href="#" data-icon="gear" class="ui-btn-right">设置</a>
+				<a href="#setting" data-role="button" data-icon="gear" class="ui-btn-right">设置</a>
 			</div>
 
 			<div data-role="content">
-				<ul  id="dishes" data-role="listview" data-theme="c" data-split-theme="c">
+				<ul style="font-size: 40px" id="dishes" data-role="listview" data-theme="c" data-split-theme="c">
 					
 				</ul>	
+				
+				<div data-role="popup" id="popupErr">
+					<p>网络好像出了点问题！<p>
+				</div>
 			</div>
-			
-			<div data-role="footer" data-position="fixed">
+			<div data-role="footer" data-position="fixed" data-tap-toggle="false">
 				<a data-role="button" href="#" data-icon="alert" data-iconpos="notext" class="ui-btn-left" data-theme="c"></a>
 				<h4 id="nowCooking"></h4>
 					
+			</div>
+		</div>
+		
+		<div data-role="page" id="setting">
+			<div data-role="header" data-position="fixed" data-tap-toggle="false">
+				<h1>设置</h1>
+				<a href="#todoDishes" class="ui-btn-left">取消</a>
+				<a href="#todoDishes" onclick="javascript:saveSetting()" class="ui-btn-right">确定</a>
+			</div>
+			<div data-role="content">
+				<form >
+					<ul data-role="listview" data-inset="true">
+						<li data-role="fieldcontain">
+							<label for="slider" >分单显示:</label>
+							<select name="slider" id="slider" data-role="slider">
+								<option value="off">关</option>
+								<option value="on">开</option>
+							</select>
+						</li>
+				
+						<li id="choosePrinter" data-role="fieldcontain">
+						</li>
+					</ul>
+				</form>
 			</div>
 		</div>
 	</body>

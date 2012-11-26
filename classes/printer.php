@@ -240,21 +240,24 @@
             $this->printl($socket, $str." 桌：");
         }
         
-        public function printCheckout($json) {
+        public function printCheckout($json, $checkoutNo) {
             $this->paddingDish = FALSE;
             $dishFontSize = $this->dishFontSize;
             $this->dishFontSize = PRINTER_COMMAND_1X;
             $count = count($this->printerInfo);
             for ($i=0; $i<$count; $i++) {
                 if($this->printerInfo[$i]->usefor == PRINT_CASHIER) {
-                    $this->printChecktoutReceipt($json, $this->printerInfo[$i]->ip, $this->printerInfo[$i]->title, $this->printerInfo[$i]->type);
+                    $this->printChecktoutReceipt($json, $this->printerInfo[$i]->ip, $this->printerInfo[$i]->title, $this->printerInfo[$i]->type, $checkoutNo);
                 }
             }
             $this->dishFontSize = $dishFontSize;
         }
         
-        private function printTitle($socket, $title, $subTitle) {
-            $print = iconv("UTF-8","GB18030", $title.$subTitle);
+        private function printTitle($socket, $title, $subTitle, $appdix) {
+            if (!isset($appdix)) {
+                $appdix = "";
+            }
+            $print = iconv("UTF-8","GB18030", $title.$subTitle."           ".$appdix);
             if (isset($subTitle)) {
                 socket_write($socket, PRINTER_COMMAND_2X);
                 socket_write($socket, $print);
@@ -341,9 +344,11 @@
 
         private function printOrderId($socket, $orderId) {
             if (isset($orderId)) {
-                $orders = implode(",", $orderId);
-                $print = sprintf("%s", "流水号:".$orders);
-                $this->printl($socket, $print);
+                if ($orderId[0] != 0) {
+                    $orders = implode(",", $orderId);
+                    $print = sprintf("%s", "流水号:".$orders);
+                    $this->printl($socket, $print);
+                }
             }
         }
         
@@ -462,7 +467,7 @@
             $this->printFooterForKichen($socket, $printerType);
         }
         
-        private function printChecktoutReceipt($json, $printerIP, $title, $printerType) {
+        private function printChecktoutReceipt($json, $printerIP, $title, $printerType, $no) {
             $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
             if ($socket < 0)
             {
@@ -485,7 +490,7 @@
             $obj = json_decode($objAll[0]);
             $waiter = $checkout->waiter;
             
-            $this->printTitle($socket, $title, NULL);
+            $this->printTitle($socket, $title, NULL, "No.".$no);
             $this->printHeader($socket, null, $checkout->tableName, $waiter, "结账", $checkout->timestamp, $printerType);
             
             
@@ -667,14 +672,19 @@
             $json_string = $json;
             $obj = json_decode($json_string); 
             $dishCount = count($obj->order);
+            if (isset($obj->timeType)) {
+                $orderType = $obj->timeType;
+            } else {
+                $orderType = "即单";
+            }
             
             if ($dishCount <= 0) {
                 die("NO_ORDERED_DISH 'NO_ORDERED_DISH'");
             }
             if ($isAdd) {
-                 $this->printTitle($socket, $title, "(加菜)");
+                 $this->printTitle($socket, $title, "(加菜)", $orderType);
             } else {
-                 $this->printTitle($socket, $title, NULL);
+                 $this->printTitle($socket, $title, NULL, $orderType);
             }
             $oId = array($orderId);
             $this->printOrderedDishes($socket, $obj, $printerType, $oId, $printPrice);
@@ -706,6 +716,11 @@
                 return ;
             }
             
+             if (isset($obj->timeType)) {
+                $orderType = $obj->timeType;
+            } else {
+                $orderType = "即单";
+            }
             $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
             if ($socket < 0) {
                 echo socket_strerror(socket_last_error())."\n";
@@ -718,9 +733,9 @@
                 die("Unable to connect printer.ip:$printer->ip");
             }
             if ($isAdd) {
-                 $this->printTitle($socket, $printer->title."-".$printer->name, "(加菜)");
+                 $this->printTitle($socket, $printer->title."-".$printer->name, "(加菜)", $orderType);
             } else {
-                 $this->printTitle($socket, $printer->title."-".$printer->name, NULL);
+                 $this->printTitle($socket, $printer->title."-".$printer->name, NULL, $orderType);
             }
             $oId = array($orderId);
             $this->printOrderedDishesByPrinterId($socket, $obj, $printer->type, $oId, $printer->id);
