@@ -2,6 +2,7 @@
     require 'macros.php';
     require('setting/defines.php');
     require 'classes/printer.php';
+    require 'classes/CNK_DB.php';
     
     if (!isset($_GET['action']) || !isset($_POST['print'])) {
         if (!isset($_POST['json'])) {
@@ -16,7 +17,9 @@
             $printer->printSales($_POST['print']);
             break;
         case 'CHECKOUT':
-            $printer->printCheckout($_POST['print']);
+            $db = new CNK_DB();
+            $checkoutNo = $db->getCheckoutNo();
+            $printer->printCheckout($_POST['print'], $checkoutNo);
             break;
         case 'ORDER':
             $printer->savePrintOrder($_POST['json'], "0", FALSE);
