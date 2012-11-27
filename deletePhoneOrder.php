@@ -8,7 +8,7 @@
 
 	$tableId = $_GET['TID'];
 	
-	if (!isset($_GET['DID'])) {
+	if (isset($_GET['DID'])) {
 		$tableDishId = $_GET['DID'];
 	}
 	
