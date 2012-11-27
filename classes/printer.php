@@ -129,6 +129,7 @@
                     $printerRet = $this->printOrder($row[2], $row[3], $row[4], $row[1], $row[5]);
                     if ($printerRet >= 0) {
                         $sql = sprintf("DELETE FROM receipt WHERE id=%s", $row[0]);
+                        //TODO db locked
                         $this->receiptDB->exec($sql);
                     }
                 }
@@ -200,10 +201,12 @@
             if ($dishCount <= 0) {
                 die("NO_ORDERED_DISH 'NO_ORDERED_DISH'");
             }
-            $this->printTitle($socket, $title, "(并台)");
-            //TODO orderId
+            
             $orderId = $db->getOrderIds($obj->tableId);
-            $this->printOrderedDishes($socket, $obj, $printerType, $orderId, $printPrice);
+            $this->printTitle($socket, $title, "(并台)", $this->convertOrderId($orderId));
+            
+            $dineId = $db->getDineId($obj->tableId);
+            $this->printOrderedDishes($socket, $obj, $printerType, $dineId, $printPrice);
             socket_close($socket);
         }
 
@@ -229,10 +232,10 @@
                 die("Unable to connect printer.ip:$printerIP");
             }
             
-            $this->printTitle($socket,  $printer->title."-".$printer->name, "(并台)");
-            //TODO orderId
             $orderId = $db->getOrderIds($obj->tableId);
-            $this->printOrderedDishesByPrinterId($socket, $obj, $printer->type, $orderId, $printer->id);
+            $this->printTitle($socket,  $printer->name, "(并台)", $this->convertOrderId($orderId));
+            $dineId = $db->getDineId($obj->tableId);
+            $this->printOrderedDishesByPrinterId($socket, $obj, $printer->type, $dineId, $printer->id);
             socket_close($socket);
         }
         
@@ -254,13 +257,14 @@
         }
         
         private function printTitle($socket, $title, $subTitle, $appdix = "") {
-            $print = iconv("UTF-8","GB18030", $title.$subTitle."           ".$appdix);
             if (isset($subTitle)) {
+                $print = iconv("UTF-8","GB18030", $title.$subTitle."   ".$appdix);
                 socket_write($socket, PRINTER_COMMAND_2X);
                 socket_write($socket, $print);
                 socket_write($socket, "\r\n\r\n");
                 socket_write($socket, $this->fontSize);
             } else {
+                $print = iconv("UTF-8","GB18030", $title.$subTitle."           ".$appdix);
                 socket_write($socket, $this->fontSize);
                 socket_write($socket, $print);
                 socket_write($socket, "\r\n\r\n");
@@ -268,7 +272,7 @@
             
         }
         
-        private function printHeader($socket, $orderId, $table, $waiter, $persons, $timestamp, $printerType, $printPrice = true) {
+        private function printHeader($socket, $dineId, $table, $waiter, $persons, $timestamp, $printerType, $printPrice = true) {
             if(file_exists(SHOPNAME_CONF)) {
                 $shopname = file_get_contents(SHOPNAME_CONF);
             } else {
@@ -282,7 +286,7 @@
                 $print = sprintf("%".$spaceLen."s%s\r\n", "", $shopname);
                 $this->printl($socket, $print);
                 $this->printTableId($socket, $table);
-                $this->printOrderId($socket, $orderId);
+                $this->printDineId($socket, $dineId);
                 $print = sprintf("%s", $timestamp);
                 $this->printl($socket, $print);
                 if ($persons == 0) {
@@ -303,7 +307,7 @@
                 $this->printl($socket, $print);
                 
                 $this->printTableId($socket, $table);
-                $this->printOrderId($socket, $orderId);
+                $this->printDineId($socket, $dineId);
                 $print = sprintf("%s", $timestamp);
                 $this->printl($socket, $print);
                 if ($persons == 0) {
@@ -321,17 +325,17 @@
             }
         }
 
-        private function printHeaderForKichen($socket, $orderId, $table, $waiter, $persons, $timestamp, $printerType) {
+        private function printHeaderForKichen($socket, $dineId, $table, $waiter, $persons, $timestamp, $printerType) {
             if ($printerType == PRINTER_TYPE_80) {
                 $this->printTableId($socket, $table);
-                $this->printOrderId($socket, $orderId);
+                $this->printDineId($socket, $dineId);
                 $print = sprintf("%s", $timestamp);
                 $this->printl($socket, $print);
                 $this->printl($socket, "----------------------------------------------");
                 $this->printl($socket, "品名                                  数量");
             } else if ($printerType == PRINTER_TYPE_58) {
                 $this->printTableId($socket, $table);
-                $this->printOrderId($socket, $orderId);
+                $this->printDineId($socket, $dineId);
                 $print = sprintf("%s", $timestamp);
                 $this->printl($socket, $print);
                 $this->printl($socket, "--------------------------------");
@@ -339,12 +343,19 @@
             }
         }
 
-        private function printOrderId($socket, $orderId) {
+        private function printDineId($socket, $dineId) {
+            if (isset($dineId)) {
+                $print = sprintf("%s", "流水号:".$dineId);
+                $this->printl($socket, $print);
+            }
+        }
+        
+        private function convertOrderId($orderId) {
             if (isset($orderId)) {
                 if ($orderId[0] != 0) {
                     $orders = implode(",", $orderId);
-                    $print = sprintf("%s", "流水号:".$orders);
-                    $this->printl($socket, $print);
+                    $print = sprintf("%s", "No.".$orders);
+                    return $print;
                 }
             }
         }
@@ -414,7 +425,7 @@
             }
         }
 
-        private function printOrderedDishes($socket, $obj, $printerType, $orderId, $printPrice) {
+        private function printOrderedDishes($socket, $obj, $printerType, $dineId, $printPrice) {
             $tableId = $obj->tableId;
             $tableName = $obj->tableName;
             $timestamp = $obj->timestamp;
@@ -425,7 +436,7 @@
                 $persons = 0;
             }
             
-            $this->printHeader($socket, $orderId, $tableName, $waiter, $persons, $timestamp, $printerType, $printPrice);
+            $this->printHeader($socket, $dineId, $tableName, $waiter, $persons, $timestamp, $printerType, $printPrice);
             
             if ($printPrice) {
                 $total = $this->printDishes($socket, $obj, $printerType);
@@ -443,7 +454,7 @@
             }
         }
 
-        private function printOrderedDishesByPrinterId($socket, $obj, $printerType, $orderId, $printerId) {
+        private function printOrderedDishesByPrinterId($socket, $obj, $printerType, $dineId, $printerId) {
             $tableId = $obj->tableId;
             $tableName = $obj->tableName;
             $timestamp = $obj->timestamp;
@@ -454,7 +465,7 @@
                 $persons = 0;
             }
             
-            $this->printHeaderForKichen($socket, $orderId, $tableName, $waiter, $persons, $timestamp, $printerType);
+            $this->printHeaderForKichen($socket, $dineId, $tableName, $waiter, $persons, $timestamp, $printerType);
             
             $total = $this->printDishesByPrinterId($socket, $obj, $printerType, $printerId);
             $this->printR($socket, $this->fontSize);
@@ -678,13 +689,16 @@
             if ($dishCount <= 0) {
                 die("NO_ORDERED_DISH 'NO_ORDERED_DISH'");
             }
-            if ($isAdd) {
-                 $this->printTitle($socket, $title, "(加菜)", $orderType);
-            } else {
-                 $this->printTitle($socket, $title, NULL, $orderType);
-            }
+            
             $oId = array($orderId);
-            $this->printOrderedDishes($socket, $obj, $printerType, $oId, $printPrice);
+            if ($isAdd) {
+                 $this->printTitle($socket, $title, "(加菜)", $orderType."  ".$this->convertOrderId($oId));
+            } else {
+                 $this->printTitle($socket, $title, NULL, $orderType."  ".$this->convertOrderId($oId));
+            }
+            $db = new CNK_DB();
+            $dineId = $db->getDineId($obj->tableId);
+            $this->printOrderedDishes($socket, $obj, $printerType, $dineId, $printPrice);
             socket_close($socket);
         }
         
@@ -729,13 +743,16 @@
                 echo socket_strerror(socket_last_error())."\n";
                 die("Unable to connect printer.ip:$printer->ip");
             }
-            if ($isAdd) {
-                 $this->printTitle($socket, $printer->title."-".$printer->name, "(加菜)", $orderType);
-            } else {
-                 $this->printTitle($socket, $printer->title."-".$printer->name, NULL, $orderType);
-            }
+            
             $oId = array($orderId);
-            $this->printOrderedDishesByPrinterId($socket, $obj, $printer->type, $oId, $printer->id);
+            if ($isAdd) {
+                 $this->printTitle($socket, $printer->name, "(加菜)", $orderType."  ".$this->convertOrderId($oId));
+            } else {
+                 $this->printTitle($socket, $printer->name, NULL, $orderType."  ".$this->convertOrderId($oId));
+            }
+            $db = new CNK_DB();
+            $dineId = $db->getDineId($obj->tableId);
+            $this->printOrderedDishesByPrinterId($socket, $obj, $printer->type, $dineId, $printer->id);
             socket_close($socket);
         }
         
@@ -759,9 +776,11 @@
             if ($dishCount <= 0) {
                 die("NO_ORDERED_DISH 'NO_ORDERED_DISH'");
             }
-            $this->printTitle($socket, $title, "(转台)");
+            
             $orderId = $db->getOrderIds($obj->tableId);
-            $this->printOrderedDishes($socket, $obj, $printerType, $orderId, $printPrice);
+            $this->printTitle($socket, $title, "(转台)", $this->convertOrderId($orderId));
+            $dineId = $db->getDineId($obj->tableId);
+            $this->printOrderedDishes($socket, $obj, $printerType, $dineId, $printPrice);
             socket_close($socket);
         }
         
@@ -787,9 +806,10 @@
                 die("Unable to connect printer.ip:$printerIP");
             }
             
-            $this->printTitle($socket, $printer->title."-".$printer->name, "(转台)");
             $orderId = $db->getOrderIds($obj->tableId);
-            $this->printOrderedDishesByPrinterId($socket, $obj, $printer->type, $orderId, $printer->id);
+            $this->printTitle($socket, $printer->name, "(转台)", $this->convertOrderId($orderId));
+            $dineId = $db->getDineId($obj->tableId);
+            $this->printOrderedDishesByPrinterId($socket, $obj, $printer->type, $dineId, $printer->id);
             
             socket_close($socket);
         }
@@ -804,8 +824,11 @@
             if ($dishCount <= 0) {
                 die("HTTP/1.1 NO_ORDERED_DISH 'NO_ORDERED_DISH'");
             }
-            $this->printTitle($socket, $title, "(退菜)");
-            $this->printOrderedDishes($socket, $obj, $printerType, $obj->orderId, $printPrice);
+            
+            $db = new CNK_DB();
+            $dineId = $db->getDineId($obj->tableId);
+            $this->printTitle($socket, $title, "(退菜)", $this->convertOrderId($obj->orderId));
+            $this->printOrderedDishes($socket, $obj, $printerType, $dineId, $printPrice);
             
             socket_close($socket);
         }
@@ -820,8 +843,11 @@
             if (!$this->isPrintNeed($obj, $printer->id, $dishCount)) {
                 return;
             }
-            $this->printTitle($socket, $printer->title."-".$printer->name, "(退菜)");
-            $this->printOrderedDishesByPrinterId($socket, $obj, $printer->type, $obj->orderId, $printer->id);
+            
+            $db = new CNK_DB();
+            $dineId = $db->getDineId($obj->tableId);
+            $this->printTitle($socket, $printer->name, "(退菜)", $this->convertOrderId($obj->orderId));
+            $this->printOrderedDishesByPrinterId($socket, $obj, $printer->type, $dineId, $printer->id);
             
             socket_close($socket);
         }

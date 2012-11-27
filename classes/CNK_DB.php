@@ -50,6 +50,9 @@
             if (!$this->deletePersons($tid)) {
                 return FALSE;
             }
+            if (!$this->removeDine($tid)) {
+                return FALSE;
+            }
 
             $this->setErrorNone();
             return TRUE;
@@ -160,6 +163,25 @@
             }
 
             return $orderId;
+        }
+        
+        public function getDineId($tid) {
+            if ($this->orderDB == NULL) {
+                $this->connectOrderDB();
+            }
+            
+            $dineId = 0;
+            $sql=sprintf("select %s from %s where %s=%s",
+                      TABLE_ORDER_TABLE_COLUM_ID, "dine",
+                      TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid);
+            $resultSet = $this->orderDB->query($sql);
+            if ($resultSet) {
+                if ($row = $resultSet->fetchArray()) {
+                    $dineId = $row[0];
+                }
+            }
+
+            return $dineId;
         }
 
         public function saveSalesData($tid, $timestamp) {
@@ -363,6 +385,34 @@
                 $this->setErrorNone();
                 return -1;
             }
+            
+             //TODO set table status to 1 directly might cause err
+             $tableStatusStr = $this->getTableStatusByTid($tableId);
+             if (!$tableStatusStr) {
+                 $tableStatus = 1;
+                 if (!$this->updateTableStatus($tableId, $tableStatus)) {
+                        return FALSE;
+                 }
+             } else {
+                 $tableStatus = substr($tableStatusStr, 1, strlen($tableStatusStr)-2);
+                 if ($tableStatus%10 == 0) {
+                     $tableStatus += 1;
+                 }
+                 if ($obj->type == "phone") {
+                     if (($tableStatus/10)%10 == 5) {
+                         $tableStatus -= 50;
+                     }
+                     $this->cleanPhoneOrder($tableId);
+                 }
+                 if (!$this->updateTableStatus($tableId, $tableStatus)) {
+                        return FALSE;
+                 }
+             }
+             
+            if (!$this->dineId($tableId)) {
+                return FALSE;
+            }
+             
             @$datetime = split(" ", $timestamp);
             if (!$this->orderDB->exec("INSERT INTO ".TABLE_ORDER_TABLE."(".TABLE_ORDER_TABLE_COLUM_TABLE_ID.",".TABLE_ORDER_TABLE_COLUM_WAITER.",".
                                              TABLE_ORDER_TABLE_COLUM_TIMESTAMP.",MD5)".
@@ -413,33 +463,22 @@
                 return FALSE;
             }
             
-             //TODO set table status to 1 directly might cause err
-             $tableStatusStr = $this->getTableStatusByTid($tableId);
-             if (!$tableStatusStr) {
-                 $tableStatus = 1;
-                 if (!$this->updateTableStatus($tableId, $tableStatus)) {
-                        return FALSE;
-                 }
-             } else {
-                 $tableStatus = substr($tableStatusStr, 1, strlen($tableStatusStr)-2);
-                 if ($tableStatus%10 == 0) {
-                     $tableStatus += 1;
-                 }
-                 if ($obj->type == "phone") {
-                     if (($tableStatus/10)%10 == 5) {
-                         $tableStatus -= 50;
-                     }
-                     $this->cleanPhoneOrder($tableId);
-                 }
-                 if (!$this->updateTableStatus($tableId, $tableStatus)) {
-                        return FALSE;
-                 }
-             }
-             
             $this->setErrorNone();
             return $orderId;
         }
 
+        private function dineId($tableId) {
+            $resultSet = $this->orderDB->query("SELECT * from dine WHERE ".TABLE_PERSONS_COLUM_TID."=".$tableId);
+            if ($resultSet) {
+                if (!$row = $resultSet->fetchArray()) {
+                   if (!$this->orderDB->exec("INSERT INTO dine values(NULL, $tableId)")) {
+                      return FALSE;
+                    } 
+                }
+            }
+            return TRUE;
+        }
+        
         private function setPersons($tid, $persons) {
             if ($this->orderDB == NULL) {
                 $this->connectOrderDB();
@@ -470,6 +509,21 @@
             return true;
         }
 
+        private function removeDine($tid) {
+            if ($this->orderDB == NULL) {
+                $this->connectOrderDB();
+            }
+
+            $sql = "DELETE FROM dine WHERE ".TABLE_PERSONS_COLUM_TID."=".$tid;
+            if (!$this->orderDB->exec($sql)) {
+                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+                return FALSE;
+            }
+
+            return true;
+        
+        }
         public function getPersons($tid) {
             $persons = 0;
             if ($this->orderDB == NULL) {
@@ -836,6 +890,7 @@
             if (!$this->setPersons($dest, $persons)) {
                 return FALSE;
             }
+            
             $this->setErrorNone();
             return TRUE;
         }
@@ -977,6 +1032,17 @@
         private function moveDishes($src, $dest) {
             if ($this->orderDB == NULL) {
                 $this->connectOrderDB();
+            }
+            
+            $sql = sprintf("update dine set %s=%d where %s=%d",
+                 TABLE_ORDER_TABLE_COLUM_TABLE_ID,
+                 $dest,/*set*/
+                 TABLE_ORDER_TABLE_COLUM_TABLE_ID,
+                 $src);
+            if (!$this->orderDB->exec($sql)) {
+                $this->setErrorMsg('exec failed:'.$this->orderDB->lastErrorMsg().' #sql:'.$sql);
+                $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
+                return FALSE;
             }
             $sql=sprintf("update %s set %s=%d where %s=%d",
                  TABLE_ORDER_TABLE, /*update*/
