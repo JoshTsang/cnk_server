@@ -24,6 +24,9 @@
         case 'ORDER':
             $printer->savePrintOrder($_POST['json'], "0", FALSE);
             break;
+        case 'RESERVATION':
+            $printer->printReservation($_POST['print']);
+            break;
         default:
             die("{\"succ\":\"false\", \"err\":\"unsupporrtted action:$action\"}");
             break;

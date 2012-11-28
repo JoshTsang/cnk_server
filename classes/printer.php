@@ -101,6 +101,60 @@
             $this->receiptDB->exec($sql);
         }
 
+        public function printReservation($print) {
+            $this->paddingDish = FALSE;
+            $dishFontSize = $this->dishFontSize;
+            $this->dishFontSize = PRINTER_COMMAND_1X;
+            $count = count($this->printerInfo);
+            for ($i=0; $i<$count; $i++) {
+                if($this->printerInfo[$i]->usefor == PRINT_CASHIER) {
+                    $this->printReservationReceipt($print, $this->printerInfo[$i]->ip, $this->printerInfo[$i]->title, $this->printerInfo[$i]->type);
+                }
+            }
+            $this->dishFontSize = $dishFontSize;
+        }
+        
+        private function printReservationReceipt($json, $printerIP, $title, $printerType) {
+            $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP); 
+            if ($socket < 0)
+            {
+                echo socket_strerror(socket_last_error())."\n";
+                die("Unable to connect printer.ip:$printerIP");
+            }
+            $connection = socket_connect($socket, $printerIP, 9100); 
+            if (!$connection) {
+                echo socket_strerror(socket_last_error())."\n";
+                die("Unable to connect printer.ip:$printerIP");
+            }
+            $json_string = $json;
+            $obj = json_decode($json_string); 
+            $dishCount = count($obj->order);
+            
+            if ($dishCount <= 0) {
+                die("NO_ORDERED_DISH 'NO_ORDERED_DISH'");
+            }
+            
+            $this->printTitle($socket, $title."-预订", NULL);
+            $tableName = $obj->tableName;
+            $timestamp = $obj->timestamp;
+            $waiter = $obj->waiter;
+            if (isset($obj->persons)) {
+                $persons = $obj->persons;
+            } else {
+                $persons = 0;
+            }
+            
+            $this->printReservationHeader($socket, $obj, $tableName, $waiter, $persons, $timestamp, $printerType, TRUE);
+            $total = $this->printDishes($socket, $obj, $printerType);
+            
+            if (isset($obj->comment)) {
+                $this->printComment($socket, $obj->comment, $printerType);   
+            }
+            $this->printFooter($socket, $total, $printerType);
+            
+            socket_close($socket);
+        }
+
         private function printOrder($print, $orderId, $isAdd, $printerIndex, $usefor) {
             try {
                 if($usefor == PRINT_ORDER || $usefor == PRINT_ORDER_NO_PRICE) {
@@ -272,6 +326,66 @@
             
         }
         
+        private function printReservationHeader($socket, $reservation, $table, $waiter, $persons, $timestamp, $printerType, $printPrice = true) {
+            if(file_exists(SHOPNAME_CONF)) {
+                $shopname = file_get_contents(SHOPNAME_CONF);
+            } else {
+                $shopname = "菜脑壳电子点菜系统";
+            }
+            $zhLen = (strlen($shopname) - iconv_strlen($shopname, "UTF-8"))/2;
+            $enLen = iconv_strlen($shopname, "UTF-8") - $zhLen;
+            $space = $zhLen*2 + $enLen;
+            if ($printerType == PRINTER_TYPE_80) {
+                $spaceLen = (48 - $space)/2;
+                $print = sprintf("%".$spaceLen."s%s\r\n", "", $shopname);
+                $this->printl($socket, $print);
+                $this->printTableId($socket, $table);
+                $print = sprintf("%s", $timestamp);
+                $this->printl($socket, $print);
+                
+                $print = sprintf("\n预订时间：%s", $reservation->reservation);
+                $this->printl($socket, $print);
+                
+                $print = sprintf("定金：%s", $reservation->deposit);
+                $this->printl($socket, $print);
+                
+                $print = sprintf("联系方式：%s  %s", $reservation->name, $reservation->tel);
+                $this->printl($socket, $print);
+                if ($persons == 0) {
+                    $print = sprintf("人数:未设置           服务员：%s", $waiter);
+                } else {
+                    $print = sprintf("人数:%-4s              服务员：%s", $persons, $waiter);
+                }
+                $this->printl($socket, $print);
+                $this->printl($socket, "----------------------------------------------");
+                if ($printPrice) {
+                    $this->printl($socket, "品名                       单价  数量    小计");
+                } else {
+                    $this->printl($socket, "品名                                 数量");
+                }
+            } else if ($printerType == PRINTER_TYPE_58) {
+                $spaceLen = (34 - $space)/2;
+                $print = sprintf("%".$spaceLen."s%s\r\n", "", $shopname);
+                $this->printl($socket, $print);
+                
+                $this->printTableId($socket, $table);
+                $print = sprintf("%s", $timestamp);
+                $this->printl($socket, $print);
+                if ($persons == 0) {
+                    $print = sprintf("人数:%-4s   服务员：%s", "未设置", $waiter);
+                } else {
+                    $print = sprintf("人数:%-4s   服务员：%s", $persons, $waiter);
+                }
+                $this->printl($socket, $print);
+                $this->printl($socket, "--------------------------------");
+                if ($printPrice) {
+                    $this->printl($socket, "品名          单价  数量    小计");
+                } else {
+                    $this->printl($socket, "品名                     数量");
+                }
+            }
+        }
+
         private function printHeader($socket, $dineId, $table, $waiter, $persons, $timestamp, $printerType, $printPrice = true) {
             if(file_exists(SHOPNAME_CONF)) {
                 $shopname = file_get_contents(SHOPNAME_CONF);
