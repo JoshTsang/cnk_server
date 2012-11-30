@@ -312,16 +312,17 @@
         
         private function printTitle($socket, $title, $subTitle, $appdix = "") {
             if (isset($subTitle)) {
-                $print = iconv("UTF-8","GB18030", $title.$subTitle."   ".$appdix);
+                $print = iconv("UTF-8","GB18030", $title.$subTitle."  ".$appdix);
                 socket_write($socket, PRINTER_COMMAND_2X);
                 socket_write($socket, $print);
                 socket_write($socket, "\r\n\r\n");
                 socket_write($socket, $this->fontSize);
             } else {
-                $print = iconv("UTF-8","GB18030", $title.$subTitle."           ".$appdix);
-                socket_write($socket, $this->fontSize);
+                $print = iconv("UTF-8","GB18030", $title."  ".$appdix);
+                socket_write($socket, PRINTER_COMMAND_2X);
                 socket_write($socket, $print);
                 socket_write($socket, "\r\n\r\n");
+                socket_write($socket, $this->fontSize);
             }
             
         }
