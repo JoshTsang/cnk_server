@@ -6,5 +6,6 @@ CREATE TABLE [receipt] (
 [orderId] TEXT NOT NULL,
 [isAdd] BOOLEAN NOT NULL,
 [useFor] INTERGER NOT NULL,
-[pend] BOOLEAN NOT NULL
+[pend] BOOLEAN NOT NULL,
+[type] INTERGER NOT NULL
 );

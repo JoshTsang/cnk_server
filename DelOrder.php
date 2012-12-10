@@ -60,6 +60,6 @@
 				  'orderId' => $orderID);
 	}
 	$jsonString = json_encode($item);
-	$printer -> printDel($jsonString);
+	$printer->savePrintDel($jsonString);
 	echo $db->error();
 ?>

@@ -1,5 +1,6 @@
 <?php
     require 'file.php';
+    
     define('PRINTER_COMMAND_ALARM', "\x1B\x43\1\x13\3\n");
     define('PRINTER_COMMAND_CUT', "\x1D\x56\x42\5\n");
     //define('PRINTER_COMMAND_1X', "\x1D\x21\x01");
@@ -8,6 +9,9 @@
     define('PRINTER_OPEN_CASHIER', "\x10\x14\1\0\10");
     define('PRINTER_COMMAND_1X', "\x1D\x21\x1");
     define('RECEIPT_DB', "../db/temporary/receipt.db");
+    
+    define('RECEIPT_ORDER', 1);
+    define('RECEIPT_DEL', 2);
     
     class printer {
         private $printerInfo;
@@ -34,7 +38,7 @@
         
         private function connectReceiptDB() {
             $this->receiptDB = new SQLite3(RECEIPT_DB);
-            $this->receiptDB->busyTimeout(2000);
+            $this->receiptDB->busyTimeout(5000);
             if (!$this->receiptDB) {
                 $this->setErrorMsg('could not connect db:'.RECEIPT_DB);
                 return false;
@@ -96,8 +100,8 @@
         }
 
         private function saveOrder($json, $index, $orderId, $isAdd, $usefor) {
-            $sql = sprintf("INSERT INTO [receipt] values(null, %s, '%s', \"%s\", %s, %s)", 
-                    $index, $json, $orderId, $isAdd?1:0, $usefor);
+            $sql = sprintf("INSERT INTO [receipt] values(null, %s, '%s', \"%s\", %s, %s, %d, %d)", 
+                    $index, $json, $orderId, $isAdd?1:0, $usefor, 0, RECEIPT_ORDER);
             $this->receiptDB->exec($sql);
         }
 
@@ -176,11 +180,21 @@
                 $this->connectReceiptDB();
             }
             
+            $this->receiptDB->busyTimeout(40000);
             $sql = "select * from receipt limit 5";
             $ret = $this->receiptDB->query($sql);
             if ($ret) {
                 while($row = $ret->fetchArray()) {
-                    $printerRet = $this->printOrder($row[2], $row[3], $row[4], $row[1], $row[5]);
+                    switch($row[7]) {
+                        case RECEIPT_DEL:
+                            $printerRet = $this->printDel($row[2], $row[1], $row[5]);
+                            break;
+                        case RECEIPT_ORDER:
+                            $printerRet = $this->printOrder($row[2], $row[3], $row[4], $row[1], $row[5]);
+                            break;
+                        default:
+                            $printerRet = -1;
+                    }
                     if ($printerRet >= 0) {
                         $sql = sprintf("DELETE FROM receipt WHERE id=%s", $row[0]);
                         //TODO db locked
@@ -190,18 +204,43 @@
             }
         }
 
-        public function printDel($print) {
+        private function printDel($print, $index, $usefor) {
+            try {
+                if($usefor == PRINT_ORDER || $usefor == PRINT_ORDER_NO_PRICE) {
+                    $this->printDelReceipt($print, $this->printerInfo[$index]->ip,
+                    $this->printerInfo[$index]->title, $this->printerInfo[$index]->type,
+                         $this->printerInfo[$index]->usefor==PRINT_ORDER_NO_PRICE?FALSE:TRUE);
+                } else if ($usefor == PRINT_KITCHEN) {
+                    $this->printDelReceiptCategory($print, $this->printerInfo[$index]);
+                }
+            } catch (Exception $e){
+                return -1;
+            }
+            
+            return 0;
+        }
+
+        public function savePrintDel($print) {
+            if($this->receiptDB == NULL) {
+                $this->connectReceiptDB();
+            }
+            
             $count = count($this->printerInfo);
             for ($i=0; $i<$count; $i++) {
-                if($this->printerInfo[$i]->usefor == PRINT_ORDER || $this->printerInfo[$i]->usefor == PRINT_ORDER_NO_PRICE) {
-                    $this->printDelReceipt($print, $this->printerInfo[$i]->ip,
-                    $this->printerInfo[$i]->title, $this->printerInfo[$i]->type, $this->printerInfo[$i]->usefor==PRINT_ORDER_NO_PRICE?FALSE:TRUE);
-                } else if ($this->printerInfo[$i]->usefor == PRINT_KITCHEN) {
-                    $this->printDelReceiptCategory($print, $this->printerInfo[$i]);
+                if($this->printerInfo[$i]->usefor == PRINT_ORDER ||
+                     $this->printerInfo[$i]->usefor == PRINT_ORDER_NO_PRICE ||
+                     $this->printerInfo[$i]->usefor == PRINT_KITCHEN) {
+                    $this->saveDel($print, $i, $this->printerInfo[$i]->usefor);
                 }
             }
         }
-
+        
+        private function saveDel($json, $index, $usefor) {
+            $sql = sprintf("INSERT INTO [receipt] values(null, %s, '%s', \"%s\", %s, %s, %d, %d)", 
+                    $index, $json, 0, 0, $usefor, 0, RECEIPT_DEL);
+            $this->receiptDB->exec($sql);
+        }
+        
         public function printSales($json) {
             $count = count($this->printerInfo);
             for ($i=0; $i<$count; $i++) {
@@ -212,13 +251,15 @@
         }
 
         public function printChangeTable($print) {
-            $count = count($this->printerInfo);
-            for ($i=0; $i<$count; $i++) {
-                if($this->printerInfo[$i]->usefor == PRINT_ORDER || $this->printerInfo[$i]->usefor == PRINT_ORDER_NO_PRICE) {
-                    $this->printChangeTableReceipt($print, $this->printerInfo[$i]->ip,
-                    $this->printerInfo[$i]->title, $this->printerInfo[$i]->type, $this->printerInfo[$i]->usefor==PRINT_ORDER_NO_PRICE?FALSE:TRUE);
-                } else if($this->printerInfo[$i]->usefor == PRINT_KITCHEN) {
-                    $this->printChangeTableReceiptCategory($print, $this->printerInfo[$i]);
+            if (ENABLED_CHANGE_TABLE_RECEIPT) {
+                $count = count($this->printerInfo);
+                for ($i=0; $i<$count; $i++) {
+                    if($this->printerInfo[$i]->usefor == PRINT_ORDER || $this->printerInfo[$i]->usefor == PRINT_ORDER_NO_PRICE) {
+                        $this->printChangeTableReceipt($print, $this->printerInfo[$i]->ip,
+                        $this->printerInfo[$i]->title, $this->printerInfo[$i]->type, $this->printerInfo[$i]->usefor==PRINT_ORDER_NO_PRICE?FALSE:TRUE);
+                    } else if($this->printerInfo[$i]->usefor == PRINT_KITCHEN) {
+                        $this->printChangeTableReceiptCategory($print, $this->printerInfo[$i]);
+                    }
                 }
             }
         }
@@ -624,7 +665,7 @@
                 $tableName[$i] = $obj->tableName;
             }
             
-            $this->printCheckoutFooter($socket, $subTableTotal, $tableName, $checkout->income, $checkout->change, $i, $printerType);
+            $this->printCheckoutFooter($socket, $subTableTotal, $tableName, $checkout->income, $checkout->change, $checkout->receivable, $i, $printerType);
             
             socket_close($socket);
         }
@@ -633,7 +674,7 @@
             $this->printl($socket, $str." 桌：");
         }
 
-        private function printCheckoutFooter($socket, $subTableTotal, $tableName, $income, $change, $tableCount, $printerType) {
+        private function printCheckoutFooter($socket, $subTableTotal, $tableName, $income, $change, $receivable, $tableCount, $printerType) {
             $total = 0;
             if ($printerType == PRINTER_TYPE_80) {
                 $this->printl($socket, "----------------------------------------------");
@@ -651,7 +692,7 @@
                                  "实收:%40.2f\r\n".
                                  "找零:%40.2f\r\n".
                                  "----------------------------------------------\r\n".
-                                 "\r\n               谢谢惠顾!               \r\n \r\n ", $total, $income, $change);
+                                 "\r\n               谢谢惠顾!               \r\n \r\n ", $receivable, $income, $change);
                 $this->printl($socket, $print);
             } else if ($printerType == PRINTER_TYPE_58) {
                 $this->printl($socket, "--------------------------------");
@@ -669,8 +710,14 @@
                                  "实收:%27.2f\r\n".
                                  "找零:%27.2f\r\n".
                                  "--------------------------------\r\n".
-                                 "\r\n           谢谢惠顾!          \r\n \r\n ", $total, $income, $change);
+                                 "\r\n           谢谢惠顾!          \r\n \r\n ", $receivable, $income, $change);
                 $this->printl($socket, $print);
+            }
+            if (round($receivable, 2, PHP_ROUND_HALF_UP) != round($total, 2, PHP_ROUND_HALF_UP)) {
+                $this->printR($socket, PRINTER_COMMAND_3X);
+                $this->printl($socket, "打印错误，此单作废");
+                $this->printR($socket, $this->fontSize);
+                echo "receivable:$receivable,total:$total";
             }
             $this->printR($socket, PRINTER_COMMAND_CUT);
             $this->printR($socket, PRINTER_COMMAND_ALARM);
@@ -805,6 +852,12 @@
                 die("NO_ORDERED_DISH 'NO_ORDERED_DISH'");
             }
             
+            if (isset($obj->multi)) {
+                $tableCount = count($obj->tableId);
+                for ($i=0; $i<$dishCount; $i++) {
+                    $obj->order[$i]->quan *= $tableCount;
+                }
+            }
             $oId = array($orderId);
             if ($isAdd) {
                  $this->printTitle($socket, $title, "(加菜)", $orderType."  ".$this->convertOrderId($oId));
@@ -812,7 +865,16 @@
                  $this->printTitle($socket, $title, NULL, $orderType."  ".$this->convertOrderId($oId));
             }
             $db = new CNK_DB();
-            $dineId = $db->getDineId($obj->tableId);
+
+            $dineId = 0;
+            if (isset($obj->multi)) {
+                for ($i=0; $i<$tableCount; $i++) {
+                    $dine[$i] = $db->getDineId($obj->tableId[$i]);
+                }
+                $dineId = implode(',', $dine);
+            } else {
+                $dineId = $db->getDineId($obj->tableId);
+            }
             $this->printOrderedDishes($socket, $obj, $printerType, $dineId, $printPrice);
             socket_close($socket);
         }
@@ -865,8 +927,25 @@
             } else {
                  $this->printTitle($socket, $printer->name, NULL, $orderType."  ".$this->convertOrderId($oId));
             }
+            
+            if (isset($obj->multi)) {
+                $tableCount = count($obj->tableId);
+                echo $tableCount;
+                for ($i=0; $i<$dishCount; $i++) {
+                    $obj->order[$i]->quan *= $tableCount;
+                }
+            }
+            
             $db = new CNK_DB();
-            $dineId = $db->getDineId($obj->tableId);
+            $dineId = 0;
+            if (isset($obj->multi)) {
+                for ($i=0; $i<$tableCount; $i++) {
+                    $dine[$i] = $db->getDineId($obj->tableId[$i]);
+                }
+                $dineId = implode(',', $dine);
+            } else {
+                $dineId = $db->getDineId($obj->tableId);
+            }
             $this->printOrderedDishesByPrinterId($socket, $obj, $printer->type, $dineId, $printer->id);
             socket_close($socket);
         }

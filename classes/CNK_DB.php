@@ -191,12 +191,13 @@
             if ($this->salesDB == NULL) {
                 $this->connectSalesDB();
             }
-            $sql=sprintf("select %s.%s,%s.%s,%s.%s,%s.%s, %s from %s,%s where %s.%s=%s.%s and %s=%s",
+            $sql=sprintf("select %s.%s,%s.%s,%s.%s,%s.%s,%s,%s.%s from %s,%s where %s.%s=%s.%s and %s=%s",
                       ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_DISH_ID,
                       ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_PRICE,
                       ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_QUANTITY,
                       TABLE_ORDER_TABLE, TABLE_ORDER_TABLE_COLUM_TIMESTAMP,
                       TABLE_ORDER_TABLE_COLUM_WAITER,
+                      ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_ORDER_ID,
                       TABLE_ORDER_TABLE, ORDER_DETAIL_TABLE,
                       TABLE_ORDER_TABLE, ORDER_DETAIL_TABLE_COLUM_ID,
                       ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_ORDER_ID,
@@ -204,7 +205,7 @@
             $resultSet = $this->orderDB->query($sql);
             if ($resultSet) {
                 while($row = $resultSet->fetchArray()) {
-                    $sqlInsert=sprintf("insert into [sales_data] values(null, %s, %s, %s, %s, '%s');", $row[0],$row[1], $row[2], $row[4], $timestamp);
+                    $sqlInsert=sprintf("insert into [sales_data] values(null, %s, %s, %s, %s, '%s', %s);", $row[0],$row[1], $row[2], $row[4], $timestamp, $row[5]);
                     if (!$this->salesDB->exec($sqlInsert)) {
                         $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sqlInsert);
                         $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
@@ -377,10 +378,35 @@
                 $this->connectOrderDB();
             }
             
-            $dishCount = count($obj->order);
             $tableId = $obj->tableId;
             $timestamp = $obj->timestamp;
             $waiter = $obj->waiterId;
+            $ret = 0;
+            if (isset($obj->multi)) {
+                $tableCount = count($tableId);
+                for ($i=0; $i<$tableCount; $i++) {
+                    $ret = $this->submitOrderToDb($tableId[$i], $waiter, $MD5, $obj->order, $obj->persons, $timestamp, $obj->type);
+                }
+            } else {
+                $ret = $this->submitOrderToDb($tableId, $waiter, $MD5, $obj->order, $obj->persons, $timestamp, $obj->type);
+            }
+            
+            return $ret;
+        }
+        
+        public function submitMultiOrder($obj, $MD5) {
+            if ($this->orderDB == NULL) {
+                $this->connectOrderDB();
+            }
+            
+            $tableId = $obj->tableId;
+            $timestamp = $obj->timestamp;
+            $waiter = $obj->waiterId;
+            
+        }
+
+        private function submitOrderToDb($tableId, $waiter, $MD5, $dishes, $persons, $timestamp, $type) {
+            $dishCount = count($dishes);
             if ($this->isOrderSubmited($tableId, $MD5)) {
                 $this->setErrorNone();
                 return -1;
@@ -398,7 +424,7 @@
                  if ($tableStatus%10 == 0) {
                      $tableStatus += 1;
                  }
-                 if ($obj->type == "phone") {
+                 if ($type == "phone") {
                      if (($tableStatus/10)%10 == 5) {
                          $tableStatus -= 50;
                      }
@@ -439,10 +465,10 @@
             }
 
             for ($i=0; $i<$dishCount; $i++) {
-                $dishId = $obj->order[$i]->dishId;
-                $price = $obj->order[$i]->price;
-                $dishQuantity = $obj->order[$i]->quan;
-                $dishName = $obj->order[$i]->name;
+                $dishId = $dishes[$i]->dishId;
+                $price = $dishes[$i]->price;
+                $dishQuantity = $dishes[$i]->quan;
+                $dishName = $dishes[$i]->name;
                 $sql = "INSERT INTO ".ORDER_DETAIL_TABLE."(".ORDER_DETAIL_TABLE_COLUM_DISH_ID.",".
                                                                     ORDER_DETAIL_TABLE_COLUM_PRICE.",".
                                                                     ORDER_DETAIL_TABLE_COLUM_QUANTITY.",".
@@ -459,14 +485,14 @@
                 return FALSE;
             }
 
-            if (!$this->setPersons($tableId, $obj->persons)) {
+            if (!$this->setPersons($tableId, $persons)) {
                 return FALSE;
             }
             
             $this->setErrorNone();
             return $orderId;
         }
-
+        
         private function dineId($tableId) {
             $resultSet = $this->orderDB->query("SELECT * from dine WHERE ".TABLE_PERSONS_COLUM_TID."=".$tableId);
             if ($resultSet) {
@@ -941,7 +967,6 @@
                 $this->connectMenuDB();
             }
 
-            //TODO check for delete
             $this->removeUnusedPrinter($obj);
 
             $count = count($obj);
@@ -954,7 +979,6 @@
                             $obj[$i]->id = $id;
                         }
                     } else {
-                        //TODO imple this
                         $this->updatePrinter($obj[$i]->id, $obj[$i]->name);
                     }
                 }
@@ -969,7 +993,7 @@
 
         private function connectMenuDB() {
             $this->menuDB = new SQLite3(DATABASE_MENU);
-            $this->menuDB->busyTimeout(2000);
+            $this->menuDB->busyTimeout(5000);
             if (!$this->menuDB) {
                 $this->setErrorMsg('could not connect db:'.DATABASE_MENU);
                 return false;
@@ -991,7 +1015,7 @@
 
         private function connectOrderDB() {
             $this->orderDB = new SQLite3(DATABASE_ORDER);
-            $this->orderDB->busyTimeout(2000);
+            $this->orderDB->busyTimeout(5000);
             if (!$this->orderDB) {
                 $this->setErrorMsg('could not connect db:'.DATABASE_ORDER);
                 return false;
@@ -1001,7 +1025,7 @@
 
         private function connectSalesDB() {
             $this->salesDB = new SQLite3(DATABASE_SALES);
-            $this->salesDB->busyTimeout(2000);
+            $this->salesDB->busyTimeout(5000);
             if (!$this->salesDB) {
                 $this->setErrorMsg('could not connect db:'.DATABASE_SALES);
                 return false;
@@ -1011,7 +1035,7 @@
 
         private function connectUserInfoDB(){
             $this->userinfoDB = new SQLite3(USER_INFO_DB);
-            $this->userinfoDB->busyTimeout(2000);
+            $this->userinfoDB->busyTimeout(5000);
             if (!$this->userinfoDB) {
                 $this->setErrorMsg('could not connect db:'.USER_INFO_DB);
                 return false;
@@ -1021,7 +1045,7 @@
 
         private function connectOrderInfoDB(){
             $this->orderInfoDB = new SQLite3(ORDER_INFO_DB);
-            $this->orderInfoDB->busyTimeout(2000);
+            $this->orderInfoDB->busyTimeout(5000);
             if (!$this->orderInfoDB) {
                 $this->setErrorMsg('could not connect db:'.ORDER_INFO_DB);
                 return false;
@@ -1082,7 +1106,6 @@
             }
         }
 
-        //TODO return
         private function getSoldoutItem($cname) {
             if($this->menuDB == NULL) {
                 $this->connectMenuDB();
@@ -1317,6 +1340,293 @@
             return $status;
         }
         
+        public function statisticsByDish($start, $end) {
+            if ($this->salesDB == NULL) {
+                $this->connectSalesDB();
+            }
+            $sql = sprintf("SELECT dish_id, sum(price*quantity), sum(quantity) ".
+                            "FROM sales_data".
+                            " where DATETIME(timestamp)>='%s' and ".
+                            "DATETIME(timestamp)<='%s' GROUP BY dish_id", 
+                            $start, $end);
+            $resultSet = $this->salesDB->query($sql);
+            if (!$resultSet) {
+                return "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+            }
+            $statistics = array();
+            $total = 0;
+
+            $i = 0;
+            while($row = $resultSet->fetchArray()) {
+                $item = array('id' => $row[0],
+                              'total' => $row[1],
+                              'quantity' => $row[2]);
+                $statistics[$i] = $item;
+                $i++;
+            }
+            
+            $sql = sprintf("SELECT sum(price*quantity) FROM sales_data".
+                            " WHERE DATETIME(timestamp)>='%s' and DATETIME(timestamp)<='%s'",
+                            $start, $end);
+            $rs = $this->salesDB->query($sql);
+            if (!$rs) {
+                return "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+            }
+            if ($row = $rs->fetchArray()) {
+                if ($row[0] != NULL) {
+                    $total = $row[0]; 
+                }
+            }
+            
+            $ret = $this->getTableUsageAndPerson($start, $end);
+            $ret = array('data' => $statistics,
+                         'total' => $total,
+                         'tableCount' => $ret['tableCount'],
+                         'personCount' => $ret['persons']);
+            return json_encode($ret);
+        }
+        
+        public function statisticsByStuff($start, $end) {
+            if ($this->salesDB == NULL) {
+                $this->connectSalesDB();
+            }
+            $sql = sprintf("SELECT waiter_id, sum(price*quantity), sum(quantity)".
+                            "FROM sales_data".
+                            " where DATETIME(timestamp)>='%s' and ".
+                            "DATETIME(timestamp)<='%s' GROUP BY waiter_id", 
+                            $start, $end);
+            $resultSet = $this->salesDB->query($sql);
+            if (!$resultSet) {
+                return "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+            }
+            $statistics = array();
+            $total = 0;
+            $i = 0;
+            while($row = $resultSet->fetchArray()) {
+                $item = array('id' => $row[0],
+                              'total' => $row[1],
+                              'quantity' => $row[2]);
+                $statistics[$i] = $item;
+                $i++;
+            }
+            
+            $sql = sprintf("SELECT sum(price*quantity) FROM sales_data".
+                            " WHERE DATETIME(timestamp)>='%s' and DATETIME(timestamp)<='%s'",
+                            $start, $end);
+            $rs = $this->salesDB->query($sql);
+            if (!$rs) {
+                return "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+            }
+            if ($row = $rs->fetchArray()) {
+                if ($row[0] != NULL) {
+                    $total = $row[0]; 
+                }
+            }
+            
+            $ret = $this->getTableUsageAndPerson($start, $end);
+            $ret = array('data' => $statistics,
+                         'total' => $total,
+                         'tableCount' => $ret['tableCount'],
+                         'personCount' => $ret['persons']);
+            return json_encode($ret);
+        }
+
+        public function statisticsByPrinter($start, $end) {
+            if (!file_exists("conf/printer.conf")) {
+                return "";
+            }
+            
+            if ($this->salesDB == NULL) {
+                $this->connectSalesDB();
+            }
+            if ($this->menuDB == null) {
+                $this->connectMenuDB();
+            }
+            $printers = json_decode(file_get_contents("conf/printer.conf"));
+            $printNum = count($printers);
+            $statistics = array();
+            $total = 0;
+            $index = 0;
+            for ($i=0; $i<$printNum; $i++) {
+                $item = NULL;
+                if ($printers[$i]->id == 0) {
+                    continue;
+                }
+                $sql = sprintf("SELECT id from dishInfo where sortPrintID=%s", $printers[$i]->id);
+                $rsOfDishes = $this->menuDB->query($sql);
+                if (!$rsOfDishes) {
+                    return "err:".sqlite_last_error($this->menuDB)." #sql:$sql";
+                }
+                $i = 0;      
+                while ($dish = $rsOfDishes->fetchArray()) {
+                    $dishIds[$i] = $dish[0];
+                    $i++;
+                }
+                
+                $sql = sprintf("SELECT sum(price*quantity), sum(quantity) FROM sales_data WHERE dish_id IN (%s) AND DATETIME(timestamp)>='%s' and ".
+                            "DATETIME(timestamp)<='%s'", implode(',', $dishIds), $start, $end);
+                $rs = $this->salesDB->query($sql);
+                if (!$rs) {
+                    return "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+                }
+                if ($row = $rs->fetchArray()) {
+                    if ($row[1] == NULL) {
+                        $item = array('name' => $printers[$index]->name,
+                                 'total' => 0,
+                                 'quantity' => 0);
+                    } else {
+                        $item = array('name' => $printers[$index]->name,
+                                 'total' => $row[0],
+                                 'quantity' => $row[1] );
+                    }
+                }
+                
+                if ($item != NULL) {
+                    $statistics[$index] = $item;
+                    $index++;
+                }
+            }
+            $sql = sprintf("SELECT sum(price*quantity) FROM sales_data".
+                            " WHERE DATETIME(timestamp)>='%s' and DATETIME(timestamp)<='%s'",
+                            $start, $end);
+            $rs = $this->salesDB->query($sql);
+            if (!$rs) {
+                return "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+            }
+            if ($row = $rs->fetchArray()) {
+                if ($row[0] != NULL) {
+                    $total = $row[0]; 
+                }
+            }
+            
+            $ret = $this->getTableUsageAndPerson($start, $end);
+            $ret = array('data' => $statistics,
+                         'total' => $total,
+                         'tableCount' => $ret['tableCount'],
+                         'personCount' => $ret['persons']);
+            return json_encode($ret);
+            return json_encode($ret);
+        }
+        
+        public function statisticsByCategory($start, $end) {
+            $sql = "SELECT categoryID, categoryName FROM category";
+            if ($this->menuDB == null) {
+                $this->connectMenuDB();
+            }
+            
+            if ($this->salesDB == null) {
+                $this->connectSalesDB();
+            }
+            
+            $rsOfCategory = $this->menuDB->query($sql);
+            if (!$rsOfCategory) {
+                return "err:".sqlite_last_error($this->menuDB)." #sql:$sql";
+            }
+            $statistics = array();
+            $total = 0;
+            $index = 0;
+            while ($category = $rsOfCategory->fetchArray()) {
+                $item = null;
+                $sql = sprintf("SELECT dishID FROM dishCategory WHERE categoryID=%s",
+                        $category[0]);
+                $rsOfDishes = $this->menuDB->query($sql);
+                if (!$rsOfDishes) {
+                    return "err:".sqlite_last_error($this->menuDB)." #sql:$sql";
+                }
+                $i = 0;      
+                while ($dish = $rsOfDishes->fetchArray()) {
+                    $dishIds[$i] = $dish[0];
+                    $i++;
+                }
+                
+                $sql = sprintf("SELECT sum(price*quantity), sum(quantity) FROM sales_data WHERE dish_id IN (%s) AND DATETIME(timestamp)>='%s' and ".
+                            "DATETIME(timestamp)<='%s'", implode(',', $dishIds), $start, $end);
+                $rs = $this->salesDB->query($sql);
+                if (!$rs) {
+                    return "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+                }
+                if ($row = $rs->fetchArray()) {
+                    if ($row[1] == NULL) {
+                        $item = array('name' => $category[1],
+                                 'total' => 0,
+                                 'quantity' => 0);
+                    } else {
+                        $item = array('name' => $category[1],
+                                 'total' => $row[0],
+                                 'quantity' => $row[1] );
+                    }
+                }
+                if ($item != null) {
+                    $statistics[$index] = $item;
+                    $index++;
+                }
+                $dishIds = null;
+            }
+            
+            $sql = sprintf("SELECT sum(price*quantity) FROM sales_data".
+                            " WHERE DATETIME(timestamp)>='%s' and DATETIME(timestamp)<='%s'",
+                            $start, $end);
+            $rs = $this->salesDB->query($sql);
+            if (!$rs) {
+                return "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+            }
+            if ($row = $rs->fetchArray()) {
+                if ($row[0] != NULL) {
+                    $total = $row[0]; 
+                }
+            }
+            $ret = $this->getTableUsageAndPerson($start, $end);
+            $ret = array('data' => $statistics,
+                         'total' => $total,
+                         'tableCount' => $ret['tableCount'],
+                         'personCount' => $ret['persons']);
+            return json_encode($ret);
+        }
+        
+        public function getStuff() {
+            if ($this->userinfoDB == null) {
+                $this->connectUserInfoDB();
+            }
+            $sql = sprintf("select * from %s",USER_INFO);
+            $rs = $this->userinfoDB->query($sql);
+            if (!$rs) {
+                return "err:".sqlite_last_error($this->menuDB)." #sql:$sql";
+            }
+            $index = 0;
+            $stuffs = null;
+            while ($stuff = $rs->fetchArray()) {
+                $stuffs[$index] = array('id' => $stuff[0],
+                                        'name' => $stuff[1]);
+                $index++;
+            }
+            
+            return json_encode($stuffs);
+        }
+        
+        public function getTableUsageAndPerson($start, $end) {
+            if ($this->salesDB == null) {
+                $this->connectSalesDB();
+            }
+            $sql = sprintf("SELECT count(), sum(persons) FROM table_info".
+                        " WHERE DATETIME(timestamp)>='%s' and DATETIME(timestamp)<='%s'",
+                        $start, $end);
+            $rs = $this->salesDB->query($sql);
+            if (!$rs) {
+                echo "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+                return fasle;
+            }
+            if ($row = $rs->fetchArray()) {
+                if ($row[0] == NULL) {
+                    $row[0] = 0;
+                }
+                if ($row[1] == NULL) {
+                    $row[1] = 0;
+                }
+                return array('tableCount' => $row[0],
+                                'persons' => $row[1] );
+            }
+            return false;
+        }
         
         function __destruct() {
             if (isset($this->menuDB)) {

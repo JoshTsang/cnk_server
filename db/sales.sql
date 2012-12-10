@@ -5,7 +5,8 @@ CREATE TABLE [sales_data] (
 [price] FLOAT  NOT NULL,
 [quantity] FLOAT  NOT NULL,
 [waiter_id] INTEGER NOT NULL,
-[timestamp] TIMESTAMP NOT NULL
+[timestamp] TIMESTAMP NOT NULL,
+[order_id] INTERGER NOT NULL
 );
 
 DROP TABLE IF EXISTS [table_info];
