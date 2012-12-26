@@ -713,7 +713,8 @@
                                  "\r\n           谢谢惠顾!          \r\n \r\n ", $receivable, $income, $change);
                 $this->printl($socket, $print);
             }
-            if (round($receivable, 2, PHP_ROUND_HALF_UP) != round($total, 2, PHP_ROUND_HALF_UP)) {
+            $tolerant = abs($receivable - $total);
+            if ($tolerant > 1) {
                 $this->printR($socket, PRINTER_COMMAND_3X);
                 $this->printl($socket, "打印错误，此单作废");
                 $this->printR($socket, $this->fontSize);

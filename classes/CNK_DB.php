@@ -14,16 +14,6 @@
         private $err = array('succ' => false,
                              'error' => 'unknown');
 
-
-        // function __construct() {
-            // if ($this->debug) {
-                // error_reporting(E_ALL);
-                // ini_set("display_errors", TRUE);
-            // } else {
-                // ini_set("display_errors", FALSE);
-            // }
-        // }
-        
         public function install() {
             $this->connectOrderDB();
             $this->connectSalesDB();
@@ -376,6 +366,10 @@
         public function submitOrder($obj, $MD5) {
             if ($this->orderDB == NULL) {
                 $this->connectOrderDB();
+            }
+            
+            if ($this->validate() == false) {
+                return false;
             }
             
             $tableId = $obj->tableId;
@@ -1626,6 +1620,52 @@
                                 'persons' => $row[1] );
             }
             return false;
+        }
+        
+        function getMacAddr(){
+              $mac = array();  
+              exec("ifconfig -a", $mac, $ret);
+              if ($ret != 0) {
+                  return "";
+              }
+              $temp_array = array();  
+              foreach ( $mac as $value ){
+                  if (preg_match("/[0-9a-f][0-9a-f][:-]".
+                                  "[0-9a-f][0-9a-f][:-]".
+                                  "[0-9a-f][0-9a-f][:-]".
+                                  "[0-9a-f][0-9a-f][:-]".
+                                  "[0-9a-f][0-9a-f][:-]".
+                                  "[0-9a-f][0-9a-f]/i",$value, $temp_array ) ){  
+                       $mac_addr = $temp_array[0];  
+                       return $mac_addr;  
+                   }  
+              }  
+              return "";
+        }
+        
+        public function register($msg) {
+            $md51 = md5($msg);
+            $md5 = md5($md51.$this->getMacAddr());
+            file_put_contents("conf/lisence.conf", $md51.$md5);
+        }
+        
+        public function validate() {
+            if (file_exists("conf/lisence.conf")) {
+                $str = file_get_contents("conf/lisence.conf");
+                $md51 = substr($str, 0, 32);
+                $macAddr = $this->getMacAddr();
+                if (strlen($macAddr) < 1) {
+                    return false;
+                }
+                $md5 = md5($md51.$macAddr);
+                if ($md5 == substr($str, 32, 64)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
         }
         
         function __destruct() {
