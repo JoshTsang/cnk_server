@@ -7,25 +7,30 @@
     if (!isset($_GET['action']) || !isset($_POST['print'])) {
         if (!isset($_POST['json'])) {
             die("{\"succ\":\"false\", \"err\":\"more param needed\"}");
+        }  else {
+            $print = $_POST['json'];
         }
     }
     
+    if (isset($_POST['print'])) {
+        $print = $_POST['print'];
+    }
     $printer = new printer(PRINTER_CONF);
     $action = strtoupper($_GET['action']);
     switch ($action) {
         case 'SALES':
-            $printer->printSales($_POST['print']);
+            $printer->printSales($print);
             break;
         case 'CHECKOUT':
             $db = new CNK_DB();
             $checkoutNo = $db->getCheckoutNo();
-            $printer->printCheckout($_POST['print'], $checkoutNo);
+            $printer->printCheckout($print, $checkoutNo);
             break;
         case 'ORDER':
-            $printer->savePrintOrder($_POST['json'], "0", FALSE);
+            $printer->savePrintOrder($print, "0", FALSE);
             break;
         case 'RESERVATION':
-            $printer->printReservation($_POST['print']);
+            $printer->printReservation($print);
             break;
         default:
             die("{\"succ\":\"false\", \"err\":\"unsupporrtted action:$action\"}");

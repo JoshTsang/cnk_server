@@ -139,7 +139,7 @@
             }
             
             $this->printTitle($socket, $title."-预订", NULL);
-            $tableName = $obj->tableName;
+            @$tableName = $obj->tableName;
             $timestamp = $obj->timestamp;
             $waiter = $obj->waiter;
             if (isset($obj->persons)) {
@@ -154,7 +154,11 @@
             if (isset($obj->comment)) {
                 $this->printComment($socket, $obj->comment, $printerType);   
             }
-            $this->printFooter($socket, $total, $printerType);
+            if (isset($obj->addr)) {
+                $this->printFooter($socket, $total, $printerType, $obj->addr);
+            } else {
+                $this->printFooter($socket, $total, $printerType);
+            }
             
             socket_close($socket);
         }
@@ -265,13 +269,15 @@
         }
 
         public function printCombine($json) {
-            $count = count($this->printerInfo);
-            for ($i=0; $i<$count; $i++) {
-                if($this->printerInfo[$i]->usefor == PRINT_ORDER || $this->printerInfo[$i]->usefor == PRINT_ORDER_NO_PRICE) {
-                    $this->printCombineReceipt($json, $this->printerInfo[$i]->ip,
-                    $this->printerInfo[$i]->title, $this->printerInfo[$i]->type, $this->printerInfo[$i]->usefor==PRINT_ORDER_NO_PRICE?FALSE:TRUE);
-                } else if ($this->printerInfo[$i]->usefor == PRINT_KITCHEN) {
-                    $this->printCombineReceiptCategory($json, $this->printerInfo[$i]);
+            if (ENABLED_COMBINE_TABLE_RECEIPT) {
+                $count = count($this->printerInfo);
+                for ($i=0; $i<$count; $i++) {
+                    if($this->printerInfo[$i]->usefor == PRINT_ORDER || $this->printerInfo[$i]->usefor == PRINT_ORDER_NO_PRICE) {
+                        $this->printCombineReceipt($json, $this->printerInfo[$i]->ip,
+                        $this->printerInfo[$i]->title, $this->printerInfo[$i]->type, $this->printerInfo[$i]->usefor==PRINT_ORDER_NO_PRICE?FALSE:TRUE);
+                    } else if ($this->printerInfo[$i]->usefor == PRINT_KITCHEN) {
+                        $this->printCombineReceiptCategory($json, $this->printerInfo[$i]);
+                    }
                 }
             }
         }
@@ -525,7 +531,7 @@
             }
         }
         
-        private function printFooter($socket, $total, $printerType) {
+        private function printFooter($socket, $total, $printerType, $addr = null) {
             if ($printerType == PRINTER_TYPE_80) {
                 $print = sprintf("----------------------------------------------\r\n".
                                  "合计:%40.2f\r\n".
@@ -539,7 +545,11 @@
                                  "\r\n           谢谢惠顾!          \r\n \r\n ", $total);
                 $this->printl($socket, $print);
             }
-            
+            if ($addr != null) {
+                $this->printR($socket, PRINTER_COMMAND_2X);
+                $this->printl($socket, "送餐地址:$addr");
+                $this->printR($socket, $this->fontSize);
+            }
             $this->printR($socket, PRINTER_COMMAND_CUT);
             $this->printR($socket, PRINTER_COMMAND_ALARM);
         }
