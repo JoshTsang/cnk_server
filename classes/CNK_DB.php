@@ -1541,11 +1541,13 @@
                 }
                 if ($row = $rs->fetchArray()) {
                     if ($row[1] == NULL) {
-                        $item = array('name' => $category[1],
+                        $item = array('id' => $category[0],
+                                 'name' => $category[1],
                                  'total' => 0,
                                  'quantity' => 0);
                     } else {
-                        $item = array('name' => $category[1],
+                        $item = array('id' => $category[0],
+                                 'name' => $category[1],
                                  'total' => $row[0],
                                  'quantity' => $row[1] );
                     }

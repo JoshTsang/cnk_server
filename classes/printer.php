@@ -391,7 +391,7 @@
                 $print = sprintf("%s", $timestamp);
                 $this->printl($socket, $print);
                 
-                $print = sprintf("\n预订时间：%s", $reservation->reservation);
+                $print = sprintf("\n吃饭时间：%s", $reservation->reservation);
                 $this->printl($socket, $print);
                 
                 $print = sprintf("定金：%s", $reservation->deposit);
@@ -602,7 +602,11 @@
                 $persons = 0;
             }
             
-            $this->printHeader($socket, $dineId, $tableName, $waiter, $persons, $timestamp, $printerType, $printPrice);
+            if (isset($obj->reservation)) {
+                $this->printReservationHeader($socket, $obj, $tableName, $waiter, $persons, $timestamp, $printerType);
+            } else {
+                $this->printHeader($socket, $dineId, $tableName, $waiter, $persons, $timestamp, $printerType, $printPrice);
+            }
             
             if ($printPrice) {
                 $total = $this->printDishes($socket, $obj, $printerType);
