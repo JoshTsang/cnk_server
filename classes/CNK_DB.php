@@ -379,10 +379,18 @@
             if (isset($obj->multi)) {
                 $tableCount = count($tableId);
                 for ($i=0; $i<$tableCount; $i++) {
-                    $ret = $this->submitOrderToDb($tableId[$i], $waiter, $MD5, $obj->order, $obj->persons, $timestamp, $obj->type);
+                    if ($i == ($tableCount -1) && isset($obj->advPayment)) {
+                        $ret = $this->submitOrderToDb($tableId[$i], $waiter, $MD5, $obj->order, $obj->persons, $obj->advPayment, $timestamp, $obj->type);
+                    } else {
+                        $ret = $this->submitOrderToDb($tableId[$i], $waiter, $MD5, $obj->order, $obj->persons, 0, $timestamp, $obj->type);
+                    }
                 }
             } else {
-                $ret = $this->submitOrderToDb($tableId, $waiter, $MD5, $obj->order, $obj->persons, $timestamp, $obj->type);
+                if (isset($obj->advPayment)) {
+                    $ret = $this->submitOrderToDb($tableId, $waiter, $MD5, $obj->order, $obj->persons, $obj->advPayment, $timestamp, $obj->type);
+                } else {
+                    $ret = $this->submitOrderToDb($tableId, $waiter, $MD5, $obj->order, $obj->persons, 0, $timestamp, $obj->type);
+                }
             }
             
             return $ret;
@@ -399,7 +407,7 @@
             
         }
 
-        private function submitOrderToDb($tableId, $waiter, $MD5, $dishes, $persons, $timestamp, $type) {
+        private function submitOrderToDb($tableId, $waiter, $MD5, $dishes, $persons, $advancePayment, $timestamp, $type) {
             $dishCount = count($dishes);
             if ($this->isOrderSubmited($tableId, $MD5)) {
                 $this->setErrorNone();
@@ -429,7 +437,8 @@
                  }
              }
              
-            if (!$this->dineId($tableId)) {
+             //TODO advancePayment
+            if (!$this->dineId($tableId, $advancePayment)) {
                 return FALSE;
             }
              
@@ -487,11 +496,11 @@
             return $orderId;
         }
         
-        private function dineId($tableId) {
+        private function dineId($tableId, $advancePayment) {
             $resultSet = $this->orderDB->query("SELECT * from dine WHERE ".TABLE_PERSONS_COLUM_TID."=".$tableId);
             if ($resultSet) {
                 if (!$row = $resultSet->fetchArray()) {
-                   if (!$this->orderDB->exec("INSERT INTO dine values(NULL, $tableId)")) {
+                   if (!$this->orderDB->exec("INSERT INTO dine values(NULL, $tableId, $advancePayment)")) {
                       return FALSE;
                     } 
                 }
@@ -1668,6 +1677,25 @@
             } else {
                 return false;
             }
+        }
+        
+        public function getAdvancePayment($tid) {
+            if ($this->orderDB == NULL) {
+                $this->connectOrderDB();
+            }
+            
+            $payment = 0;
+            $sql=sprintf("select %s from %s where %s=%s",
+                      "advance_payment", "dine",
+                      TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid);
+            $resultSet = $this->orderDB->query($sql);
+            if ($resultSet) {
+                if ($row = $resultSet->fetchArray()) {
+                    $payment = $row[0];
+                }
+            }
+
+            return $payment;
         }
         
         function __destruct() {

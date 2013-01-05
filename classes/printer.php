@@ -155,9 +155,9 @@
                 $this->printComment($socket, $obj->comment, $printerType);   
             }
             if (isset($obj->addr)) {
-                $this->printFooter($socket, $total, $printerType, $obj->addr);
+                $this->printFooter($socket, $total, 0, $printerType, $obj->addr);
             } else {
-                $this->printFooter($socket, $total, $printerType);
+                $this->printFooter($socket, $total, 0, $printerType);
             }
             
             socket_close($socket);
@@ -419,6 +419,14 @@
                 $this->printTableId($socket, $table);
                 $print = sprintf("%s", $timestamp);
                 $this->printl($socket, $print);
+                $print = sprintf("\n吃饭时间：%s", $reservation->reservation);
+                $this->printl($socket, $print);
+                
+                $print = sprintf("定金：%s", $reservation->deposit);
+                $this->printl($socket, $print);
+                
+                $print = sprintf("联系方式：%s  %s", $reservation->name, $reservation->tel);
+                $this->printl($socket, $print);
                 if ($persons == 0) {
                     $print = sprintf("人数:%-4s   服务员：%s", "未设置", $waiter);
                 } else {
@@ -531,23 +539,40 @@
             }
         }
         
-        private function printFooter($socket, $total, $printerType, $addr = null) {
+        private function printFooter($socket, $total, $advPayment,$printerType, $addr = null) {
             if ($printerType == PRINTER_TYPE_80) {
-                $print = sprintf("----------------------------------------------\r\n".
+                if ($advPayment > 0) {
+                    $print = sprintf("----------------------------------------------\r\n".
+                                 "合计:%40.2f\r\n".
+                                 "预付:%40.2f\r\n".
+                                 "----------------------------------------------\r\n".
+                                 "\r\n               谢谢惠顾!               \r\n \r\n ", $total, $advPayment);
+                } else {
+                    $print = sprintf("----------------------------------------------\r\n".
                                  "合计:%40.2f\r\n".
                                  "----------------------------------------------\r\n".
                                  "\r\n               谢谢惠顾!               \r\n \r\n ", $total);
+                }
+                
                 $this->printl($socket, $print);
             } else if ($printerType == PRINTER_TYPE_58) {
-                $print = sprintf("--------------------------------\r\n".
-                                 "合计:%27.2f\r\n".
-                                 "--------------------------------\r\n".
-                                 "\r\n           谢谢惠顾!          \r\n \r\n ", $total);
+                if ($advPayment > 0) {
+                    $print = sprintf("--------------------------------\r\n".
+                                     "合计:%27.2f\r\n".
+                                     "预付:%27.2f\r\n".
+                                     "--------------------------------\r\n".
+                                     "\r\n           谢谢惠顾!          \r\n \r\n ", $total, $advPayment);
+                } else {
+                    $print = sprintf("--------------------------------\r\n".
+                                     "合计:%27.2f\r\n".
+                                     "--------------------------------\r\n".
+                                     "\r\n           谢谢惠顾!          \r\n \r\n ", $total);
+                }
                 $this->printl($socket, $print);
             }
             if ($addr != null) {
                 $this->printR($socket, PRINTER_COMMAND_2X);
-                $this->printl($socket, "送餐地址:$addr");
+                $this->printl($socket, "送餐地址:$addr".($printerType == PRINTER_TYPE_58?"\r\n\r\n":""));
                 $this->printR($socket, $this->fontSize);
             }
             $this->printR($socket, PRINTER_COMMAND_CUT);
@@ -617,8 +642,17 @@
             if (isset($obj->comment)) {
                 $this->printComment($socket, $obj->comment, $printerType);   
             }
+            $advPayment = 0;
+            if (isset($obj->advPayment)) {
+                $advPayment = $obj->advPayment;
+            }
+            
             if ($printPrice) {
-                $this->printFooter($socket, $total, $printerType);
+                if (isset($obj->addr)) {
+                    $this->printFooter($socket, $total, $advPayment, $printerType, $obj->addr);
+                } else {
+                     $this->printFooter($socket, $total,$advPayment, $printerType);
+                }
             } else {
                 $this->printFooterForKichen($socket, $printerType);
             }
@@ -678,8 +712,11 @@
                 $subTableTotal[$i] = $this->printDishes($socket, $obj, $printerType);
                 $tableName[$i] = $obj->tableName;
             }
-            
-            $this->printCheckoutFooter($socket, $subTableTotal, $tableName, $checkout->income, $checkout->change, $checkout->receivable, $i, $printerType);
+            $advPayment = 0;
+            if (isset($checkout->advPayment)) {
+                $advPayment = $checkout->advPayment;
+            }
+            $this->printCheckoutFooter($socket, $subTableTotal, $tableName, $checkout->income, $checkout->change, $checkout->receivable, $i, $advPayment, $printerType);
             
             socket_close($socket);
         }
@@ -688,43 +725,71 @@
             $this->printl($socket, $str." 桌：");
         }
 
-        private function printCheckoutFooter($socket, $subTableTotal, $tableName, $income, $change, $receivable, $tableCount, $printerType) {
+        private function printCheckoutFooter($socket, $subTableTotal, $tableName, $income, $change, $receivable, $tableCount, $advPayment, $printerType) {
             $total = 0;
             if ($printerType == PRINTER_TYPE_80) {
                 $this->printl($socket, "----------------------------------------------");
                 for ($i=0; $i<$tableCount; $i++) {
                     $name = " ".$tableName[$i]." 桌：";
-                    $zhLen = (strlen($name) - iconv_strlen($name, "UTF-8"))/2;
-                    $enLen = iconv_strlen($name, "UTF-8") - $zhLen;
-                    $dishNameSpace = $zhLen*2 + $enLen;
-                    $spaceLen = 24 - $dishNameSpace;
-                    $printString = sprintf("%s%$spaceLen"."s%21.2f",$name, "", $subTableTotal[$i]);
+                    if (strstr($name, ",")) {
+                        $printString = sprintf("%s\r\n%45.2f", $name, $subTableTotal[$i]);
+                    } else {
+                        $zhLen = (strlen($name) - iconv_strlen($name, "UTF-8"))/2;
+                        $enLen = iconv_strlen($name, "UTF-8") - $zhLen;
+                        $dishNameSpace = $zhLen*2 + $enLen;
+                        $spaceLen = 24 - $dishNameSpace;
+                        $printString = sprintf("%s%$spaceLen"."s%21.2f",$name, "", $subTableTotal[$i]);                        
+                    }
                     $this->printl($socket, $printString);
                     $total += $subTableTotal[$i];
                 }
-                $print = sprintf("合计:%40.2f\r\n".
+                if ($advPayment > 0) {
+                    $print = sprintf("合计:%40.2f\r\n".
+                                 "预付:%40.2f\r\n".
+                                 "实收:%40.2f\r\n".
+                                 "找零:%40.2f\r\n".
+                                 "----------------------------------------------\r\n".
+                                 "\r\n               谢谢惠顾!               \r\n \r\n ", $receivable, $advPayment, $income, $change);
+                    
+                } else {
+                    $print = sprintf("合计:%40.2f\r\n".
                                  "实收:%40.2f\r\n".
                                  "找零:%40.2f\r\n".
                                  "----------------------------------------------\r\n".
                                  "\r\n               谢谢惠顾!               \r\n \r\n ", $receivable, $income, $change);
+                }
                 $this->printl($socket, $print);
             } else if ($printerType == PRINTER_TYPE_58) {
                 $this->printl($socket, "--------------------------------");
                 for ($i=0; $i<$tableCount; $i++) {
                     $name = " ".$tableName[$i]." 桌：";
-                    $zhLen = (strlen($name) - iconv_strlen($name, "UTF-8"))/2;
-                    $enLen = iconv_strlen($name, "UTF-8") - $zhLen;
-                    $dishNameSpace = $zhLen*2 + $enLen;
-                    $spaceLen = 12 - $dishNameSpace;
-                    $printString = sprintf("%s%$spaceLen"."s%20.2f",$name, "", $subTableTotal[$i]);
+                    if (strstr($name, ",")) {
+                        $printString = sprintf("%s\r\n%32.2f", $name, $subTableTotal[$i]);
+                    } else {
+                        $zhLen = (strlen($name) - iconv_strlen($name, "UTF-8"))/2;
+                        $enLen = iconv_strlen($name, "UTF-8") - $zhLen;
+                        $dishNameSpace = $zhLen*2 + $enLen;
+                        $spaceLen = 12 - $dishNameSpace;
+                        $printString = sprintf("%s%$spaceLen"."s%20.2f",$name, "", $subTableTotal[$i]);
+                    }
                     $this->printl($socket, $printString);
                     $total += $subTableTotal[$i];
                 }
-                $print = sprintf("合计:%27.2f\r\n".
+                if ($advPayment > 0) {
+                    $print = sprintf("合计:%27.2f\r\n".
+                                 "预付:%27.2f\r\n".
+                                 "实收:%27.2f\r\n".
+                                 "找零:%27.2f\r\n".
+                                 "--------------------------------\r\n".
+                                 "\r\n           谢谢惠顾!          \r\n \r\n ", $receivable, $advPayment, $income, $change);
+                    
+                } else {
+                    $print = sprintf("合计:%27.2f\r\n".
                                  "实收:%27.2f\r\n".
                                  "找零:%27.2f\r\n".
                                  "--------------------------------\r\n".
                                  "\r\n           谢谢惠顾!          \r\n \r\n ", $receivable, $income, $change);
+                }
                 $this->printl($socket, $print);
             }
             $tolerant = abs($receivable - $total);
@@ -1116,7 +1181,7 @@
             $this->printTitle($socket, "销售统计", NULL);
             $this->printSalesHeader($socket, $timestart, $timeend, $printerType);
             $this->printSalesData($obj, $socket, $printerType);
-            $this->printFooter($socket, $total, $printerType);
+            $this->printFooter($socket, $total, 0, $printerType);
             
         }
 
