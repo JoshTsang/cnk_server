@@ -26,6 +26,13 @@
         case 3:
             $ret = $db->statisticsByPrinter($start_datetime, $end_datetime);
             break;
+        case 4:
+            if (isset($obj->id)) {
+                $ret = $db->statisticsCategoryDetail($start_datetime, $end_datetime, $obj->id);
+            } else {
+                $ret = "";
+            }
+            break;
         default:
             $ret = "";
             break;

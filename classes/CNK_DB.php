@@ -1588,6 +1588,50 @@
             return json_encode($ret);
         }
         
+        public function statisticsCategoryDetail($start, $end, $id) {
+            if ($this->menuDB == null) {
+                $this->connectMenuDB();
+            }
+            
+            if ($this->salesDB == null) {
+                $this->connectSalesDB();
+            }
+            
+            $statistics = array();
+            $index = 0;
+            $sql = sprintf("SELECT dishID FROM dishCategory WHERE categoryID=%s", $id);
+            $rsOfDishes = $this->menuDB->query($sql);
+            if (!$rsOfDishes) {
+                return "err:".sqlite_last_error($this->menuDB)." #sql:$sql";
+            }
+            $i = 0;      
+            while ($dish = $rsOfDishes->fetchArray()) {
+                $dishIds[$i] = $dish[0];
+                $i++;
+            }
+            
+            $sql = sprintf("SELECT dish_id, sum(price*quantity), sum(quantity) FROM sales_data WHERE dish_id IN (%s) AND DATETIME(timestamp)>='%s' and ".
+                        "DATETIME(timestamp)<='%s' group by dish_id", implode(',', $dishIds), $start, $end);
+            $rs = $this->salesDB->query($sql);
+            if (!$rs) {
+                return "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+            }
+            while ($row = $rs->fetchArray()) {
+                $item = array('id' => $row[0],
+                         'name' => 0,
+                         'total' => $row[1],
+                         'quantity' => $row[2] );
+                $statistics[$index] = $item;
+                $index++;
+            }
+            
+            $ret = array('data' => $statistics,
+                         'total' => 0,
+                         'tableCount' => 0,
+                         'personCount' => 0);
+            return json_encode($ret);
+        }
+               
         public function getStuff() {
             if ($this->userinfoDB == null) {
                 $this->connectUserInfoDB();
