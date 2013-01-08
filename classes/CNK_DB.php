@@ -1742,6 +1742,24 @@
             return $payment;
         }
         
+        public function setAdvancePayment($tid, $payment) {
+            if ($this->orderDB == NULL) {
+                $this->connectOrderDB();
+            }
+            
+            $sql=sprintf("UPDATE %s SET %s=%s where %s=%s",
+                       "dine", "advance_payment", $payment,
+                      TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid);
+            $resultSet = $this->orderDB->exec($sql);
+            if ($resultSet) {
+                return $payment;
+            } else {
+                echo $this->orderDB->lastErrorMsg()."#sql:$sql";
+                return 0;
+            }
+
+       }
+        
         function __destruct() {
             if (isset($this->menuDB)) {
                 $this->menuDB->close();
