@@ -3,7 +3,7 @@
 	require('setting/defines.php');
 	require('classes/printer.php');
 	require('classes/CNK_DB.php');
-	if (!isset($_GET['TYPE'])) {
+	if (!isset($_GET['TYPE']) || !$_POST['json']) {
 		die("[MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED."]");
 	}
 	$json_string = $_POST['json'];

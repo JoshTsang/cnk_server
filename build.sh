@@ -1,32 +1,26 @@
 # !/bin/bash
-mkdir /cainaoke/webhome/orderPad
 mkdir -p /cainaoke/webhome/data
 mkdir -p /cainaoke/webhome/config
+mkdir /cainaoke/webhome/db
+mkdir /cainaoke/webhome/db/temp
+mkdir /cainaoke/webhome/db/temporary
+mkdir /cainaoke/webhome/db/dev
 
-#copy orderPad source code
-echo "Fetching Source Code..."
-scp -r root@192.168.0.1:/mnt/sda1/cnk_server/cnk_orderPad/* /cainaoke/webhome/orderPad/
+chmod 777 /cainaoke/webhome/data
+chmod 777 /cainaoke/webhome/config
+chmod 777 /cainaoke/webhome/db
+chmod 777 /cainaoke/webhome/db/temp
+chmod 777 /cainaoke/webhome/db/temporary
+chmod 777 /cainaoke/webhome/db/dev
 
-#copy front & mangement source code
-scp -r root@192.168.0.1:/mnt/sda1/cnk_server/cnk_mangement/cnk_web/* /cainaoke/webhome/orderPad/
+#construct db
+curl http://127.0.0.1/orderPad/build/db.php
 
-#install orderPad
-echo "Installing..."
-wget http://127.0.0.1/orderPad/install.php
-
-#install front & mangement
-
-#copy menu & table settings
-echo "Downloading menu for Demostration..."
-scp -r root@192.168.0.1:/mnt/sda1/cnk_server/data /cainaoke/webhome/data
-scp -r root@192.168.0.1:/mnt/sda1/cnk_server/data /cainaoke/webhome/data
-
-#replace index for install
-mv /cainaoke/webhome/index.php /cainaoke/webhome/index_1.php
-cp /cainaoke/webhome/orderPad/install.php /cainaoke/webhome/index.php
-
-#prepare for installation
-sh /cainaoke/webhome/orderPad/install.sh
-
+#rc.local
+cp /cainaoke/webhome/orderPad/build/rc.local /etc
 #Notify for Printer setting
-echo "Done.\nPlease reboot the server.\nConfig Cainaoke after rebooting to finish installation."
+echo "Upload cnk.apk to finish installation.Then reboot the server."
+
+#remove install files
+rm -rf /cainaoke/webhome/orderPad/build
+rm -f /cainaoke/webhome/orderPad/build.sh

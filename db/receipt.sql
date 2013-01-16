@@ -9,3 +9,12 @@ CREATE TABLE [receipt] (
 [pend] BOOLEAN NOT NULL,
 [type] INTERGER NOT NULL
 );
+
+DROP TABLE IF EXISTS [history];
+CREATE TABLE [history] (
+	[id] INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,
+	[type] INTERGER  NOT NULL,
+	[table] TEXT  NOT NULL,
+	[timestamp]  TIMESTAMP  NOT NULL,
+	[receipt] TEXT  NOT NULL
+);

@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+# This script will be executed *after* all the other init scripts.
+# You can put your own initialization stuff in here if you don't
+# want to do the full Sys V style init stuff.
+
+touch /var/lock/subsys/local
+ifconfig eth0 192.168.0.2
+service iptables stop
+service vsftpd start
+service dnsmasq start
+service dhcpd stop
+cp /cainaoke/webhome/db/temp/* /cainaoke/webhome/db/temporary/
+mkdir /cainaoke/webhome/db/temporary/dev
+touch /cainaoke/webhome/db/temporary/printer
+chmod 777 /cainaoke/webhome/db/temporary/printer
+chmod 777 /cainaoke/webhome/db/temporary/dev
+chmod 777 /cainaoke/webhome/db
+chmod 777 /cainaoke/webhome/db/sales.db
+chmod 777 /cainaoke/webhome/db/temp
+chmod 777 /cainaoke/webhome/db/temporary
+chmod 777 /cainaoke/webhome/db/temp/*
+chmod 777 /cainaoke/webhome/db/temporary/*
+chmod 777 /cainaoke/webhome/db/dish.db3
+chmod 777 /cainaoke/webhome/db/user.db3
+chmod 777 /cainaoke/webhome/db/temp/orderInfo.db3
+chmod 777 /cainaoke/webhome/db/member.db3
+chmod 777 /cainaoke/webhome/db/reservation.db3
+chmod 777 /cainaoke/webhome/orderPad/conf
+chmod 777 /cainaoke/webhome/orderPad/conf/*.*
+chmod 777 /tmp
+chmod 777 /cainaoke/webhome/upload/ftp_temp/temp
+/cainaoke/nginxhome/sbin/nginx
+/cainaoke/phphome/sbin/php-fpm
+

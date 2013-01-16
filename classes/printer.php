@@ -184,7 +184,7 @@
                 $this->connectReceiptDB();
             }
             
-            $this->receiptDB->busyTimeout(40000);
+            $this->receiptDB->busyTimeout(60000);
             $sql = "select * from receipt limit 5";
             $ret = $this->receiptDB->query($sql);
             if ($ret) {

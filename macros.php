@@ -111,6 +111,9 @@
 	define('USER_PWD',"password");
 	define('USER_PERMISSION',"permission");	
     
+    //receipt
+    define('DATABASE_RECEIPT', "../db/temporary/receipt.db");
+    
     //config files
     define("LISENCE_CONF", "conf/Lisence.conf");
     define("FLAVOR_CONF", "conf/flavor.conf");

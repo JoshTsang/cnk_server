@@ -1758,7 +1758,11 @@
                 return 0;
             }
 
-       }
+        }
+
+        public function saveHistory($obj) {
+            $sql = sprintf("INSERT INTO history values(null, )");
+        }
         
         function __destruct() {
             if (isset($this->menuDB)) {
