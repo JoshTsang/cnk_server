@@ -114,8 +114,13 @@
                 $this->connectReceiptDB();
             }
             
-            $sql = sprintf("INSERT INTO history values(null, %s, '%s', '%s', '%s')",
-                 $history->type, $history->table, $history->timestamp, $history->receipt);
+            if (isset($history->extra)) {
+                $extra = $history->extra;
+            } else {
+                $extra = "";
+            }
+            $sql = sprintf("INSERT INTO history values(null, %s, '%s', '%s', '%s', '%s')",
+                 $history->type, $history->table, $history->timestamp, $history->receipt, $extra);
             return $this->receiptDB->exec($sql);
         }
         
@@ -131,9 +136,9 @@
                 $i = 0;
                 while($row = $ret->fetchArray()) {
                     $historys[$i] = array('id' => $row[0],
-                                           'type' => $row[1],
-                                           'timestamp' => $row[2],
-                                           'receipt' => $row[3]);
+                                           'table' => $row[2],
+                                           'timestamp' => $row[3],
+                                           'type' => $row[1]);
                    $i++;
                 }
             }
@@ -152,17 +157,37 @@
                 if($row = $ret->fetchArray()) {
                     switch ($row[1]) {
                         case HISTORY_CHECKOUT:
-                            
+                            $this->printCheckout($row[4], $row[5]);
                             break;
                         case HISTORY_ORDER:
-                            
+                            $this->savePrintOrder($row[4], $row[5], FALSE);
+                            break;
+                        case HISTORY_ADD:
+                            $this->savePrintOrder($row[4], $row[5], true);
                             break;
                         case HISTORY_DEL:
-                            
+                            $this->savePrintDel($row[4]);
                             break;
                         default:
                             
                             break;
+                    }
+                }
+            }
+            
+            $this->removeHistory();
+        }
+
+        private function removeHistory() {
+            $sql = "select max(id) from history";
+            $ret = $this->receiptDB->query($sql);
+            if ($ret) {
+                if($row = $ret->fetchArray()) {
+                    $max = $row[0];
+                    $id = $max - 50;
+                    if ($id > 0) {
+                        $sql = "DELETE from history where id<$id";
+                        $this->receiptDB->exec($sql);
                     }
                 }
             }

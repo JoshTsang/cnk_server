@@ -118,7 +118,8 @@
     //history
     define('HISTORY_CHECKOUT', 1);
     define('HISTORY_ORDER', 2);
-    define('HISTORY_DEL', 3);
+    define('HISTORY_ADD', 3);
+    define('HISTORY_DEL', 4);
     
     //config files
     define("LISENCE_CONF", "conf/Lisence.conf");

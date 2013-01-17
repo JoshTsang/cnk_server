@@ -25,10 +25,11 @@
 	}
 	
     $receipt = json_decode($json_string);
-    $history = array('type' => HISTORY_ORDER,
+    $history = array('type' => isset($_GET['action'])?HISTORY_ADD:HISTORY_ORDER,
                      'table' => $receipt->tableName,
                      'timestamp' => $receipt->timestamp,
-                     'receipt' => $json_string );
+                     'receipt' => $json_string,
+                     'extra' => $orderId);
     $printer->saveHistory((object)$history);
 	echo $db->error();
 ?>

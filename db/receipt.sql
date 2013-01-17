@@ -16,5 +16,6 @@ CREATE TABLE [history] (
 	[type] INTERGER  NOT NULL,
 	[table] TEXT  NOT NULL,
 	[timestamp]  TIMESTAMP  NOT NULL,
-	[receipt] TEXT  NOT NULL
+	[receipt] TEXT  NOT NULL,
+	[extra] CHAR(5)
 );
