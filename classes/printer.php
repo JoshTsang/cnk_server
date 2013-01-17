@@ -100,11 +100,74 @@
         }
 
         private function saveOrder($json, $index, $orderId, $isAdd, $usefor) {
+            if($this->receiptDB == NULL) {
+                $this->connectReceiptDB();
+            }
+            
             $sql = sprintf("INSERT INTO [receipt] values(null, %s, '%s', \"%s\", %s, %s, %d, %d)", 
                     $index, $json, $orderId, $isAdd?1:0, $usefor, 0, RECEIPT_ORDER);
             $this->receiptDB->exec($sql);
         }
 
+        public function saveHistory($history) {
+            if($this->receiptDB == NULL) {
+                $this->connectReceiptDB();
+            }
+            
+            $sql = sprintf("INSERT INTO history values(null, %s, '%s', '%s', '%s')",
+                 $history->type, $history->table, $history->timestamp, $history->receipt);
+            return $this->receiptDB->exec($sql);
+        }
+        
+        public function getHistory() {
+            if ($this->receiptDB == null) {
+                $this->connectReceiptDB();
+            }
+            
+            $sql = "select * from history ORDER BY id DESC limit 20";
+            $ret = $this->receiptDB->query($sql);
+            $historys = array();
+            if ($ret) {
+                $i = 0;
+                while($row = $ret->fetchArray()) {
+                    $historys[$i] = array('id' => $row[0],
+                                           'type' => $row[1],
+                                           'timestamp' => $row[2],
+                                           'receipt' => $row[3]);
+                   $i++;
+                }
+            }
+            
+            return json_encode($historys);
+        }
+        
+        public function printHistory($id) {
+             if ($this->receiptDB == null) {
+                $this->connectReceiptDB();
+            }
+            
+            $sql = "select * from history where id=$id";
+            $ret = $this->receiptDB->query($sql);
+            if ($ret) {
+                if($row = $ret->fetchArray()) {
+                    switch ($row[1]) {
+                        case HISTORY_CHECKOUT:
+                            
+                            break;
+                        case HISTORY_ORDER:
+                            
+                            break;
+                        case HISTORY_DEL:
+                            
+                            break;
+                        default:
+                            
+                            break;
+                    }
+                }
+            }
+        }
+        
         public function printReservation($print) {
             $this->paddingDish = FALSE;
             $dishFontSize = $this->dishFontSize;

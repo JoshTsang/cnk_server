@@ -94,6 +94,7 @@
 	define('TABLE_INDEX',"tableOrder");
 	define('TABLE_AREA',"tableArea");
 	define('TABLE_FLOOR',"tableFloor");
+    
 	/*callWaiter*/
 	define('TABLE_NOTIFICATION', 'callWaiter');
 	define('NOTIFICATION_COLUM_TID', 'tableID');
@@ -113,6 +114,11 @@
     
     //receipt
     define('DATABASE_RECEIPT', "../db/temporary/receipt.db");
+    
+    //history
+    define('HISTORY_CHECKOUT', 1);
+    define('HISTORY_ORDER', 2);
+    define('HISTORY_DEL', 3);
     
     //config files
     define("LISENCE_CONF", "conf/Lisence.conf");

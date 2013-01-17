@@ -61,5 +61,12 @@
 	}
 	$jsonString = json_encode($item);
 	$printer->savePrintDel($jsonString);
+    
+    $receipt = json_decode($jsonString);
+    $history = array('type' => HISTORY_DEL,
+                     'table' => $receipt->tableName,
+                     'timestamp' => $receipt->timestamp,
+                     'receipt' => $json_string );
+    $printer->saveHistory((object)$history);
 	echo $db->error();
 ?>

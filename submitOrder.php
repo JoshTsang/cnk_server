@@ -24,5 +24,11 @@
 		$printer->savePrintOrder($json_string, $orderId, isset($_GET['action']));
 	}
 	
+    $receipt = json_decode($json_string);
+    $history = array('type' => HISTORY_ORDER,
+                     'table' => $receipt->tableName,
+                     'timestamp' => $receipt->timestamp,
+                     'receipt' => $json_string );
+    $printer->saveHistory((object)$history);
 	echo $db->error();
 ?>

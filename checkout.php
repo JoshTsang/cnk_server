@@ -15,5 +15,12 @@
 	$json_string = $_POST['json'];
 	
 	$printer->printCheckout($json_string, $checkoutNo);
+    
+    $receipt = json_decode($json_string);
+    $history = array('type' => HISTORY_CHECKOUT,
+                     'table' => $receipt->tableName,
+                     'timestamp' => $receipt->timestamp,
+                     'receipt' => $json_string );
+    $printer->saveHistory((object)$history);
 	echo "{\"succ\":true}";
 ?>
