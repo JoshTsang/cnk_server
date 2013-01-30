@@ -25,6 +25,13 @@
             $db = new CNK_DB();
             $checkoutNo = $db->getCheckoutNo();
             $printer->printCheckout($print, $checkoutNo);
+            $receipt = json_decode($print);
+            $history = array('type' => HISTORY_CHECKOUT,
+                             'table' => $receipt->tableName,
+                             'timestamp' => $receipt->timestamp,
+                             'receipt' => $print,
+                             'extra' => $checkoutNo);
+            $printer->saveHistory((object)$history);
             break;
         case 'ORDER':
             $printer->savePrintOrder($print, "0", FALSE);

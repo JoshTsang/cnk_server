@@ -273,27 +273,44 @@
             }
             
             $this->receiptDB->busyTimeout(60000);
-            $sql = "select * from receipt limit 5";
+            $sql = "select * from receipt limit 2";
             $ret = $this->receiptDB->query($sql);
+            $receipts = array();
             if ($ret) {
+                $i = 0;
                 while($row = $ret->fetchArray()) {
-                    switch($row[7]) {
-                        case RECEIPT_DEL:
-                            $printerRet = $this->printDel($row[2], $row[1], $row[5]);
+                    $receipts[$i] = $row;
+                    $i++;
+                }
+            }
+            
+            $count = count($receipts);
+            for ($i=0; $i<$count; $i++) {
+               $row = $receipts[$i];
+               switch($row[7]) {
+                    case RECEIPT_DEL:
+                        $printerRet = $this->printDel($row[2], $row[1], $row[5]);
+                        break;
+                    case RECEIPT_ORDER:
+                        $printerRet = $this->printOrder($row[2], $row[3], $row[4], $row[1], $row[5]);
+                        break;
+                    default:
+                        $printerRet = -1;
+                }
+                if ($printerRet >= 0) {
+                    $sql = sprintf("DELETE FROM receipt WHERE id=%s", $row[0]);
+                    //TODO db locked
+                    for ($j=0; $j<5; $j++) {
+                        $ret = $this->receiptDB->exec($sql);
+                        if ($ret) {
                             break;
-                        case RECEIPT_ORDER:
-                            $printerRet = $this->printOrder($row[2], $row[3], $row[4], $row[1], $row[5]);
-                            break;
-                        default:
-                            $printerRet = -1;
-                    }
-                    if ($printerRet >= 0) {
-                        $sql = sprintf("DELETE FROM receipt WHERE id=%s", $row[0]);
-                        //TODO db locked
-                        $this->receiptDB->exec($sql);
+                        } else {
+                            sleep(2);
+                        }
                     }
                 }
             }
+            
         }
 
         private function printDel($print, $index, $usefor) {
@@ -699,6 +716,7 @@
                 } else {
                     $this->printl($socket, "********************************");
                 }
+                $this->printR($socket, PRINTER_COMMAND_2X);
                 $this->printl($socket, "#备注:".$comment);
                 $this->printR($socket, $this->fontSize);
             }

@@ -30,6 +30,8 @@ chmod 777 /cainaoke/webhome/orderPad/conf
 chmod 777 /cainaoke/webhome/orderPad/conf/*.*
 chmod 777 /tmp
 chmod 777 /cainaoke/webhome/upload/ftp_temp/temp
+rm -f /cainaoke/webhome/user_data/tmp *
+rm -f /cainaoke/webhome/user_data/tmp *.*
 /cainaoke/nginxhome/sbin/nginx
 /cainaoke/phphome/sbin/php-fpm
 
