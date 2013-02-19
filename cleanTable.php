@@ -9,14 +9,13 @@
 	$obj = json_decode($json_string);
 	$db = new CNK_DB();
 	
-	
 	$order = $obj->order;
 	$timestamp = $obj->timestamp;
 	$tableIdCount = count($obj->order);
 	if ($tableIdCount <= 0) {
 	  	die("[MORE_PARAM_NEEDED:".MORE_PARAM_NEEDED."]");
 	}
-	for($i = 0;$i < $tableIdCount;$i++){
+	for($i = 0;$i < $tableIdCount;$i++) {
 		$tableId = $order[$i] -> TID;
 		$db->cleanTable($tableId, $timestamp);
 	}

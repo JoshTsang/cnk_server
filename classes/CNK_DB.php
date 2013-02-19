@@ -559,8 +559,9 @@
                 $this->connectOrderDB();
             }
 
-            $resultSet = $this->orderDB->query("SELECT ".TABLE_PERSONS_COLUM_PERSONS." from ".
-                                          TABLE_PERSONS." WHERE ".TABLE_PERSONS_COLUM_TID."=".$tid);
+            $sql = "SELECT ".TABLE_PERSONS_COLUM_PERSONS." from ".
+                                          TABLE_PERSONS." WHERE ".TABLE_PERSONS_COLUM_TID."=".$tid;
+            $resultSet = $this->orderDB->query($sql);
             if ($resultSet) {
                 if ($row = $resultSet->fetchArray()) {
                     $persons = $row[0];
