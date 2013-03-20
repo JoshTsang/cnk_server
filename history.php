@@ -1,6 +1,7 @@
 <?php
     require('macros.php');
     require('setting/defines.php');
+    require('classes/mysql.php');
     require('classes/printer.php');
     
     if (isset($_GET['do'])) {

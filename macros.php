@@ -18,7 +18,7 @@
 	define('DISHES_TABLE_COLUM_ID', "id");
 	define('DISHES_TABLE_COLUM_STATUS', "status");
 	
-	define('DATABASE_ORDER', "../db/temporary/order.db");
+	define('DATABASE_ORDER', "order");
 	define('TABLE_ORDER_TABLE', "table_order");
 	define('TABLE_ORDER_TABLE_COLUM_ID', "id");
 	define('TABLE_ORDER_TABLE_COLUM_TABLE_ID', "table_id");
@@ -40,7 +40,7 @@
 	define('PRINTER_TABLE', "sortPrint");
 	define('PRINTER_COLUMN_NAME', "sortPrintName");
 	
-	define('DATABASE_SALES', "../db/sales.db");
+	define('DATABASE_SALES', "sales");
 	// define('TABLE_INFO', "table_info");
 	// define('TABLE_NAME', "tablenum");
 	// define('TABLE_ID', "id");
@@ -113,7 +113,7 @@
 	define('USER_PERMISSION',"permission");	
     
     //receipt
-    define('DATABASE_RECEIPT', "../db/temporary/receipt.db");
+    define('DATABASE_RECEIPT', "receipt");
     
     //history
     define('HISTORY_CHECKOUT', 1);

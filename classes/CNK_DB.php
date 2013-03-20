@@ -1,4 +1,7 @@
 <?php
+    //TODO remove
+    require 'classes/mysql.php';
+    
     function sqlite_last_error($db) {
         return $db->lastErrorMsg();
     }
@@ -6,8 +9,7 @@
     class CNK_DB {
         private $debug = FALSE;
         private $menuDB;
-        private $orderDB;
-        private $salesDB;
+        private $db;
         //private $phoneDB;
         private $userinfoDB;
         private $orderInfoDB;
@@ -15,13 +17,14 @@
                              'error' => 'unknown');
 
         public function install() {
-            $this->connectOrderDB();
-            $this->connectSalesDB();
+            $this->connectDB();
             $order = file_get_contents("db/order.sql");
             $sales = file_get_contents("db/sales.sql");
             
-            $this->orderDB->exec($order);
-            $this->salesDB->exec($sales);
+            $this->db->select_db(DATABASE_ORDER);
+            $this->db->query($order);
+            $this->db->select_db(DATABASE_SALES);
+            $this->db->query($sales);
         }
         
         public function cleanTable($tid, $timestamp) {
@@ -50,21 +53,22 @@
 
         public function getCheckoutNo() {
             $checkoutNo = FALSE;
-            if ($this->orderDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
             $sign = time().rand(100000, 999999);
             $sql = sprintf("INSERT INTO %s VALUES(null,'%s')", "checkout", $sign);
-            if (!$this->orderDB->exec($sql)) {
-                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+            $this->db->select_db(DATABASE_ORDER);
+            if (!$this->db->query($sql)) {
+                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
             }
             
             $sql = sprintf("SELECT id FROM %s WHERE sign='%s'", "checkout", $sign);
-            $resultSet = $this->orderDB->query($sql);
+            $resultSet = $this->db->query($sql);
             if ($resultSet) {
-               if($row = $resultSet->fetchArray()) {
+               if($row = mysql_fetch_array($resultSet)) {
                     $checkoutNo = $row[0];
                 }
             }
@@ -136,17 +140,18 @@
         }
 
         public function getOrderIds($tid) {
-            if ($this->orderDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
 
             $sql=sprintf("select %s from %s where %s=%s",
                       TABLE_ORDER_TABLE_COLUM_ID, TABLE_ORDER_TABLE,
                       TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid);
-            $resultSet = $this->orderDB->query($sql);
+            $this->db->select_db(DATABASE_ORDER);
+            $resultSet = $this->db->query($sql);
             if ($resultSet) {
                 $i = 0;
-                while($row = $resultSet->fetchArray()) {
+                while($row = mysql_fetch_array($resultSet)) {
                     $orderId[$i] = $row[0];
                     $i++;
                 }
@@ -156,7 +161,7 @@
         }
         
         public function getDineId($tid) {
-            if ($this->orderDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
             
@@ -164,9 +169,10 @@
             $sql=sprintf("select %s from %s where %s=%s",
                       TABLE_ORDER_TABLE_COLUM_ID, "dine",
                       TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid);
-            $resultSet = $this->orderDB->query($sql);
+            $this->db->select_db(DATABASE_ORDER);
+            $resultSet = $this->db->query($sql);
             if ($resultSet) {
-                if ($row = $resultSet->fetchArray()) {
+                if ($row = mysql_fetch_array($resultSet)) {
                     $dineId = $row[0];
                 }
             }
@@ -175,12 +181,10 @@
         }
 
         public function saveSalesData($tid, $timestamp) {
-            if ($this->orderDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
-            if ($this->salesDB == NULL) {
-                $this->connectSalesDB();
-            }
+            
             $sql=sprintf("select %s.%s,%s.%s,%s.%s,%s.%s,%s,%s.%s from %s,%s where %s.%s=%s.%s and %s=%s",
                       ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_DISH_ID,
                       ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_PRICE,
@@ -192,18 +196,23 @@
                       TABLE_ORDER_TABLE, ORDER_DETAIL_TABLE_COLUM_ID,
                       ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_ORDER_ID,
                       TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid);
-            $resultSet = $this->orderDB->query($sql);
+            $this->db->select_db(DATABASE_ORDER); 
+            $resultSet = $this->db->query($sql);
             if ($resultSet) {
-                while($row = $resultSet->fetchArray()) {
-                    $sqlInsert=sprintf("insert into [sales_data] values(null, %s, %s, %s, %s, '%s', %s);", $row[0],$row[1], $row[2], $row[4], $timestamp, $row[5]);
-                    if (!$this->salesDB->exec($sqlInsert)) {
-                        $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sqlInsert);
+                $orderedDishes = $this->db->fetch_all($resultSet, MYSQL_NUM);
+                $count = count($orderedDishes);
+                $this->db->select_db(DATABASE_SALES); 
+                for ($i=0; $i<$count; $i++) {
+                    $row = $orderedDishes[$i];
+                    $sqlInsert=sprintf("insert into sales_data values(null, %s, %s, %s, %s, '%s', %s);", $row[0],$row[1], $row[2], $row[4], $timestamp, $row[5]);
+                    if (!$this->db->query($sqlInsert)) {
+                        $this->setErrorMsg('exec failed:'.sqlite_last_error($this->db).' #sql:'.$sqlInsert);
                         $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                         return false;
                     }
                 }
             } else {
-                $this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                $this->setErrorMsg('query failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return false;
             }
@@ -214,9 +223,10 @@
             }
 
             $persons = substr($persons, 1, strlen($persons) - 2);
-            $sqlInsert=sprintf("insert into [table_info] values(null, %s, %s, '%s');", $tid, $persons, $timestamp);
-            if (!$this->salesDB->exec($sqlInsert)) {
-                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->salesDB).' #sql:'.$sqlInsert);
+            $sqlInsert=sprintf("insert into table_info values(null, %s, %s, '%s');", $tid, $persons, $timestamp);
+            $this->db->select_db(DATABASE_SALES);
+            if (!$this->db->query($sqlInsert)) {
+                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->db).' #sql:'.$sqlInsert);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
             }
@@ -228,24 +238,25 @@
             $sql=sprintf("select %s from %s where %s=%s",
                       ORDER_DETAIL_TABLE_COLUM_ID, TABLE_ORDER_TABLE,
                       TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid);
-            if ($this->orderDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
-            $resultSet = $this->orderDB->query($sql);
+            $this->db->select_db(DATABASE_ORDER);
+            $resultSet = $this->db->query($sql);
             if ($resultSet) {
-                while($row = $resultSet->fetchArray()) {
+                while($row = mysql_fetch_array($resultSet)) {
                     $sqlDelete=sprintf("DELETE FROM %s where %s=%s;", ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_ORDER_ID,$row[0]);
-                    $this->orderDB->exec($sqlDelete);
+                    $this->db->query($sqlDelete);
                 }
             } else {
-                $this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                $this->setErrorMsg('query failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return false;
             }
 
             $sqlDelete=sprintf("DELETE FROM %s where %s=%s;", TABLE_ORDER_TABLE,TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid);
-            if (!$this->orderDB->exec($sqlDelete)) {
-                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+            if (!$this->db->query($sqlDelete)) {
+                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return false;
             }
@@ -344,16 +355,17 @@
         }
         
         private function isOrderSubmited($tid, $MD5) {
-            if ($this->orderDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
             
             $sql = sprintf("select * from %s where %s='%s' and %s=%s", 
                         TABLE_ORDER_TABLE, "MD5", $MD5,
                          TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid);
-            $resultSet = $this->orderDB->query($sql);
+            $this->db->select_db(DATABASE_ORDER);
+            $resultSet = $this->db->query($sql);
             if ($resultSet) {
-                if ($row = $resultSet->fetchArray()) {
+                if ($row = mysql_fetch_array($resultSet)) {
                     return TRUE;
                 } else {
                     return FALSE;
@@ -364,7 +376,7 @@
         }
 
         public function submitOrder($obj, $MD5) {
-            if ($this->orderDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
             
@@ -397,7 +409,7 @@
         }
         
         public function submitMultiOrder($obj, $MD5) {
-            if ($this->orderDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
             
@@ -443,26 +455,27 @@
             }
              
             @$datetime = split(" ", $timestamp);
-            if (!$this->orderDB->exec("INSERT INTO ".TABLE_ORDER_TABLE."(".TABLE_ORDER_TABLE_COLUM_TABLE_ID.",".TABLE_ORDER_TABLE_COLUM_WAITER.",".
+            $this->db->select_db(DATABASE_ORDER);
+            if (!$this->db->query("INSERT INTO ".TABLE_ORDER_TABLE."(".TABLE_ORDER_TABLE_COLUM_TABLE_ID.",".TABLE_ORDER_TABLE_COLUM_WAITER.",".
                                              TABLE_ORDER_TABLE_COLUM_TIMESTAMP.",MD5)".
                                 "values('$tableId', '$waiter', '$datetime[0]T$datetime[1]','$MD5')")){
-                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
             }
 
-            $resultSet = $this->orderDB->query("SELECT MAX(".TABLE_ORDER_TABLE_COLUM_ID.") from ".
+            $resultSet = $this->db->query("SELECT MAX(".TABLE_ORDER_TABLE_COLUM_ID.") from ".
                                           TABLE_ORDER_TABLE." WHERE ".TABLE_ORDER_TABLE_COLUM_TABLE_ID."=".$tableId);
             if ($resultSet) {
-                if ($row = $resultSet->fetchArray()) {
+                if ($row = mysql_fetch_array($resultSet)) {
                     $orderId = $row[0];
                 } else {
-                    $this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                    $this->setErrorMsg('query failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                     $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                     return FALSE;
                 }
             } else {
-                $this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                $this->setErrorMsg('query failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
             }
@@ -477,8 +490,9 @@
                                                                     ORDER_DETAIL_TABLE_COLUM_QUANTITY.",".
                                                                     ORDER_DETAIL_TABLE_COLUM_ORDER_ID.")".
                                      "values($dishId, $price, $dishQuantity, $orderId)";
-                if (!$this->orderDB->exec($sql)) {
-                    $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                $this->db->select_db(DATABASE_ORDER);
+                if (!$this->db->query($sql)) {
+                    $this->setErrorMsg('exec failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                     $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                     return FALSE;
                 }
@@ -497,10 +511,11 @@
         }
         
         private function dineId($tableId, $advancePayment) {
-            $resultSet = $this->orderDB->query("SELECT * from dine WHERE ".TABLE_PERSONS_COLUM_TID."=".$tableId);
+            $this->db->select_db(DATABASE_ORDER);
+            $resultSet = $this->db->query("SELECT * from dine WHERE ".TABLE_PERSONS_COLUM_TID."=".$tableId);
             if ($resultSet) {
-                if (!$row = $resultSet->fetchArray()) {
-                   if (!$this->orderDB->exec("INSERT INTO dine values(NULL, $tableId, $advancePayment)")) {
+                if (!$row = mysql_fetch_array($resultSet)) {
+                   if (!$this->db->query("INSERT INTO dine values(NULL, $tableId, $advancePayment)")) {
                       return FALSE;
                     } 
                 }
@@ -509,13 +524,14 @@
         }
         
         private function setPersons($tid, $persons) {
-            if ($this->orderDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
             $this->deletePersons($tid);
             $sql = "INSERT INTO ".TABLE_PERSONS." values(null, $tid, $persons)";
-            if (!$this->orderDB->exec($sql)) {
-                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+            $this->db->select_db(DATABASE_ORDER);
+            if (!$this->db->query($sql)) {
+                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
             }
@@ -524,13 +540,14 @@
         }
 
         private function deletePersons($tid) {
-            if ($this->orderDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
 
             $sql = "DELETE FROM ".TABLE_PERSONS." WHERE ".TABLE_PERSONS_COLUM_TID."=".$tid;
-            if (!$this->orderDB->exec($sql)) {
-                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+            $this->db->select_db(DATABASE_ORDER);
+            if (!$this->db->query($sql)) {
+                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
             }
@@ -539,13 +556,14 @@
         }
 
         private function removeDine($tid) {
-            if ($this->orderDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
 
             $sql = "DELETE FROM dine WHERE ".TABLE_PERSONS_COLUM_TID."=".$tid;
-            if (!$this->orderDB->exec($sql)) {
-                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+            $this->db->select_db(DATABASE_ORDER);
+            if (!$this->db->query($sql)) {
+                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
             }
@@ -555,21 +573,22 @@
         }
         public function getPersons($tid) {
             $persons = 0;
-            if ($this->orderDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
-
+            
             $sql = "SELECT ".TABLE_PERSONS_COLUM_PERSONS." from ".
                                           TABLE_PERSONS." WHERE ".TABLE_PERSONS_COLUM_TID."=".$tid;
-            $resultSet = $this->orderDB->query($sql);
+            $this->db->select_db(DATABASE_ORDER);
+            $resultSet = $this->db->query($sql);
             if ($resultSet) {
-                if ($row = $resultSet->fetchArray()) {
+                if ($row = mysql_fetch_array($resultSet)) {
                     $persons = $row[0];
                 } else {
                     return '['.$persons.']';
                 }
             } else {
-                $this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                $this->setErrorMsg('query failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
             }
@@ -579,22 +598,23 @@
         }
 
         public function getCurrentPersons() {
-            if ($this->orderDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
 
-            $resultSet = $this->orderDB->query("SELECT sum(".TABLE_PERSONS_COLUM_PERSONS.") from ".
+            $this->db->select_db(DATABASE_ORDER);
+            $resultSet = $this->db->query("SELECT sum(".TABLE_PERSONS_COLUM_PERSONS.") from ".
                                           TABLE_PERSONS);
             if ($resultSet) {
-                if ($row = $resultSet->fetchArray()) {
+                if ($row = mysql_fetch_array($resultSet)) {
                     $persons = $row[0];
                 } else {
-                    $this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                    $this->setErrorMsg('query failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                     $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                     return FALSE;
                 }
             } else {
-                $this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                $this->setErrorMsg('query failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
             }
@@ -604,7 +624,7 @@
         }
 
         public function updateDishStatus($tid, $did, $statusValue) {
-            if($this->orderDB == NULL) {
+            if($this->db == NULL) {
                 $this->connectOrderDB();
             }
 
@@ -625,18 +645,19 @@
                              ORDER_DETAIL_TABLE_COLUM_STATUS, ORDER_DETAIL_TABLE_COLUM_QUANTITY,
                              ORDER_DETAIL_TABLE_COLUM_DISH_ID, $did);
 
-            $resultSet = $this->orderDB->query($sql);
+            $this->db->select_db(DATABASE_ORDER);
+            $resultSet = $this->db->query($sql);
             if ($resultSet) {
-                if ($row = $resultSet->fetchArray()) {
+                if ($row = mysql_fetch_array($resultSet)) {
                     $orderId = $row[0];
                     $status = $row[1];
                 } else {
-                    $this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                    $this->setErrorMsg('query failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                     $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                     return FALSE;
                 }
             } else {
-                $this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                $this->setErrorMsg('query failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
             }
@@ -652,8 +673,8 @@
                          $status,/*set*/
                          ORDER_DETAIL_TABLE_COLUM_ID, $orderId,
                          ORDER_DETAIL_TABLE_COLUM_DISH_ID, $did);
-            if(!$this->orderDB->exec($sql)) {
-                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+            if(!$this->db->query($sql)) {
+                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
             }
@@ -768,7 +789,7 @@
         }
 
         public function getOrderedDishes($tid) {
-            if( $this->orderDB == NULL) {
+            if( $this->db == NULL) {
                 $this->connectOrderDB();
             }
 
@@ -783,10 +804,11 @@
                  TABLE_ORDER_TABLE,TABLE_ORDER_TABLE_COLUM_ID,
                  TABLE_ORDER_TABLE,TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid);
             $table = null;
-            $resultSet = $this->orderDB->query($sql);
+            $this->db->select_db(DATABASE_ORDER);
+            $resultSet = $this->db->query($sql);
             if ($resultSet) {
                 $i = 0;
-                while($row = $resultSet->fetchArray()) {
+                while($row = mysql_fetch_array($resultSet)) {
                     $item = array('dish_id' => $row[0],
                                   'price' => $row[1],
                                   'order_id' => $row[2],
@@ -797,7 +819,7 @@
                 }
                 $jsonString = json_encode($table);
             } else {
-                $this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                $this->setErrorMsg('query failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
             }
@@ -814,7 +836,7 @@
                  TABLE_PHONE_ORDERED_DID,$did,
                  PHONE_COLUM_TID,$tid);
 
-            if (!$this->orderInfoDB->exec($sql)) {
+            if (!$this->orderInfoDB->query($sql)) {
                 $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderInfoDB).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
@@ -825,7 +847,7 @@
         }
 
         public  function updateTableOrder($tid, $did, $type){
-            if($this->orderDB == NULL){
+            if($this->db == NULL){
                 $this->connectOrderDB();
             }
 			$orderId = FALSE;
@@ -838,16 +860,17 @@
                             TABLE_ORDER_TABLE,TABLE_ORDER_TABLE_COLUM_TABLE_ID,$tid,
                             ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_DISH_ID,$did);
 
-            if ($ret = $this->orderDB->query($sql)) {
+            $this->db->select_db(DATABASE_ORDER);
+            if ($ret = $this->db->query($sql)) {
                 $i = 0;
-                while($row = $ret->fetchArray()) {
+                while($row = mysql_fetch_array($ret)) {
                     if(($row[0] < 1.00001 && $row[0] > 0.00001 && $row[2] == 0) || $type == 0 || $type == 2){
                         $sql = sprintf("DELETE from %s where %s.%s = %s and %s.%s = %s",
                                         ORDER_DETAIL_TABLE,
                                         ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_ORDER_ID,$row[1],
                                         ORDER_DETAIL_TABLE,ORDER_DETAIL_TABLE_COLUM_DISH_ID,$did);
-                        if (!$this->orderDB->exec($sql)) {
-                            $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                        if (!$this->db->query($sql)) {
+                            $this->setErrorMsg('exec failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                             $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                             return FALSE;
                         }else if($type == 1){
@@ -868,8 +891,8 @@
                                         ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_QUANTITY,
                                         $quan,ORDER_DETAIL_TABLE_COLUM_ORDER_ID,$row[1],
                                         ORDER_DETAIL_TABLE_COLUM_DISH_ID,$did);
-                        if (!$this->orderDB->exec($sql)) {
-                            $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                        if (!$this->db->query($sql)) {
+                            $this->setErrorMsg('exec failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                             $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                             return FALSE;
                         }else if($type == 1){
@@ -882,7 +905,7 @@
                     $i++; 
                 }
             } else {
-                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
             }
@@ -1018,9 +1041,11 @@
         }
 
         private function connectOrderDB() {
-            $this->orderDB = new SQLite3(DATABASE_ORDER);
-            $this->orderDB->busyTimeout(5000);
-            if (!$this->orderDB) {
+            if ($this->db != null) {
+                return true;
+            }
+            $this->db= new Mysql(NULL);
+            if (!$this->db) {
                 $this->setErrorMsg('could not connect db:'.DATABASE_ORDER);
                 return false;
             }   
@@ -1028,9 +1053,11 @@
         }
 
         private function connectSalesDB() {
-            $this->salesDB = new SQLite3(DATABASE_SALES);
-            $this->salesDB->busyTimeout(5000);
-            if (!$this->salesDB) {
+            if ($this->db != null) {
+                return true;
+            }
+            $this->db = new Mysql(null);
+            if (!$this->db) {
                 $this->setErrorMsg('could not connect db:'.DATABASE_SALES);
                 return false;
             }   
@@ -1058,7 +1085,7 @@
         }
 
         private function moveDishes($src, $dest) {
-            if ($this->orderDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
             
@@ -1067,8 +1094,9 @@
                  $dest,/*set*/
                  TABLE_ORDER_TABLE_COLUM_TABLE_ID,
                  $src);
-            if (!$this->orderDB->exec($sql)) {
-                $this->setErrorMsg('exec failed:'.$this->orderDB->lastErrorMsg().' #sql:'.$sql);
+            $this->db->select_db(DATABASE_ORDER);
+            if (!$this->db->query($sql)) {
+                $this->setErrorMsg('exec failed:'.$this->db->lastErrorMsg().' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
             }
@@ -1078,8 +1106,8 @@
                  $dest,/*set*/
                  TABLE_ORDER_TABLE_COLUM_TABLE_ID,
                  $src);  
-            if (!$this->orderDB->exec($sql)) {
-                $this->setErrorMsg('exec failed:'.$this->orderDB->lastErrorMsg().' #sql:'.$sql);
+            if (!$this->db->query($sql)) {
+                $this->setErrorMsg('exec failed:'.$this->db->lastErrorMsg().' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
             }
@@ -1200,15 +1228,16 @@
                         ORDER_DETAIL_TABLE, TABLE_ORDER_TABLE,
                         ORDER_DETAIL_TABLE_COLUM_COOKED, ORDER_DETAIL_TABLE_COLUM_QUANTITY,
                         TABLE_ORDER_TABLE, TABLE_ORDER_TABLE_COLUM_ID, ORDER_DETAIL_TABLE_COLUM_ORDER_ID);
-            if ($this->orderDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
-            $ret = $this->orderDB->query($sql);
+            $this->db->select_db(DATABASE_ORDER);
+            $ret = $this->db->query($sql);
             $todos = null;
             $i = 0;
             if ($ret) {
                 $i = 0;
-                while($row = $ret->fetchArray()) {
+                while($row = mysql_fetch_array($ret)) {
                     $dishInfo = $this->getDishInfo($row[2]);
                     if ($dishInfo) {
                         $todos[$i] = array('id' => $row[1],
@@ -1222,7 +1251,7 @@
                     }
                 }
             } else {
-                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
             }   
@@ -1310,11 +1339,12 @@
                             ORDER_DETAIL_TABLE, ORDER_DETAIL_TABLE_COLUM_COOKED, $status,
                             ORDER_DETAIL_TABLE_COLUM_ID, $id);
                             
-            if ($this->orderDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
             
-            $ret = $this->orderDB->exec($sql);
+            $this->db->select_db(DATABASE_ORDER);
+            $ret = $this->db->query($sql);
             return $ret;
         }
         
@@ -1324,19 +1354,20 @@
                          ORDER_DETAIL_TABLE_COLUM_COOKED, ORDER_DETAIL_TABLE,
                          ORDER_DETAIL_TABLE_COLUM_ID, $id);
 
-            if ($this->orderDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
             
             $status = FALSE;
-            @$resultSet = $this->orderDB->query($sql);
+            $this->db->select_db(DATABASE_ORDER);
+            @$resultSet = $this->db->query($sql);
             if ($resultSet) {
-                if ($row = $resultSet->fetchArray()) {
+                if ($row = mysql_fetch_array($resultSet)) {
                     $status = array('quan' => $row[0],
                                   'cooked' => $row[1]);
                 }
             } else {
-                $this->setErrorMsg('query failed:'.sqlite_last_error($this->orderDB).' #sql:'.$sql);
+                $this->setErrorMsg('query failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
                 $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
                 return FALSE;
             }
@@ -1345,23 +1376,24 @@
         }
         
         public function statisticsByDish($start, $end) {
-            if ($this->salesDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectSalesDB();
             }
             $sql = sprintf("SELECT dish_id, sum(price*quantity), sum(quantity) ".
                             "FROM sales_data".
-                            " where DATETIME(timestamp)>='%s' and ".
-                            "DATETIME(timestamp)<='%s' GROUP BY dish_id", 
+                            " where timestamp BETWEEN '%s' and ".
+                            "'%s' GROUP BY dish_id", 
                             $start, $end);
-            $resultSet = $this->salesDB->query($sql);
+            $this->db->select_db(DATABASE_SALES);
+            $resultSet = $this->db->query($sql);
             if (!$resultSet) {
-                return "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+                return "err:".sqlite_last_error($this->db)." #sql:$sql";
             }
             $statistics = array();
             $total = 0;
 
             $i = 0;
-            while($row = $resultSet->fetchArray()) {
+            while($row = mysql_fetch_array($resultSet)) {
                 $item = array('id' => $row[0],
                               'total' => $row[1],
                               'quantity' => $row[2]);
@@ -1370,13 +1402,13 @@
             }
             
             $sql = sprintf("SELECT sum(price*quantity) FROM sales_data".
-                            " WHERE DATETIME(timestamp)>='%s' and DATETIME(timestamp)<='%s'",
+                            " WHERE timestamp BETWEEN '%s' and '%s'",
                             $start, $end);
-            $rs = $this->salesDB->query($sql);
+            $rs = $this->db->query($sql);
             if (!$rs) {
-                return "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+                return "err:".sqlite_last_error($this->db)." #sql:$sql";
             }
-            if ($row = $rs->fetchArray()) {
+            if ($row = mysql_fetch_array($rs)) {
                 if ($row[0] != NULL) {
                     $total = $row[0]; 
                 }
@@ -1391,22 +1423,23 @@
         }
         
         public function statisticsByStuff($start, $end) {
-            if ($this->salesDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectSalesDB();
             }
             $sql = sprintf("SELECT waiter_id, sum(price*quantity), sum(quantity)".
                             "FROM sales_data".
-                            " where DATETIME(timestamp)>='%s' and ".
-                            "DATETIME(timestamp)<='%s' GROUP BY waiter_id", 
+                            " where timestamp BETWEEN '%s' and ".
+                            "'%s' GROUP BY waiter_id", 
                             $start, $end);
-            $resultSet = $this->salesDB->query($sql);
+            $this->db->select_db(DATABASE_SALES);
+            $resultSet = $this->db->query($sql);
             if (!$resultSet) {
-                return "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+                return "err:".sqlite_last_error($this->db)." #sql:$sql";
             }
             $statistics = array();
             $total = 0;
             $i = 0;
-            while($row = $resultSet->fetchArray()) {
+            while($row = mysql_fetch_array($resultSet)) {
                 $item = array('id' => $row[0],
                               'total' => $row[1],
                               'quantity' => $row[2]);
@@ -1415,13 +1448,13 @@
             }
             
             $sql = sprintf("SELECT sum(price*quantity) FROM sales_data".
-                            " WHERE DATETIME(timestamp)>='%s' and DATETIME(timestamp)<='%s'",
+                            " WHERE timestamp BETWEEN '%s' and '%s'",
                             $start, $end);
-            $rs = $this->salesDB->query($sql);
+            $rs = $this->db->query($sql);
             if (!$rs) {
-                return "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+                return "err:".sqlite_last_error($this->db)." #sql:$sql";
             }
-            if ($row = $rs->fetchArray()) {
+            if ($row = mysql_fetch_array($rs)) {
                 if ($row[0] != NULL) {
                     $total = $row[0]; 
                 }
@@ -1440,7 +1473,7 @@
                 return "";
             }
             
-            if ($this->salesDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectSalesDB();
             }
             if ($this->menuDB == null) {
@@ -1467,13 +1500,14 @@
                     $i++;
                 }
                 
-                $sql = sprintf("SELECT sum(price*quantity), sum(quantity) FROM sales_data WHERE dish_id IN (%s) AND DATETIME(timestamp)>='%s' and ".
-                            "DATETIME(timestamp)<='%s'", implode(',', $dishIds), $start, $end);
-                $rs = $this->salesDB->query($sql);
+                $sql = sprintf("SELECT sum(price*quantity), sum(quantity) FROM sales_data WHERE dish_id IN (%s) AND timestamp BETWEEN '%s' and ".
+                            "'%s'", implode(',', $dishIds), $start, $end);
+                $this->db->select_db(DATABASE_SALES);
+                $rs = $this->db->query($sql);
                 if (!$rs) {
-                    return "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+                    return "err:".sqlite_last_error($this->db)." #sql:$sql";
                 }
-                if ($row = $rs->fetchArray()) {
+                if ($row = mysql_fetch_array($rs)) {
                     if ($row[1] == NULL) {
                         $item = array('name' => $printers[$index]->name,
                                  'total' => 0,
@@ -1491,13 +1525,15 @@
                 }
             }
             $sql = sprintf("SELECT sum(price*quantity) FROM sales_data".
-                            " WHERE DATETIME(timestamp)>='%s' and DATETIME(timestamp)<='%s'",
+                            " WHERE timestamp BETWEEN '%s' and '%s'",
                             $start, $end);
-            $rs = $this->salesDB->query($sql);
+            
+            $this->db->select_db(DATABASE_SALES);
+            $rs = $this->db->query($sql);
             if (!$rs) {
-                return "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+                return "err:".sqlite_last_error($this->db)." #sql:$sql";
             }
-            if ($row = $rs->fetchArray()) {
+            if ($row = mysql_fetch_array($rs)) {
                 if ($row[0] != NULL) {
                     $total = $row[0]; 
                 }
@@ -1518,7 +1554,7 @@
                 $this->connectMenuDB();
             }
             
-            if ($this->salesDB == null) {
+            if ($this->db == null) {
                 $this->connectSalesDB();
             }
             
@@ -1543,13 +1579,14 @@
                     $i++;
                 }
                 
-                $sql = sprintf("SELECT sum(price*quantity), sum(quantity) FROM sales_data WHERE dish_id IN (%s) AND DATETIME(timestamp)>='%s' and ".
-                            "DATETIME(timestamp)<='%s'", implode(',', $dishIds), $start, $end);
-                $rs = $this->salesDB->query($sql);
+                $sql = sprintf("SELECT sum(price*quantity), sum(quantity) FROM sales_data WHERE dish_id IN (%s) AND timestamp between '%s' and ".
+                            "'%s'", implode(',', $dishIds), $start, $end);
+                $this->db->select_db(DATABASE_SALES);
+                $rs = $this->db->query($sql);
                 if (!$rs) {
-                    return "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+                    return "err:".sqlite_last_error($this->db)." #sql:$sql";
                 }
-                if ($row = $rs->fetchArray()) {
+                if ($row = mysql_fetch_array($rs)) {
                     if ($row[1] == NULL) {
                         $item = array('id' => $category[0],
                                  'name' => $category[1],
@@ -1570,13 +1607,13 @@
             }
             
             $sql = sprintf("SELECT sum(price*quantity) FROM sales_data".
-                            " WHERE DATETIME(timestamp)>='%s' and DATETIME(timestamp)<='%s'",
+                            " WHERE timestamp BETWEEN '%s' and '%s'",
                             $start, $end);
-            $rs = $this->salesDB->query($sql);
+            $rs = $this->db->query($sql);
             if (!$rs) {
-                return "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+                return "err:".sqlite_last_error($this->db)." #sql:$sql";
             }
-            if ($row = $rs->fetchArray()) {
+            if ($row = mysql_fetch_array($rs)) {
                 if ($row[0] != NULL) {
                     $total = $row[0]; 
                 }
@@ -1594,7 +1631,7 @@
                 $this->connectMenuDB();
             }
             
-            if ($this->salesDB == null) {
+            if ($this->db == null) {
                 $this->connectSalesDB();
             }
             
@@ -1611,13 +1648,14 @@
                 $i++;
             }
             
-            $sql = sprintf("SELECT dish_id, sum(price*quantity), sum(quantity) FROM sales_data WHERE dish_id IN (%s) AND DATETIME(timestamp)>='%s' and ".
-                        "DATETIME(timestamp)<='%s' group by dish_id", implode(',', $dishIds), $start, $end);
-            $rs = $this->salesDB->query($sql);
+            $sql = sprintf("SELECT dish_id, sum(price*quantity), sum(quantity) FROM sales_data WHERE dish_id IN (%s) AND timestamp BETWEEN '%s' and ".
+                        "'%s' group by dish_id", implode(',', $dishIds), $start, $end);
+            $this->db->select_db(DATABASE_SALES);
+            $rs = $this->db->query($sql);
             if (!$rs) {
-                return "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+                return "err:".sqlite_last_error($this->db)." #sql:$sql";
             }
-            while ($row = $rs->fetchArray()) {
+            while ($row = mysql_fetch_array($rs)) {
                 $item = array('id' => $row[0],
                          'name' => 0,
                          'total' => $row[1],
@@ -1654,18 +1692,19 @@
         }
         
         public function getTableUsageAndPerson($start, $end) {
-            if ($this->salesDB == null) {
+            if ($this->db == null) {
                 $this->connectSalesDB();
             }
-            $sql = sprintf("SELECT count(), sum(persons) FROM table_info".
-                        " WHERE DATETIME(timestamp)>='%s' and DATETIME(timestamp)<='%s'",
+            $sql = sprintf("SELECT count(*), sum(persons) FROM table_info".
+                        " WHERE timestamp BETWEEN '%s' and '%s'",
                         $start, $end);
-            $rs = $this->salesDB->query($sql);
+            $this->db->select_db(DATABASE_SALES);
+            $rs = $this->db->query($sql);
             if (!$rs) {
-                echo "err:".sqlite_last_error($this->salesDB)." #sql:$sql";
+                echo "err:".sqlite_last_error($this->db)." #sql:$sql";
                 return fasle;
             }
-            if ($row = $rs->fetchArray()) {
+            if ($row = mysql_fetch_array($rs)) {
                 if ($row[0] == NULL) {
                     $row[0] = 0;
                 }
@@ -1725,7 +1764,7 @@
         }
         
         public function getAdvancePayment($tid) {
-            if ($this->orderDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
             
@@ -1733,9 +1772,10 @@
             $sql=sprintf("select %s from %s where %s=%s",
                       "advance_payment", "dine",
                       TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid);
-            $resultSet = $this->orderDB->query($sql);
+            $this->db->select_db(DATABASE_ORDER);
+            $resultSet = $this->db->query($sql);
             if ($resultSet) {
-                if ($row = $resultSet->fetchArray()) {
+                if ($row = mysql_fetch_array($resultSet)) {
                     $payment = $row[0];
                 }
             }
@@ -1744,18 +1784,19 @@
         }
         
         public function setAdvancePayment($tid, $payment) {
-            if ($this->orderDB == NULL) {
+            if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
             
             $sql=sprintf("UPDATE %s SET %s=%s where %s=%s",
                        "dine", "advance_payment", $payment,
                       TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid);
-            $resultSet = $this->orderDB->exec($sql);
+            $this->db->select_db(DATABASE_ORDER);
+            $resultSet = $this->db->query($sql);
             if ($resultSet) {
                 return $payment;
             } else {
-                echo $this->orderDB->lastErrorMsg()."#sql:$sql";
+                echo $this->db->lastErrorMsg()."#sql:$sql";
                 return 0;
             }
 
@@ -1765,11 +1806,9 @@
             if (isset($this->menuDB)) {
                 $this->menuDB->close();
             }
-            if (isset($this->orderDB)) {
-                $this->orderDB->close();
-            }
-            if (isset($this->salesDB)) {
-                $this->salesDB->close();
+            
+            if (isset($this->db)) {
+                $this->db->close();
             }
             if (isset($this->orderInfoDB)) {
                 $this->orderInfoDB->close();

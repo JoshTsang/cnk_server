@@ -8,7 +8,7 @@
     define('PRINTER_COMMAND_3X', "\x1D\x21\x22");
     define('PRINTER_OPEN_CASHIER', "\x10\x14\1\0\10");
     define('PRINTER_COMMAND_1X', "\x1D\x21\x1");
-    define('RECEIPT_DB', "../db/temporary/receipt.db");
+    define('RECEIPT_DB', "receipt");
     
     define('RECEIPT_ORDER', 1);
     define('RECEIPT_DEL', 2);
@@ -37,8 +37,7 @@
         }
         
         private function connectReceiptDB() {
-            $this->receiptDB = new SQLite3(RECEIPT_DB);
-            $this->receiptDB->busyTimeout(5000);
+            $this->receiptDB = new Mysql(RECEIPT_DB, 1);
             if (!$this->receiptDB) {
                 $this->setErrorMsg('could not connect db:'.RECEIPT_DB);
                 return false;
@@ -104,9 +103,9 @@
                 $this->connectReceiptDB();
             }
             
-            $sql = sprintf("INSERT INTO [receipt] values(null, %s, '%s', \"%s\", %s, %s, %d, %d)", 
+            $sql = sprintf("INSERT INTO receipt values(null, %s, '%s', \"%s\", %s, %s, %d, %d)", 
                     $index, $json, $orderId, $isAdd?1:0, $usefor, 0, RECEIPT_ORDER);
-            $this->receiptDB->exec($sql);
+            return $this->receiptDB->query($sql);
         }
 
         public function saveHistory($history) {
@@ -121,7 +120,7 @@
             }
             $sql = sprintf("INSERT INTO history values(null, %s, '%s', '%s', '%s', '%s')",
                  $history->type, $history->table, $history->timestamp, $history->receipt, $extra);
-            return $this->receiptDB->exec($sql);
+            return $this->receiptDB->query($sql);
         }
         
         public function getHistory() {
@@ -134,7 +133,7 @@
             $historys = array();
             if ($ret) {
                 $i = 0;
-                while($row = $ret->fetchArray()) {
+                while($row = mysql_fetch_array($ret)) {
                     $historys[$i] = array('id' => $row[0],
                                            'table' => $row[2],
                                            'timestamp' => $row[3],
@@ -154,7 +153,7 @@
             $sql = "select * from history where id=$id";
             $ret = $this->receiptDB->query($sql);
             if ($ret) {
-                if($row = $ret->fetchArray()) {
+                if($row = mysql_fetch_array($ret)) {
                     switch ($row[1]) {
                         case HISTORY_CHECKOUT:
                             $this->printCheckout($row[4], $row[5]);
@@ -182,12 +181,12 @@
             $sql = "select max(id) from history";
             $ret = $this->receiptDB->query($sql);
             if ($ret) {
-                if($row = $ret->fetchArray()) {
+                if($row = mysql_fetch_array($ret)) {
                     $max = $row[0];
                     $id = $max - 100;
                     if ($id > 0) {
                         $sql = "DELETE from history where id<$id";
-                        $this->receiptDB->exec($sql);
+                        $this->receiptDB->query($sql);
                     }
                 }
             }
@@ -272,16 +271,16 @@
                 $this->connectReceiptDB();
             }
             
-            $this->receiptDB->busyTimeout(60000);
             $sql = "select * from receipt limit 2";
             $ret = $this->receiptDB->query($sql);
             $receipts = array();
             if ($ret) {
                 $i = 0;
-                while($row = $ret->fetchArray()) {
+                while($row = mysql_fetch_array($ret)) {
                     $receipts[$i] = $row;
                     $i++;
                 }
+                mysql_free_result($ret);
             }
             
             $count = count($receipts);
@@ -299,15 +298,7 @@
                 }
                 if ($printerRet >= 0) {
                     $sql = sprintf("DELETE FROM receipt WHERE id=%s", $row[0]);
-                    //TODO db locked
-                    for ($j=0; $j<5; $j++) {
-                        $ret = $this->receiptDB->exec($sql);
-                        if ($ret) {
-                            break;
-                        } else {
-                            sleep(2);
-                        }
-                    }
+                    $ret = $this->receiptDB->query($sql);
                 }
             }
             
@@ -345,9 +336,9 @@
         }
         
         private function saveDel($json, $index, $usefor) {
-            $sql = sprintf("INSERT INTO [receipt] values(null, %s, '%s', \"%s\", %s, %s, %d, %d)", 
+            $sql = sprintf("INSERT INTO receipt values(null, %s, '%s', \"%s\", %s, %s, %d, %d)", 
                     $index, $json, 0, 0, $usefor, 0, RECEIPT_DEL);
-            $this->receiptDB->exec($sql);
+            $this->receiptDB->query($sql);
         }
         
         public function printSales($json) {
