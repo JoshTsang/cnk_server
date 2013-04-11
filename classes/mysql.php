@@ -32,9 +32,6 @@ class Mysql {
     /**   
      * 构造函数   
      *   
-     * @param string $dbhost 主机名   
-     * @param string $dbuser 用户   
-     * @param string $dbpw   密码   
      * @param string $dbname 数据库名   
      * @param int $pconnect 是否持续连接   
      */   

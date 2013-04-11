@@ -40,9 +40,6 @@
             if (!$this->updateTableStatus($tid, 0)) {
                 return FALSE;
             }
-            if (!$this->deletePersons($tid)) {
-                return FALSE;
-            }
             if (!$this->removeDine($tid)) {
                 return FALSE;
             }
@@ -167,7 +164,7 @@
             
             $dineId = 0;
             $sql=sprintf("select %s from %s where %s=%s",
-                      TABLE_ORDER_TABLE_COLUM_ID, "dine",
+                      TABLE_ORDER_TABLE_COLUM_ID, "dine_info",
                       TABLE_ORDER_TABLE_COLUM_TABLE_ID, $tid);
             $this->db->select_db(DATABASE_ORDER);
             $resultSet = $this->db->query($sql);
@@ -450,7 +447,7 @@
              }
              
              //TODO advancePayment
-            if (!$this->dineId($tableId, $advancePayment)) {
+            if (!$this->dineId($tableId, $advancePayment, $persons)) {
                 return FALSE;
             }
              
@@ -498,24 +495,16 @@
                 }
             }
 
-            if (!$this->deletePersons($tableId)) {
-                return FALSE;
-            }
-
-            if (!$this->setPersons($tableId, $persons)) {
-                return FALSE;
-            }
-            
             $this->setErrorNone();
             return $orderId;
         }
         
-        private function dineId($tableId, $advancePayment) {
+        private function dineId($tableId, $advancePayment, $persons) {
             $this->db->select_db(DATABASE_ORDER);
-            $resultSet = $this->db->query("SELECT * from dine WHERE ".TABLE_PERSONS_COLUM_TID."=".$tableId);
+            $resultSet = $this->db->query("SELECT * from dine_info WHERE ".TABLE_PERSONS_COLUM_TID."=".$tableId);
             if ($resultSet) {
                 if (!$row = mysql_fetch_array($resultSet)) {
-                   if (!$this->db->query("INSERT INTO dine values(NULL, $tableId, $advancePayment)")) {
+                   if (!$this->db->query("INSERT INTO dine_info values(NULL, $tableId, $advancePayment, $persons)")) {
                       return FALSE;
                     } 
                 }
@@ -527,8 +516,7 @@
             if ($this->db == NULL) {
                 $this->connectOrderDB();
             }
-            $this->deletePersons($tid);
-            $sql = "INSERT INTO ".TABLE_PERSONS." values(null, $tid, $persons)";
+            $sql = "UPDATE dine_info set persons=$persons where table_id=$tid";
             $this->db->select_db(DATABASE_ORDER);
             if (!$this->db->query($sql)) {
                 $this->setErrorMsg('exec failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
@@ -537,22 +525,6 @@
             }
 
             return TRUE;
-        }
-
-        private function deletePersons($tid) {
-            if ($this->db == NULL) {
-                $this->connectOrderDB();
-            }
-
-            $sql = "DELETE FROM ".TABLE_PERSONS." WHERE ".TABLE_PERSONS_COLUM_TID."=".$tid;
-            $this->db->select_db(DATABASE_ORDER);
-            if (!$this->db->query($sql)) {
-                $this->setErrorMsg('exec failed:'.sqlite_last_error($this->db).' #sql:'.$sql);
-                $this->setErrorLocation(__FILE__, __FUNCTION__, __LINE__);
-                return FALSE;
-            }
-
-            return true;
         }
 
         private function removeDine($tid) {
@@ -933,10 +905,6 @@
             }
 
             if (!$this->updateTableStatus($src, 0)) {
-                return FALSE;
-            }
-
-            if (!$this->deletePersons($src)) {
                 return FALSE;
             }
 

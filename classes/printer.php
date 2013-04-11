@@ -103,8 +103,8 @@
                 $this->connectReceiptDB();
             }
             
-            $sql = sprintf("INSERT INTO receipt values(null, %s, '%s', \"%s\", %s, %s, %d, %d)", 
-                    $index, $json, $orderId, $isAdd?1:0, $usefor, 0, RECEIPT_ORDER);
+            $sql = sprintf("INSERT INTO receipt values(null, %s, '%s', \"%s\", %s, %s, %d)", 
+                    $index, $json, $orderId, $isAdd?1:0, $usefor, RECEIPT_ORDER);
             return $this->receiptDB->query($sql);
         }
 
@@ -128,7 +128,7 @@
                 $this->connectReceiptDB();
             }
             
-            $sql = "select * from history ORDER BY id DESC limit 100";
+            $sql = "select * from history ORDER BY id DESC limit 500";
             $ret = $this->receiptDB->query($sql);
             $historys = array();
             if ($ret) {
@@ -183,7 +183,7 @@
             if ($ret) {
                 if($row = mysql_fetch_array($ret)) {
                     $max = $row[0];
-                    $id = $max - 100;
+                    $id = $max - 100000;
                     if ($id > 0) {
                         $sql = "DELETE from history where id<$id";
                         $this->receiptDB->query($sql);
@@ -286,7 +286,7 @@
             $count = count($receipts);
             for ($i=0; $i<$count; $i++) {
                $row = $receipts[$i];
-               switch($row[7]) {
+               switch($row[6]) {
                     case RECEIPT_DEL:
                         $printerRet = $this->printDel($row[2], $row[1], $row[5]);
                         break;
