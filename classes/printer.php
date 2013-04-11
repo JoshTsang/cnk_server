@@ -129,7 +129,7 @@
                 $this->connectReceiptDB();
             }
             
-            $sql = "select * from history ORDER BY id DESC limit 100";
+            $sql = "select * from history ORDER BY id DESC limit 300";
             $ret = $this->receiptDB->query($sql);
             $historys = array();
             if ($ret) {
@@ -184,7 +184,7 @@
             if ($ret) {
                 if($row = $ret->fetchArray()) {
                     $max = $row[0];
-                    $id = $max - 100;
+                    $id = $max - 100000;
                     if ($id > 0) {
                         $sql = "DELETE from history where id<$id";
                         $this->receiptDB->exec($sql);
