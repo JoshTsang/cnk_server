@@ -325,6 +325,7 @@
             if ($this->orderInfoDB == NULL) {
                 $this->connectOrderInfoDB();
             }
+            $table = array();
             @$resultSet = $this->orderInfoDB->query($sql);
             if ($resultSet) {
                 $j = 0;
@@ -1154,7 +1155,7 @@
                                   'name' => $row[2],
                                   'category'=>$row[3],
                                   'index' => $row[4],
-                                  'area' => $row[5],
+                                  'area' => $row[5]==null?0:$row[5],
                                   'floor'=>$row[6]);
                     $Table[$i] = $item;
                     $i++;
